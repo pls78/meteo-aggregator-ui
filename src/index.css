@@ -1,0 +1,22 @@
+@import 'tailwindcss';
+@import 'maplibre-gl/dist/maplibre-gl.css';
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+#root {
+  /* The map is the full-screen surface; overlays are absolutely positioned above it. */
+  position: relative;
+  overflow: hidden;
+}
+
+/* The MapLibre map fills its container for the full-screen map. */
+.map-container {
+  height: 100%;
+  width: 100%;
+  background: #e7eef2; /* matches Voyager's light water tone while the style loads */
+}
