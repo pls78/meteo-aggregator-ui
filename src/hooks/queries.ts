@@ -37,10 +37,16 @@ export function useHourly(loc: LatLng | null, hours = 24) {
   })
 }
 
+// Re-poll /imagery so active overlays track the latest cadence frame. The call is
+// cheap (the backend computes WMS params, no upstream HTTP) and React Query's
+// structural sharing makes an unchanged response between boundaries a no-op.
+const IMAGERY_REFETCH_MS = 60_000
+
 export function useImagery() {
   return useQuery({
     queryKey: ['imagery'],
     queryFn: () => getImagery(),
-    staleTime: 5 * 60_000,
+    staleTime: IMAGERY_REFETCH_MS,
+    refetchInterval: IMAGERY_REFETCH_MS,
   })
 }

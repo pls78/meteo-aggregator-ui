@@ -31,16 +31,21 @@ There is no test runner configured yet.
 
 ## Backend dependency
 
-The UI needs the aggregator running and reachable at `VITE_API_BASE_URL` (default
-`http://localhost:8000`, see `.env`):
+The UI needs the aggregator running. In dev the Vite proxy forwards `/api` to it
+(target `VITE_API_PROXY_TARGET`, default `http://localhost:8000`, see `.env`):
 
 ```bash
 cd ../meteo-aggregator && uvicorn api.main:app --reload
 ```
 
-**CORS:** because the browser calls FastAPI cross-origin, the backend must allow the UI
-origin. Add `CORSMiddleware` (allow `http://localhost:5173`) in
-`../meteo-aggregator/api/main.py`. Without it, all data requests fail in the browser.
+**CORS:** in dev the browser talks to the Vite server **same-origin** — it calls
+`/api/*` (`VITE_API_BASE_URL` defaults to `/api`) and Vite's `server.proxy`
+forwards that to the backend, so **no backend CORS is needed** in development (the
+backend's `http://localhost:5173` allow-list is now unnecessary for dev). In
+**production** the proxy does not run: if the UI and API are served from different
+origins, the backend must allow the UI origin via `CORSMiddleware` (or serve the
+API under a same-origin `/api` route), and `VITE_API_BASE_URL` must be set to the
+absolute API URL.
 
 ## Architecture
 

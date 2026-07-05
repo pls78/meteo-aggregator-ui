@@ -1,6 +1,8 @@
 // Thin typed client over the meteo-aggregator FastAPI backend.
-// Base URL comes from VITE_API_BASE_URL (see .env). No logic here beyond
-// building the request and parsing JSON; throws on non-OK responses.
+// Base URL comes from VITE_API_BASE_URL (see .env), defaulting to the relative
+// `/api` path — in dev the Vite proxy (vite.config.ts) forwards /api to the
+// backend (same-origin, no CORS). No logic here beyond building the request and
+// parsing JSON; throws on non-OK responses.
 
 import type {
   AggregatedForecast,
@@ -10,11 +12,13 @@ import type {
 } from './types'
 
 const BASE_URL = (
-  import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000'
+  import.meta.env.VITE_API_BASE_URL ?? '/api'
 ).replace(/\/$/, '')
 
 async function getJson<T>(path: string, params: Record<string, string | number | undefined>): Promise<T> {
-  const url = new URL(BASE_URL + path)
+  // Resolve against the page origin so a relative base (`/api`) works; an
+  // absolute BASE_URL ignores the second argument.
+  const url = new URL(BASE_URL + path, window.location.origin)
   for (const [key, value] of Object.entries(params)) {
     if (value !== undefined) url.searchParams.set(key, String(value))
   }

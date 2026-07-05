@@ -71,6 +71,9 @@ export function MapView() {
   const primaryMarker = useRef<maplibregl.Marker | null>(null)
   const comparisonMarker = useRef<maplibregl.Marker | null>(null)
   const [loaded, setLoaded] = useState(false)
+  // Current tile URL per active WMS layer id, so tiles are re-fetched only when a
+  // layer's snapped frame time actually advances — not on every opacity change.
+  const layerUrls = useRef<Record<string, string>>({})
 
   const { primary, comparison, focus, activeLayers, opacity, selectLocation } = useAppStore()
   const { data: imagery } = useImagery()
@@ -133,7 +136,8 @@ export function MapView() {
     }
   }, [focus])
 
-  // Satellite WMS overlays: add/remove raster sources and update opacity.
+  // Satellite WMS overlays: add/remove raster sources, update opacity, and refresh
+  // tiles in place when a layer's snapped frame time advances.
   useEffect(() => {
     const map = mapRef.current
     if (!map || !loaded) return
@@ -141,13 +145,23 @@ export function MapView() {
       const id = `wms-${params.layer}`
       const active = activeLayers.includes(params.layer)
       const exists = Boolean(map.getLayer(id))
+      const url = wmsTileUrl(params)
       if (active && !exists) {
-        map.addSource(id, { type: 'raster', tiles: [wmsTileUrl(params)], tileSize: 256 })
+        map.addSource(id, { type: 'raster', tiles: [url], tileSize: 256 })
         map.addLayer({ id, type: 'raster', source: id, paint: { 'raster-opacity': opacity } })
+        layerUrls.current[id] = url
       } else if (!active && exists) {
         map.removeLayer(id)
         map.removeSource(id)
+        delete layerUrls.current[id]
       } else if (active && exists) {
+        // New frame (snapped time changed → new URL): swap tiles in place, only
+        // when actually changed so opacity drags don't trigger a reload.
+        if (layerUrls.current[id] !== url) {
+          const src = map.getSource(id) as maplibregl.RasterTileSource | undefined
+          src?.setTiles([url])
+          layerUrls.current[id] = url
+        }
         map.setPaintProperty(id, 'raster-opacity', opacity)
       }
     }
