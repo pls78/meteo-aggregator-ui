@@ -17,6 +17,28 @@ the Python/FastAPI **meteo-aggregator** backend in the sibling repo `../meteo-ag
 - App is feature-complete for the MVP + six follow-ups; `npm run build` and `npm run lint`
   pass.
 - Both dev servers were running during development: UI on `:5173`, backend on `:8000`.
+- **Deployed and live:** UI on Cloudflare Pages (<https://meteo-aggregator.pages.dev>),
+  API on Google Cloud Run. See "Deployment" below and `CLAUDE.md`.
+
+## Deployment
+
+Two free, separate services; **local dev and the deployed build never collide**
+because the API target is chosen by Vite mode:
+
+- `npm run dev` → `.env` (`/api`) → dev proxy → **local** backend `:8000`.
+- `npm run build` → committed `.env.production` → **deployed** Cloud Run API.
+
+Redeploy the UI (static, direct upload — no Git integration):
+
+```bash
+nvm use && npm run build
+npx wrangler pages deploy dist --project-name=meteo-aggregator   # -> meteo-aggregator.pages.dev
+```
+
+Gotcha: use the stable `meteo-aggregator.pages.dev` URL, **not** the per-deploy
+`<hash>.…pages.dev` alias — the hash changes each upload and is not on the backend
+CORS allow-list, so the app would fail with CORS errors there. The backend's
+`ALLOWED_ORIGINS` is set to the production Pages origin; update it if that changes.
 
 ## Run it
 
