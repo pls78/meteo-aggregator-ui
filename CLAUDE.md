@@ -40,12 +40,36 @@ cd ../meteo-aggregator && uvicorn api.main:app --reload
 
 **CORS:** in dev the browser talks to the Vite server **same-origin** — it calls
 `/api/*` (`VITE_API_BASE_URL` defaults to `/api`) and Vite's `server.proxy`
-forwards that to the backend, so **no backend CORS is needed** in development (the
-backend's `http://localhost:5173` allow-list is now unnecessary for dev). In
-**production** the proxy does not run: if the UI and API are served from different
-origins, the backend must allow the UI origin via `CORSMiddleware` (or serve the
-API under a same-origin `/api` route), and `VITE_API_BASE_URL` must be set to the
-absolute API URL.
+forwards that to the backend, so **no backend CORS is needed** in development. In
+**production** the proxy does not run: the deployed build calls the backend's
+absolute origin cross-origin, so the backend must allow the UI origin. This is
+wired up — see "Deployment" below.
+
+## Deployment
+
+Deployed as two free, separate services:
+
+- **UI** → Cloudflare Pages (static, direct upload): <https://meteo-aggregator.pages.dev>
+- **API** → Google Cloud Run (scale-to-zero container): `https://your-backend.example.com`
+
+The API target is selected by Vite mode, so **local and deployed never collide**:
+
+- `npm run dev` (development mode) → `.env` (`/api`) → dev proxy → **local** backend on `:8000`.
+- `npm run build` (production mode) → **committed** `.env.production` (`VITE_API_BASE_URL` = Cloud Run URL) → **deployed** backend.
+
+`.env` is gitignored (local); `.env.production` is committed (public URL, no secret).
+
+Redeploy the UI:
+
+```bash
+nvm use && npm run build
+npx wrangler pages deploy dist --project-name=meteo-aggregator
+```
+
+Use the stable `meteo-aggregator.pages.dev` URL — the per-deploy `<hash>.…pages.dev`
+alias changes each upload and is **not** on the backend CORS allow-list. The
+backend's `ALLOWED_ORIGINS` env var is set to `https://meteo-aggregator.pages.dev`
+(see `../meteo-aggregator/api/README.md`); update it if the UI origin changes.
 
 ## Architecture
 
