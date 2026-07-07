@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { useImagery } from '../../hooks/queries'
 import { useAppStore } from '../../store/appStore'
 import type { WmsLayerParams } from '../../api/types'
+import { RGB_LEGENDS } from '../../lib/layerLegends'
 
 // Build a GetLegendGraphic URL for a layer from its WMS endpoint + name. Legends
 // are static color scales (independent of time).
@@ -32,6 +33,27 @@ function LayerLegend({ params }: { params: WmsLayerParams }) {
       onLoad={(e) => setReady(e.currentTarget.naturalWidth >= 64)}
       onError={() => setReady(false)}
     />
+  )
+}
+
+// Static colour key for RGB composite overlays, which have no WMS legend. Renders
+// nothing for layers without an entry in RGB_LEGENDS (those use LayerLegend).
+function RgbColorKey({ layerId }: { layerId: string }) {
+  const info = RGB_LEGENDS[layerId]
+  if (!info) return null
+  return (
+    <div className="ml-6 mt-1 space-y-0.5 text-xs text-slate-600">
+      {info.note && <p className="italic text-slate-500">{info.note}</p>}
+      {info.swatches?.map((s) => (
+        <div key={s.label} className="flex items-center gap-1.5">
+          <span
+            className="inline-block h-3 w-3 shrink-0 rounded-sm ring-1 ring-black/10"
+            style={{ backgroundColor: s.color }}
+          />
+          <span>{s.label}</span>
+        </div>
+      ))}
+    </div>
   )
 }
 
@@ -84,7 +106,12 @@ export function LayerControl() {
                     />
                     <span>{layer.title}</span>
                   </label>
-                  {activeLayers.includes(layer.layer) && <LayerLegend params={layer} />}
+                  {activeLayers.includes(layer.layer) && (
+                    <>
+                      <LayerLegend params={layer} />
+                      <RgbColorKey layerId={layer.layer} />
+                    </>
+                  )}
                 </li>
               ))}
             </ul>
