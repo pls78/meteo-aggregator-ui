@@ -8,7 +8,9 @@ A map-driven weather UI: a full-screen Leaflet map where the user clicks (or sea
 select a location and sees aggregated weather overlaid; `Shift`+click adds a second location
 for side-by-side comparison; tapping a day opens an hour-by-hour bottom sheet for that day
 (both locations overlaid when two are selected); satellite WMS layers can be toggled onto the
-map. It is a pure frontend (Vite + React + TypeScript + Tailwind v4 + react-leaflet) that
+map. Below the `md` breakpoint it switches to a **mobile layout** — a draggable weather bottom
+sheet, an on-screen **A/B tap target** in place of Shift+click, and a satellite-layers sheet.
+It is a pure frontend (Vite + React + TypeScript + Tailwind v4 + react-leaflet) that
 talks directly to the Python/FastAPI **meteo-aggregator** backend in the sibling repo
 `../meteo-aggregator`.
 
@@ -84,17 +86,31 @@ backend's `ALLOWED_ORIGINS` env var is set to `https://meteo-aggregator.pages.de
   fetches 24 h for current conditions; `useHourlyRange` lazily fetches the full 168 h week,
   enabled only while a day is open in the hourly view.
 - **`src/store/appStore.tsx`** — client UI state only (selected primary/comparison locations,
-  active WMS layers, overlay opacity, map focus, and `selectedDay` — the day open in the
-  hourly view, shared by both locations). Server data stays in React Query, never here.
-- **`src/components/map/`** — `MapView` (the full-screen map + base tiles + markers + recenter),
-  `WmsOverlays` (active satellite layers via `L.tileLayer.wms`).
-- **`src/components/`** — `search/SearchBox`, `panels/LocationCard` (its day rows are buttons
-  that open the hourly view), `compare/ComparisonPanel`, `layers/LayerControl`, and
-  `hourly/` — `HourlyPanel` (the full-width bottom sheet: day header, legend, states) +
-  `HourlyChart` (dependency-free inline SVG; temperature line and precipitation bars in
-  **separate stacked panels** sharing one x-axis — never a dual-axis chart). `App.tsx`
-  composes the map with absolutely-positioned overlays plus the bottom hourly sheet.
+  active WMS layers, overlay opacity, map focus, `selectedDay` — the day open in the hourly
+  view — and `activeSlot`, which slot a plain map tap fills. `activeSlot` is the mobile A/B
+  target; it stays `'primary'` on desktop so plain-click/Shift are unchanged). Server data
+  stays in React Query, never here.
+- **`src/components/map/`** — `MapView` (the full-screen map + base tiles + markers + recenter).
+  Rotation and pitch are locked (kept north-up). A plain tap fills `activeSlot`; Shift+click
+  always fills comparison. `WmsOverlays` renders active satellite layers.
+- **`src/components/`** (desktop overlays) — `search/SearchBox` (accepts a `className` for
+  width), `panels/LocationCard` (day rows are buttons that open the hourly view),
+  `compare/ComparisonPanel`, `layers/LayerControl` (exports `LayerLegend`/`RgbColorKey` for
+  reuse), and `hourly/` — `HourlyPanel` (full-width bottom sheet) + `HourlyChart`
+  (dependency-free inline SVG; temperature line and precipitation bars in **separate stacked
+  panels** sharing one x-axis — never a dual-axis chart).
+- **`src/components/mobile/`** — the layout shown below the `md` breakpoint. `MobileShell`
+  composes `MobileTopBar` (search + A/B target), `WeatherSheet` (draggable peek/half/full sheet
+  with an A/B tab, embedding `HourlyChart`), and `MobileLayers` (Layers FAB + modal sheet).
+- **`src/hooks/useMediaQuery.ts`** — `useMediaQuery`/`useIsMobile` (`max-width: 767px`).
+  `App.tsx` renders `DesktopOverlays` or `MobileShell` over the shared `MapView` based on it.
 - **`src/lib/weatherCode.ts`** — WMO `weather_code` → icon/label.
+
+> **Two layouts, one behavior:** presentation of selection / weather / layers is duplicated
+> across the desktop overlays and `src/components/mobile/`. Changing one usually means changing
+> the other. The map, store, and React Query hooks are shared, so keep behavior in those.
+> The `index.html` viewport is intentionally locked (`maximum-scale=1, user-scalable=no`) — the
+> map owns zoom; without it iOS zooms into focused inputs and never restores. Don't re-enable it.
 
 ### Backend contract (consumed, not owned here)
 
