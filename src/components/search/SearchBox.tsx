@@ -30,9 +30,11 @@ interface Props {
   slot: Slot
   accent: string
   onRemove?: () => void
+  /** Outer width/box classes; defaults to the desktop fixed width. */
+  className?: string
 }
 
-export function SearchBox({ slot, accent, onRemove }: Props) {
+export function SearchBox({ slot, accent, onRemove, className = 'w-80 max-w-[80vw]' }: Props) {
   const { primary, comparison, selectLocation, focusOn } = useAppStore()
   const location = slot === 'comparison' ? comparison : primary
 
@@ -60,7 +62,7 @@ export function SearchBox({ slot, accent, onRemove }: Props) {
   const showResults = open && focused && debounced.trim().length >= 2
 
   return (
-    <div className="relative w-80 max-w-[80vw]">
+    <div className={`relative ${className}`}>
       <div className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white/95 px-3 py-2 shadow-lg focus-within:border-blue-500">
         <span
           className="inline-block h-3 w-3 shrink-0 rounded-full"
@@ -80,7 +82,7 @@ export function SearchBox({ slot, accent, onRemove }: Props) {
             setOpen(true)
           }}
           onBlur={() => setFocused(false)}
-          className="min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none"
+          className="min-w-0 flex-1 bg-transparent text-base text-slate-900 outline-none md:text-sm"
         />
         {onRemove && (
           <button

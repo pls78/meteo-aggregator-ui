@@ -23,7 +23,7 @@ function legendUrl(params: WmsLayerParams): string {
 // A layer's legend image. It loads while taking no layout space and only reveals
 // itself once a real legend has arrived — so layers with no legend (GeoServer's
 // ~20x20 cross-hatched placeholder) or failed loads never cause a layout bump.
-function LayerLegend({ params }: { params: WmsLayerParams }) {
+export function LayerLegend({ params }: { params: WmsLayerParams }) {
   const [ready, setReady] = useState(false)
   return (
     <img
@@ -38,7 +38,7 @@ function LayerLegend({ params }: { params: WmsLayerParams }) {
 
 // Static colour key for RGB composite overlays, which have no WMS legend. Renders
 // nothing for layers without an entry in RGB_LEGENDS (those use LayerLegend).
-function RgbColorKey({ layerId }: { layerId: string }) {
+export function RgbColorKey({ layerId }: { layerId: string }) {
   const info = RGB_LEGENDS[layerId]
   if (!info) return null
   return (
