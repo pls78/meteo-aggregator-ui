@@ -53,7 +53,7 @@
 ## 7. Verify
 
 - [x] 7.1 `npm run build` and `npm run lint` pass
-- [ ] 7.2 Live check (backend running with the tz-alignment change): tap a day → sheet opens
+- [x] 7.2 Live check (backend running with the tz-alignment change): tap a day → sheet opens
       with that day's hours; the hours shown match the tapped local day (evening hours
       present, no next-day bleed); Shift+click a second location → both lines appear color-
       coded with a legend; clear comparison → single line; close → sheet dismisses; a far-out
