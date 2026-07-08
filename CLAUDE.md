@@ -6,9 +6,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A map-driven weather UI: a full-screen Leaflet map where the user clicks (or searches) to
 select a location and sees aggregated weather overlaid; `Shift`+click adds a second location
-for side-by-side comparison; satellite WMS layers can be toggled onto the map. It is a pure
-frontend (Vite + React + TypeScript + Tailwind v4 + react-leaflet) that talks directly to the
-Python/FastAPI **meteo-aggregator** backend in the sibling repo `../meteo-aggregator`.
+for side-by-side comparison; tapping a day opens an hour-by-hour bottom sheet for that day
+(both locations overlaid when two are selected); satellite WMS layers can be toggled onto the
+map. It is a pure frontend (Vite + React + TypeScript + Tailwind v4 + react-leaflet) that
+talks directly to the Python/FastAPI **meteo-aggregator** backend in the sibling repo
+`../meteo-aggregator`.
 
 ## Node version
 
@@ -77,14 +79,21 @@ backend's `ALLOWED_ORIGINS` env var is set to `https://meteo-aggregator.pages.de
   (`../meteo-aggregator/meteo_aggregator/models.py`) — **keep them in sync**. `client.ts` is
   a thin `fetch` wrapper (one function per endpoint).
 - **`src/hooks/queries.ts`** — React Query hooks (`useSearch`, `useForecast`, `useHourly`,
-  `useImagery`). Forecast/hourly query keys include rounded lat/lon so locations cache
-  independently and aren't refetched on tiny coordinate changes.
+  `useHourlyRange`, `useImagery`). Forecast/hourly query keys include rounded lat/lon so
+  locations cache independently and aren't refetched on tiny coordinate changes. `useHourly`
+  fetches 24 h for current conditions; `useHourlyRange` lazily fetches the full 168 h week,
+  enabled only while a day is open in the hourly view.
 - **`src/store/appStore.tsx`** — client UI state only (selected primary/comparison locations,
-  active WMS layers, overlay opacity, map focus). Server data stays in React Query, never here.
+  active WMS layers, overlay opacity, map focus, and `selectedDay` — the day open in the
+  hourly view, shared by both locations). Server data stays in React Query, never here.
 - **`src/components/map/`** — `MapView` (the full-screen map + base tiles + markers + recenter),
   `WmsOverlays` (active satellite layers via `L.tileLayer.wms`).
-- **`src/components/`** — `search/SearchBox`, `panels/LocationCard`, `compare/ComparisonPanel`,
-  `layers/LayerControl`. `App.tsx` composes the map with absolutely-positioned overlays.
+- **`src/components/`** — `search/SearchBox`, `panels/LocationCard` (its day rows are buttons
+  that open the hourly view), `compare/ComparisonPanel`, `layers/LayerControl`, and
+  `hourly/` — `HourlyPanel` (the full-width bottom sheet: day header, legend, states) +
+  `HourlyChart` (dependency-free inline SVG; temperature line and precipitation bars in
+  **separate stacked panels** sharing one x-axis — never a dual-axis chart). `App.tsx`
+  composes the map with absolutely-positioned overlays plus the bottom hourly sheet.
 - **`src/lib/weatherCode.ts`** — WMO `weather_code` → icon/label.
 
 ### Backend contract (consumed, not owned here)
@@ -95,7 +104,7 @@ Four keyless GET endpoints; full reference in `../meteo-aggregator/api/README.md
 |----------|-------|
 | `GET /search?name` | `Place[]` — name → coordinates for the search box |
 | `GET /forecast?lat&lon&days` | daily consensus; `values` keyed by variable, plus `confidence` + per-model `breakdown` |
-| `GET /hourly?lat&lon&hours` | hourly consensus; **`hours[0]` = current conditions** (`/forecast` has only daily max/min) |
+| `GET /hourly?lat&lon&hours` | hourly consensus; **`hours[0]` = current conditions** (`/forecast` has only daily max/min). Timestamps are **location-local** (backend uses `timezone=auto`), matching the daily `date`, so the hourly view groups hours under a tapped day via `date.slice(0,10)` — **do not** assume UTC here |
 | `GET /imagery?time` | EUMETSAT WMS layer params (`EPSG:3857`, transparent PNG). Tiles are fetched **directly from EUMETSAT by the browser**, not proxied; `time: null` ⇒ WMS serves the latest image |
 
 `values` is `Record<string, number | string | null>`; `weather_code` is a WMO code, and

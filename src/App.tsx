@@ -5,6 +5,7 @@ import { MapView } from './components/map/MapView'
 import { SearchPanel } from './components/search/SearchPanel'
 import { LayerControl } from './components/layers/LayerControl'
 import { ComparisonPanel } from './components/compare/ComparisonPanel'
+import { HourlyPanel } from './components/hourly/HourlyPanel'
 
 function App() {
   return (
@@ -23,6 +24,13 @@ function App() {
 
         <div className="pointer-events-auto absolute bottom-4 left-4">
           <LayerControl />
+        </div>
+      </div>
+
+      {/* Hourly detail sheet: full-width, anchored to the bottom, above the map. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1001] px-2">
+        <div className="pointer-events-auto">
+          <HourlyPanel />
         </div>
       </div>
     </>

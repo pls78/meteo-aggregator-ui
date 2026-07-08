@@ -28,7 +28,7 @@ interface Props {
 }
 
 export function LocationCard({ location, slot, accent }: Props) {
-  const { clearLocation } = useAppStore()
+  const { clearLocation, selectedDay, selectDay } = useAppStore()
   const forecast = useForecast(location)
   const hourly = useHourly(location)
 
@@ -75,35 +75,45 @@ export function LocationCard({ location, slot, accent }: Props) {
         </div>
       ) : null}
 
-      {/* Daily forecast */}
+      {/* Daily forecast — tap a day to open its hours in the bottom sheet. */}
       {forecast.data && (
-        <ul className="space-y-1">
-          {forecast.data.days.map((day) => (
-            <li
-              key={day.date}
-              className="grid grid-cols-[2.5rem_1.5rem_1fr_auto] items-center gap-2 text-sm"
-            >
-              <span className="text-slate-500">{WEEKDAY(day.date)}</span>
-              <span>{weatherInfo(day.values.weather_code).icon}</span>
-              <span className="text-slate-800">
-                <span className="font-medium">{num(day.values.temperature_2m_max)}°</span>
-                <span className="text-slate-400"> / {num(day.values.temperature_2m_min)}°</span>
-                {typeof day.values.precipitation_sum === 'number' &&
-                  day.values.precipitation_sum > 0 && (
-                    <span className="ml-1 text-blue-500">
-                      {num(day.values.precipitation_sum, 1)}mm
-                    </span>
-                  )}
-              </span>
-              <span
-                className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${
-                  CONFIDENCE_STYLE[day.confidence.level] ?? ''
-                }`}
-              >
-                {day.confidence.level}
-              </span>
-            </li>
-          ))}
+        <ul className="space-y-0.5">
+          {forecast.data.days.map((day) => {
+            const active = day.date === selectedDay
+            return (
+              <li key={day.date}>
+                <button
+                  type="button"
+                  onClick={() => selectDay(day.date)}
+                  aria-pressed={active}
+                  title="Show hourly forecast for this day"
+                  className={`grid w-full cursor-pointer grid-cols-[2.5rem_1.5rem_1fr_auto] items-center gap-2 rounded px-1 py-0.5 text-left text-sm hover:bg-slate-100 ${
+                    active ? 'bg-slate-100 ring-1 ring-slate-300' : ''
+                  }`}
+                >
+                  <span className="text-slate-500">{WEEKDAY(day.date)}</span>
+                  <span>{weatherInfo(day.values.weather_code).icon}</span>
+                  <span className="text-slate-800">
+                    <span className="font-medium">{num(day.values.temperature_2m_max)}°</span>
+                    <span className="text-slate-400"> / {num(day.values.temperature_2m_min)}°</span>
+                    {typeof day.values.precipitation_sum === 'number' &&
+                      day.values.precipitation_sum > 0 && (
+                        <span className="ml-1 text-blue-500">
+                          {num(day.values.precipitation_sum, 1)}mm
+                        </span>
+                      )}
+                  </span>
+                  <span
+                    className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${
+                      CONFIDENCE_STYLE[day.confidence.level] ?? ''
+                    }`}
+                  >
+                    {day.confidence.level}
+                  </span>
+                </button>
+              </li>
+            )
+          })}
         </ul>
       )}
     </section>

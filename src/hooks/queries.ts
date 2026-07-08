@@ -37,6 +37,22 @@ export function useHourly(loc: LatLng | null, hours = 24) {
   })
 }
 
+// The full hourly week, fetched lazily — only when a day is open in the hourly
+// view (`enabled`). Its own cache entry (hours=168) independent of the 24h
+// `useHourly` used for current conditions.
+export function useHourlyRange(
+  loc: LatLng | null,
+  { enabled }: { enabled: boolean },
+  hours = 168,
+) {
+  return useQuery({
+    queryKey: ['hourly', loc && round(loc.lat), loc && round(loc.lng), hours],
+    queryFn: () => getHourly(loc!.lat, loc!.lng, hours),
+    enabled: loc !== null && enabled,
+    staleTime: 10 * 60_000,
+  })
+}
+
 // Re-poll /imagery so active overlays track the latest cadence frame. The call is
 // cheap (the backend computes WMS params, no upstream HTTP) and React Query's
 // structural sharing makes an unchanged response between boundaries a no-op.
