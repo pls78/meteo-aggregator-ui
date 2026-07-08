@@ -54,6 +54,6 @@
 - [x] 7.1 `npm run build` and `npm run lint` pass
 - [x] 7.2 Desktop unchanged at ≥ 768px: plain-click primary, Shift+click comparison, floating
       cards, inline layer panel, hourly panel all behave as before
-- [ ] 7.3 Mobile (≤ 767px) live check: tap sets A; "+ Compare" → tap sets B; A/B switch re-aims;
+- [x] 7.3 Mobile (≤ 767px) live check: tap sets A; "+ Compare" → tap sets B; A/B switch re-aims;
       sheet peek/half/full via drag and tap; tap a day → hourly (both series when comparing);
       Layers FAB opens a scrollable sheet; list scroll doesn't pan the map — verified by the user
