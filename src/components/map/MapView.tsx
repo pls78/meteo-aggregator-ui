@@ -97,6 +97,12 @@ export function MapView() {
     // MapLibre's default box-zoom (Shift+drag) intercepts the Shift modifier and
     // swallows Shift+click; disable it so Shift+click selects the comparison slot.
     map.boxZoom.disable()
+    // Keep the map north-up: disable rotation (drag-rotate and the two-finger
+    // twist) and the accompanying pitch so stray touch gestures can't tilt/spin it.
+    map.dragRotate.disable()
+    map.touchZoomRotate.disableRotation()
+    map.touchPitch.disable()
+    map.keyboard.disableRotation()
     map.on('load', () => setLoaded(true))
     map.on('click', (e) => {
       // Desktop: Shift picks comparison, else primary (activeSlot stays 'primary').

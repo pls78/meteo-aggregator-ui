@@ -82,7 +82,7 @@ export function SearchBox({ slot, accent, onRemove, className = 'w-80 max-w-[80v
             setOpen(true)
           }}
           onBlur={() => setFocused(false)}
-          className="min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none"
+          className="min-w-0 flex-1 bg-transparent text-base text-slate-900 outline-none md:text-sm"
         />
         {onRemove && (
           <button

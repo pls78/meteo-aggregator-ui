@@ -37,6 +37,35 @@ function nearestSnap(px: number): Snap {
   return opts.reduce((best, s) => (Math.abs(snapPx(s) - px) < Math.abs(snapPx(best) - px) ? s : best), 'half')
 }
 
+// One location's current conditions (dot + name + temp + icon), compact enough to
+// sit two-up in the peek header when comparing.
+function CurrentBlock({
+  loc,
+  accent,
+  q,
+}: {
+  loc: SelectedLocation | null
+  accent: string
+  q: ReturnType<typeof useHourly>
+}) {
+  if (!loc) return null
+  const now = q.data?.hours[0]?.values
+  return (
+    <div className="flex min-w-0 flex-1 items-center gap-2">
+      <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: accent }} />
+      <div className="min-w-0">
+        <div className="truncate text-xs font-semibold text-slate-500">{label(loc)}</div>
+        <div className="flex items-baseline gap-1.5">
+          <span className="text-2xl font-semibold tabular-nums text-slate-900">
+            {now ? `${num(now.temperature_2m)}°` : q.isError ? '—' : '…'}
+          </span>
+          {now && <span className="text-lg">{weatherInfo(now.weather_code).icon}</span>}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function WeatherSheet() {
   const { primary, comparison, selectedDay, selectDay } = useAppStore()
   const [tab, setTab] = useState<Slot>('primary')
@@ -51,7 +80,9 @@ export function WeatherSheet() {
 
   const shown = tab === 'comparison' ? comparison : primary
   const forecast = useForecast(shown)
-  const hourly = useHourly(shown)
+  // Current conditions for both slots so the peek header can show them side by side.
+  const pHourly = useHourly(primary)
+  const cHourly = useHourly(comparison)
 
   const dayOpen = selectedDay !== null
   const pWeek = useHourlyRange(primary, { enabled: dayOpen })
@@ -59,7 +90,6 @@ export function WeatherSheet() {
 
   if (!primary && !comparison) return null
 
-  const now = hourly.data?.hours[0]?.values
   const height = dragH != null ? `${dragH}px` : snap === 'peek' ? `${PEEK_PX}px` : snap === 'half' ? '46vh' : '88vh'
 
   function onDown(e: React.PointerEvent) {
@@ -104,22 +134,16 @@ export function WeatherSheet() {
         <span className="h-1.5 w-10 rounded-full bg-slate-300" />
       </div>
 
-      {/* Current conditions (visible even at peek) */}
+      {/* Current conditions (visible even at peek). Both locations side by side
+          when comparing, so the header isn't stuck on the primary only. */}
       <div className="flex shrink-0 items-center gap-3 px-4 pb-2">
-        <span
-          className="h-2.5 w-2.5 shrink-0 rounded-full"
-          style={{ background: tab === 'comparison' ? COMPARISON : PRIMARY }}
-        />
-        <div className="min-w-0">
-          <div className="truncate text-xs font-semibold text-slate-500">{shown ? label(shown) : '–'}</div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-semibold tabular-nums text-slate-900">
-              {now ? `${num(now.temperature_2m)}°` : hourly.isError ? '—' : '…'}
-            </span>
-            {now && <span className="text-xs text-slate-500">{weatherInfo(now.weather_code).label}</span>}
-          </div>
-        </div>
-        {now && <span className="ml-auto text-3xl">{weatherInfo(now.weather_code).icon}</span>}
+        <CurrentBlock loc={primary} accent={PRIMARY} q={pHourly} />
+        {comparison && (
+          <>
+            <div className="h-9 w-px shrink-0 bg-slate-200" />
+            <CurrentBlock loc={comparison} accent={COMPARISON} q={cHourly} />
+          </>
+        )}
       </div>
 
       {/* Scrollable detail (hidden visually at peek by the sheet height) */}
