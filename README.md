@@ -3,7 +3,10 @@
 A map-driven weather UI for the [meteo-aggregator](../meteo-aggregator) backend.
 A full-screen MapLibre GL map: click (or search, or click a place label) to select
 a location and see the aggregated multi-model forecast; `Shift`+click adds a second
-location for side-by-side comparison; toggleable EUMETSAT satellite WMS overlays.
+location for side-by-side comparison; tap a day in the forecast to open its
+hour-by-hour breakdown in a bottom sheet (temperature, precipitation, weather
+icons), with both locations overlaid on one chart when two are selected; toggleable
+EUMETSAT satellite WMS overlays.
 
 Pure frontend — Vite + React 19 + TypeScript + Tailwind v4 + MapLibre GL — talking
 directly to the FastAPI backend over HTTP. See [`CLAUDE.md`](CLAUDE.md) for
