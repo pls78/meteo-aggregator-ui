@@ -75,12 +75,14 @@ export function MapView() {
   // layer's snapped frame time actually advances — not on every opacity change.
   const layerUrls = useRef<Record<string, string>>({})
 
-  const { primary, comparison, focus, activeLayers, opacity, selectLocation } = useAppStore()
+  const { primary, comparison, focus, activeLayers, opacity, selectLocation, activeSlot } = useAppStore()
   const { data: imagery } = useImagery()
 
-  // The click handler is attached once; read the latest selectLocation via a ref.
+  // The click handler is attached once; read the latest values via refs.
   const selectRef = useRef(selectLocation)
   selectRef.current = selectLocation
+  const activeSlotRef = useRef(activeSlot)
+  activeSlotRef.current = activeSlot
 
   // Create the map once.
   useEffect(() => {
@@ -97,7 +99,9 @@ export function MapView() {
     map.boxZoom.disable()
     map.on('load', () => setLoaded(true))
     map.on('click', (e) => {
-      const slot = e.originalEvent.shiftKey ? 'comparison' : 'primary'
+      // Desktop: Shift picks comparison, else primary (activeSlot stays 'primary').
+      // Mobile: the A/B control sets activeSlot, so a plain tap fills the chosen slot.
+      const slot = e.originalEvent.shiftKey ? 'comparison' : activeSlotRef.current
       // Prefer a clicked place label (named); fall back to the raw coordinate.
       const loc: SelectedLocation =
         placeAtPoint(map, e.point) ?? { lat: e.lngLat.lat, lng: e.lngLat.lng }

@@ -30,6 +30,7 @@ interface AppState {
   opacity: number // 0..1, applied to all overlays
   focus: LatLng | null // coordinate the map should recenter on (e.g. after search)
   selectedDay: string | null // YYYY-MM-DD of the day open in the hourly view (shared by both locations)
+  activeSlot: Slot // which slot a plain map tap fills (mobile A/B target); desktop stays 'primary'
 
   /** Plain click selects primary; Shift+click selects comparison. */
   selectLocation: (loc: SelectedLocation, slot: Slot) => void
@@ -41,6 +42,8 @@ interface AppState {
   /** Open the hourly view for a day; selecting the already-open day closes it. */
   selectDay: (date: string) => void
   clearDay: () => void
+  /** Choose which slot a plain map tap fills (mobile A/B target). */
+  setActiveSlot: (slot: Slot) => void
 }
 
 const AppStoreContext = createContext<AppState | null>(null)
@@ -52,6 +55,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
   const [opacity, setOpacity] = useState(0.7)
   const [focus, setFocus] = useState<LatLng | null>(null)
   const [selectedDay, setSelectedDay] = useState<string | null>(null)
+  const [activeSlot, setActiveSlot] = useState<Slot>('primary')
 
   // New object identity each call so the map recenters even on the same coords.
   const focusOn = useCallback((loc: LatLng) => setFocus({ lat: loc.lat, lng: loc.lng }), [])
@@ -83,6 +87,11 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     if (!primary && !comparison) setSelectedDay(null)
   }, [primary, comparison])
 
+  // Without a comparison, a map tap can only mean the primary; keep the target there.
+  useEffect(() => {
+    if (!comparison) setActiveSlot('primary')
+  }, [comparison])
+
   const value = useMemo<AppState>(
     () => ({
       primary,
@@ -91,6 +100,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       opacity,
       focus,
       selectedDay,
+      activeSlot,
       selectLocation,
       clearLocation,
       toggleLayer,
@@ -98,8 +108,9 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       focusOn,
       selectDay,
       clearDay,
+      setActiveSlot,
     }),
-    [primary, comparison, activeLayers, opacity, focus, selectedDay, selectLocation, clearLocation, toggleLayer, focusOn, selectDay, clearDay],
+    [primary, comparison, activeLayers, opacity, focus, selectedDay, activeSlot, selectLocation, clearLocation, toggleLayer, focusOn, selectDay, clearDay],
   )
 
   return <AppStoreContext.Provider value={value}>{children}</AppStoreContext.Provider>
