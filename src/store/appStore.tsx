@@ -31,6 +31,7 @@ interface AppState {
   focus: LatLng | null // coordinate the map should recenter on (e.g. after search)
   selectedDay: string | null // YYYY-MM-DD of the day open in the hourly view (shared by both locations)
   activeSlot: Slot // which slot a plain map tap fills (mobile A/B target); desktop stays 'primary'
+  aboutOpen: boolean // whether the info / "how it works" dialog is open (shared by both layouts)
 
   /** Plain click selects primary; Shift+click selects comparison. */
   selectLocation: (loc: SelectedLocation, slot: Slot) => void
@@ -44,6 +45,8 @@ interface AppState {
   clearDay: () => void
   /** Choose which slot a plain map tap fills (mobile A/B target). */
   setActiveSlot: (slot: Slot) => void
+  /** Open or close the info / "how it works" dialog. */
+  setAboutOpen: (open: boolean) => void
 }
 
 const AppStoreContext = createContext<AppState | null>(null)
@@ -56,6 +59,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
   const [focus, setFocus] = useState<LatLng | null>(null)
   const [selectedDay, setSelectedDay] = useState<string | null>(null)
   const [activeSlot, setActiveSlot] = useState<Slot>('primary')
+  const [aboutOpen, setAboutOpen] = useState(false)
 
   // New object identity each call so the map recenters even on the same coords.
   const focusOn = useCallback((loc: LatLng) => setFocus({ lat: loc.lat, lng: loc.lng }), [])
@@ -101,6 +105,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       focus,
       selectedDay,
       activeSlot,
+      aboutOpen,
       selectLocation,
       clearLocation,
       toggleLayer,
@@ -109,8 +114,9 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       selectDay,
       clearDay,
       setActiveSlot,
+      setAboutOpen,
     }),
-    [primary, comparison, activeLayers, opacity, focus, selectedDay, activeSlot, selectLocation, clearLocation, toggleLayer, focusOn, selectDay, clearDay],
+    [primary, comparison, activeLayers, opacity, focus, selectedDay, activeSlot, aboutOpen, selectLocation, clearLocation, toggleLayer, focusOn, selectDay, clearDay],
   )
 
   return <AppStoreContext.Provider value={value}>{children}</AppStoreContext.Provider>

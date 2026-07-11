@@ -7,6 +7,8 @@ import { LayerControl } from './components/layers/LayerControl'
 import { ComparisonPanel } from './components/compare/ComparisonPanel'
 import { HourlyPanel } from './components/hourly/HourlyPanel'
 import { MobileShell } from './components/mobile/MobileShell'
+import { AboutDialog } from './components/about/AboutDialog'
+import { AboutButton } from './components/about/AboutButton'
 import { useIsMobile } from './hooks/useMediaQuery'
 import { useInitialLocation } from './hooks/useInitialLocation'
 
@@ -27,6 +29,10 @@ function DesktopOverlays() {
         <div className="pointer-events-auto absolute bottom-4 left-4">
           <LayerControl />
         </div>
+
+        <div className="pointer-events-auto absolute bottom-4 right-4">
+          <AboutButton className="h-10 w-10" />
+        </div>
       </div>
 
       {/* Hourly detail sheet: full-width, anchored to the bottom, above the map. */}
@@ -46,6 +52,7 @@ function App() {
     <>
       <MapView />
       {isMobile ? <MobileShell /> : <DesktopOverlays />}
+      <AboutDialog />
     </>
   )
 }
