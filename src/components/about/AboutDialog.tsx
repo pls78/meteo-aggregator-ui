@@ -40,6 +40,18 @@ const CONF_TEXT: Record<string, string> = {
   low: 'text-rose-600',
 }
 
+// Illustrative worked example for the aggregation section: tomorrow's high (a
+// near-term day, so the days 1–3 weights apply). The five near-term weights sum
+// to 1, so no renormalization is needed. The confidence example below reuses these
+// same five forecasts, since temperature max is the confidence variable.
+const WEIGHT_EXAMPLE = [
+  { model: 'ICON-2i', value: '24.0', weight: '0.50', contribution: '12.00' },
+  { model: 'ECMWF IFS', value: '25.0', weight: '0.18', contribution: '4.50' },
+  { model: 'ECMWF AIFS', value: '26.0', weight: '0.12', contribution: '3.12' },
+  { model: 'ICON', value: '25.0', weight: '0.12', contribution: '3.00' },
+  { model: 'GFS', value: '27.0', weight: '0.08', contribution: '2.16' },
+]
+
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
     <p className="mb-2 flex items-center gap-2 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-sky-700">
@@ -241,6 +253,46 @@ export function AboutDialog() {
               <WeightTable title="Longer range" tag="days 4+" rows={WEIGHTS_RANGE} />
             </div>
 
+            <div className="mb-4 rounded-xl border border-slate-200 bg-white p-4">
+              <p className="mb-3 font-mono text-[0.66rem] uppercase tracking-widest text-slate-400">
+                Worked example · tomorrow’s high (near term)
+              </p>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[380px] border-collapse text-sm">
+                  <thead>
+                    <tr className="font-mono text-[0.62rem] uppercase tracking-wide text-slate-400">
+                      <th className="py-1 pr-3 text-left font-medium">Model</th>
+                      <th className="px-3 py-1 text-right font-medium">Forecast</th>
+                      <th className="px-3 py-1 text-right font-medium">Weight</th>
+                      <th className="py-1 pl-3 text-right font-medium">Contribution</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {WEIGHT_EXAMPLE.map((r) => (
+                      <tr key={r.model}>
+                        <td className="py-1 pr-3 text-slate-700">{r.model}</td>
+                        <td className="px-3 py-1 text-right font-mono tabular-nums text-slate-700">{r.value} °C</td>
+                        <td className="px-3 py-1 text-right font-mono tabular-nums text-slate-500">{r.weight}</td>
+                        <td className="py-1 pl-3 text-right font-mono tabular-nums text-slate-700">{r.contribution}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr className="border-t border-slate-200 font-semibold text-slate-900">
+                      <td className="py-1.5 pr-3 text-left">Consensus</td>
+                      <td className="px-3 py-1.5 text-right" />
+                      <td className="px-3 py-1.5 text-right font-mono tabular-nums">1.00</td>
+                      <td className="py-1.5 pl-3 text-right font-mono tabular-nums">24.8 °C</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+              <p className="mt-2 text-xs text-slate-500">
+                Each forecast times its weight, summed: 12.00 + 4.50 + 3.12 + 3.00 + 2.16 = 24.78, so the consensus
+                high is 24.8&nbsp;°C. These five weights already sum to 1, so nothing needs renormalizing.
+              </p>
+            </div>
+
             <div className="mb-3 flex gap-3 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm">
               <span className="mt-0.5 shrink-0 text-sky-700">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-[18px] w-[18px]">
@@ -282,6 +334,35 @@ export function AboutDialog() {
                   <small className="text-xs text-slate-400">{c.note}</small>
                 </div>
               ))}
+            </div>
+
+            <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
+              <p className="mb-3 font-mono text-[0.66rem] uppercase tracking-widest text-slate-400">
+                Worked example · the same five highs
+              </p>
+              <p className="mb-3 text-sm text-slate-600">
+                Those five model highs were{' '}
+                <span className="font-mono tabular-nums text-slate-800">24, 25, 26, 25, 27&nbsp;°C</span>.
+              </p>
+              <dl className="text-sm">
+                <div className="flex justify-between gap-4 py-1">
+                  <dt className="text-slate-600">Spread between models (std dev)</dt>
+                  <dd className="font-mono tabular-nums text-slate-800">1.0&nbsp;°C</dd>
+                </div>
+                <div className="flex justify-between gap-4 py-1">
+                  <dt className="text-slate-600">ICON ensemble spread</dt>
+                  <dd className="font-mono tabular-nums text-slate-800">1.3&nbsp;°C</dd>
+                </div>
+                <div className="flex justify-between gap-4 border-t border-slate-100 py-1.5">
+                  <dt className="font-medium text-slate-700">Take the larger</dt>
+                  <dd className="font-mono tabular-nums font-semibold text-slate-900">1.3&nbsp;°C</dd>
+                </div>
+              </dl>
+              <p className="mt-3 text-sm text-slate-600">
+                1.3&nbsp;°C ≤ 1.5&nbsp;°C, so this day reads{' '}
+                <span className="font-semibold text-emerald-600">High</span> confidence, with a range of{' '}
+                <span className="font-mono tabular-nums text-slate-800">24.8 ± 1.3 → 23.5 to 26.1&nbsp;°C</span>.
+              </p>
             </div>
           </section>
 
