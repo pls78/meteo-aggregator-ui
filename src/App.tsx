@@ -8,6 +8,7 @@ import { ComparisonPanel } from './components/compare/ComparisonPanel'
 import { HourlyPanel } from './components/hourly/HourlyPanel'
 import { MobileShell } from './components/mobile/MobileShell'
 import { useIsMobile } from './hooks/useMediaQuery'
+import { useInitialLocation } from './hooks/useInitialLocation'
 
 // Desktop overlay layout (≥ md): floating cards, inline layer panel, hourly sheet.
 function DesktopOverlays() {
@@ -40,6 +41,7 @@ function DesktopOverlays() {
 
 function App() {
   const isMobile = useIsMobile()
+  useInitialLocation() // seed a location on load (geolocation, else configured default)
   return (
     <>
       <MapView />
