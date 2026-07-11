@@ -152,12 +152,12 @@ export function AboutDialog() {
           <section className="border-b border-slate-100 px-6 py-6">
             <Eyebrow>What this is</Eyebrow>
             <h2 id="about-title" className="mb-3 text-2xl font-bold tracking-tight text-slate-900 text-balance">
-              One honest forecast, drawn from five weather models
+              Five weather models, one forecast
             </h2>
             <p className="max-w-[60ch] text-slate-600">
-              meteo-aggregator is a map-first weather app. Click anywhere — or search a place — and it blends several
+              meteo-aggregator is a map-first weather app. Click anywhere, or search a place, and it blends several
               numerical weather models into a single <b className="font-semibold text-slate-800">consensus forecast
-              with a confidence level</b>, then lets you overlay live <b className="font-semibold text-slate-800">
+              with a confidence level</b>. You can also overlay live <b className="font-semibold text-slate-800">
               satellite imagery</b> from EUMETSAT on the same map.
             </p>
           </section>
@@ -181,8 +181,8 @@ export function AboutDialog() {
             <Eyebrow>Data sources</Eyebrow>
             <h3 className="mb-1 text-lg font-semibold text-slate-900">Where the numbers come from</h3>
             <p className="mb-4 max-w-[60ch] text-sm text-slate-600">
-              Forecasts, ensemble spread and place search come from Open-Meteo (no key required); satellite imagery
-              comes from EUMETSAT’s EUMETView, fetched directly by your browser.
+              Forecasts, ensemble spread and place search come from Open-Meteo, which needs no key. Satellite imagery
+              comes from EUMETSAT’s EUMETView, fetched by your browser.
             </p>
             <div className="mb-5 grid gap-3 sm:grid-cols-2">
               {SOURCES.map((s) => (
@@ -231,7 +231,7 @@ export function AboutDialog() {
             <Eyebrow>How we aggregate</Eyebrow>
             <h3 className="mb-1 text-lg font-semibold text-slate-900">Weighting by lead time</h3>
             <p className="mb-4 max-w-[60ch] text-sm text-slate-600">
-              For every day and every variable, the consensus is a <b className="font-semibold text-slate-800">weighted
+              For each day and each variable, the consensus is a <b className="font-semibold text-slate-800">weighted
               average of the models that have data that day</b>. The weights shift with how far out the forecast is: the
               2&nbsp;km local model leads for the first three days, then ECMWF takes over at range.
             </p>
@@ -250,9 +250,9 @@ export function AboutDialog() {
               </span>
               <p className="text-slate-600">
                 <b className="font-semibold text-slate-800">Weights renormalize over the models present.</b> They don’t
-                need to sum to 1 — when a model is missing for a day or variable (ICON-2i past day 3, or AIFS, which
-                supplies no precipitation probability), the remaining weights are rescaled to sum to 1 so gaps never
-                skew the blend.
+                need to sum to 1. When a model is missing for a day or variable (ICON-2i past day 3, or AIFS, which
+                supplies no precipitation probability), the app rescales the remaining weights to sum to 1 so gaps
+                don’t skew the blend.
               </p>
             </div>
             <div className="mb-5 flex gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
@@ -263,16 +263,16 @@ export function AboutDialog() {
               </span>
               <p className="text-slate-600">
                 <b className="font-semibold text-slate-800">Some things can’t be averaged.</b> Sunrise, sunset, the
-                weather-code icon and wind direction take the value from the single highest-weighted model present —
-                averaging a timestamp or a category is meaningless.
+                weather-code icon and wind direction take the value from the single highest-weighted model present.
+                Averaging a timestamp or a category would be meaningless.
               </p>
             </div>
 
             <h4 className="mb-1 font-semibold text-slate-900">Confidence, from how much the models disagree</h4>
             <p className="mb-3 max-w-[60ch] text-sm text-slate-600">
-              Confidence uses the <b className="font-semibold text-slate-800">larger</b> of two signals — how far the
-              models spread apart, and the ICON ensemble spread — measured on next-day high temperature. The daily range
-              shown is the consensus ± that spread.
+              Confidence takes the <b className="font-semibold text-slate-800">larger</b> of two signals: how far the
+              models spread apart, and the ICON ensemble spread, both measured on next-day high temperature. The daily
+              range shown is the consensus ± that spread.
             </p>
             <div className="grid gap-3 sm:grid-cols-3">
               {CONFIDENCE.map((c) => (

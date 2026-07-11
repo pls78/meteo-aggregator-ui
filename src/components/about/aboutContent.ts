@@ -10,10 +10,10 @@ export interface Feature {
 export const FEATURES: Feature[] = [
   { title: 'Point anywhere', body: 'Click the map or search a town. On first load it starts at your location, or a configured default.' },
   { title: 'Compare two places', body: 'Shift-click (or the A / B target on mobile) to hold a second location side by side.' },
-  { title: 'Hour by hour', body: 'Tap a day to open an hourly breakdown — a temperature line and precipitation bars.' },
-  { title: 'Consensus + confidence', body: 'Every day shows one blended value plus how much the models agree — and the full per-model breakdown.' },
-  { title: 'Live satellite layers', body: 'Toggle EUMETSAT imagery — cloud, dust, lightning, convection — onto the map.' },
-  { title: 'Metric & keyless', body: 'Metric units throughout, no account, no API keys — it talks directly to open weather services.' },
+  { title: 'Hour by hour', body: 'Tap a day to open its hourly breakdown: a temperature line and precipitation bars.' },
+  { title: 'Consensus + confidence', body: 'Each day shows one blended value, how much the models agree, and the full per-model breakdown.' },
+  { title: 'Live satellite layers', body: 'Toggle EUMETSAT imagery onto the map: cloud, dust, lightning, convection.' },
+  { title: 'Metric & keyless', body: 'Metric units throughout. No account, no API keys; it talks straight to open weather services.' },
 ]
 
 export interface Source {
@@ -23,10 +23,10 @@ export interface Source {
 }
 
 export const SOURCES: Source[] = [
-  { title: 'Forecast API', body: 'Five numerical models in one call — the table below.', host: 'api.open-meteo.com' },
+  { title: 'Forecast API', body: 'Five numerical models in one call; see the table below.', host: 'api.open-meteo.com' },
   { title: 'Ensemble API', body: 'ICON ensemble spread feeds the confidence score.', host: 'ensemble-api.open-meteo.com' },
   { title: 'Geocoding API', body: 'Turns a place name into coordinates for the search box.', host: 'geocoding-api.open-meteo.com' },
-  { title: 'EUMETView WMS', body: 'MTG, MSG & Sentinel-3 satellite layers, fetched by your browser.', host: 'view.eumetsat.int' },
+  { title: 'EUMETView WMS', body: 'MTG, MSG and Sentinel-3 satellite layers, fetched by your browser.', host: 'view.eumetsat.int' },
 ]
 
 export type ModelRole = 'global' | 'local' | 'ml'
@@ -85,9 +85,9 @@ export interface ConfidenceBand {
 
 // config.CONFIDENCE_HIGH_MAX = 1.5 °C, CONFIDENCE_MEDIUM_MAX = 3.5 °C (spread of next-day high temp).
 export const CONFIDENCE: ConfidenceBand[] = [
-  { level: 'high', label: 'High', range: '≤ 1.5 °C', note: 'models tightly agree — narrow range' },
+  { level: 'high', label: 'High', range: '≤ 1.5 °C', note: 'models agree; narrow range' },
   { level: 'medium', label: 'Medium', range: '≤ 3.5 °C', note: 'some disagreement' },
-  { level: 'low', label: 'Low', range: '> 3.5 °C', note: 'models diverge — treat as indicative' },
+  { level: 'low', label: 'Low', range: '> 3.5 °C', note: 'models diverge; treat as indicative' },
 ]
 
 export type Cadence = 'fast' | 'normal' | 'daily'
@@ -103,13 +103,13 @@ export interface SatelliteLayer {
 // config.EUMETVIEW_LAYERS: cadence_minutes → the update period; Sentinel-3 is a daily mosaic.
 export const SATELLITE_LAYERS: SatelliteLayer[] = [
   { title: 'Geo Colour RGB', satellite: 'MTG', cadence: '10 min', cadenceKind: 'normal', description: 'True colour by day; infrared cloud tops and city lights by night.' },
-  { title: 'IR 10.5 µm', satellite: 'MTG', cadence: '10 min', cadenceKind: 'normal', description: 'Cloud-top temperature — colder means higher, thicker cloud. Works in the dark.' },
-  { title: 'Cloud Phase RGB', satellite: 'MTG', cadence: '10 min', cadenceKind: 'normal', description: 'Separates ice cloud from water cloud — a cue for storm structure.' },
+  { title: 'IR 10.5 µm', satellite: 'MTG', cadence: '10 min', cadenceKind: 'normal', description: 'Cloud-top temperature: colder means higher, thicker cloud. Works in the dark.' },
+  { title: 'Cloud Phase RGB', satellite: 'MTG', cadence: '10 min', cadenceKind: 'normal', description: 'Separates ice cloud from water cloud, a cue for storm structure.' },
   { title: 'Dust RGB', satellite: 'MTG', cadence: '10 min', cadenceKind: 'normal', description: 'Tracks airborne Saharan dust as it moves across the region.' },
   { title: 'Airmass RGB', satellite: 'MSG 0°', cadence: '15 min', cadenceKind: 'normal', description: 'Warm, cold and dry air masses; reveals jet streaks and stratospheric intrusions.' },
   { title: 'Convection RGB', satellite: 'MSG 0°', cadence: '15 min', cadenceKind: 'normal', description: 'Highlights intense updraughts and severe-storm potential.' },
   { title: 'Lightning Flash Area', satellite: 'MTG', cadence: '5 min', cadenceKind: 'fast', description: 'Live lightning activity from the MTG Lightning Imager.' },
-  { title: 'Cloud Mask', satellite: 'MSG 0°', cadence: '15 min', cadenceKind: 'normal', description: 'A clean split of where cloud is present versus clear sky.' },
-  { title: 'IR 3.9 µm Rapid Scan', satellite: 'MSG', cadence: '5 min', cadenceKind: 'fast', description: 'Fog and low-cloud detection on a fast five-minute rapid scan.' },
-  { title: 'True-colour RGB', satellite: 'Sentinel-3', cadence: 'Daily', cadenceKind: 'daily', description: 'High-resolution polar-orbiter mosaic — globally complete, about 48 h behind.' },
+  { title: 'Cloud Mask', satellite: 'MSG 0°', cadence: '15 min', cadenceKind: 'normal', description: 'Where cloud is present versus clear sky.' },
+  { title: 'IR 3.9 µm Rapid Scan', satellite: 'MSG', cadence: '5 min', cadenceKind: 'fast', description: 'Fog and low-cloud detection on a five-minute rapid scan.' },
+  { title: 'True-colour RGB', satellite: 'Sentinel-3', cadence: 'Daily', cadenceKind: 'daily', description: 'High-resolution polar-orbiter mosaic, complete worldwide, about 48 h behind.' },
 ]
