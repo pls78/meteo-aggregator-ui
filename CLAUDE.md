@@ -4,15 +4,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-A map-driven weather UI: a full-screen Leaflet map where the user clicks (or searches) to
+A map-driven weather UI: a full-screen MapLibre GL map where the user clicks (or searches) to
 select a location and sees aggregated weather overlaid; `Shift`+click adds a second location
 for side-by-side comparison; tapping a day opens an hour-by-hour bottom sheet for that day
 (both locations overlaid when two are selected); satellite WMS layers can be toggled onto the
-map. Below the `md` breakpoint it switches to a **mobile layout** — a draggable weather bottom
-sheet, an on-screen **A/B tap target** in place of Shift+click, and a satellite-layers sheet.
-It is a pure frontend (Vite + React + TypeScript + Tailwind v4 + react-leaflet) that
-talks directly to the Python/FastAPI **meteo-aggregator** backend in the sibling repo
-`../meteo-aggregator`.
+map. On load it seeds a starting location (browser geolocation, else a configured default), and
+an info button opens a "how it works" page. Below the `md` breakpoint it switches to a
+**mobile layout** — a draggable weather bottom sheet, an on-screen **A/B tap target** in place
+of Shift+click, and a satellite-layers sheet. It is a pure frontend (Vite + React + TypeScript
++ Tailwind v4 + MapLibre GL) that talks directly to the Python/FastAPI **meteo-aggregator**
+backend in the sibling repo `../meteo-aggregator`.
 
 ## Node version
 
@@ -87,9 +88,9 @@ backend's `ALLOWED_ORIGINS` env var is set to `https://meteo-aggregator.pages.de
   enabled only while a day is open in the hourly view.
 - **`src/store/appStore.tsx`** — client UI state only (selected primary/comparison locations,
   active WMS layers, overlay opacity, map focus, `selectedDay` — the day open in the hourly
-  view — and `activeSlot`, which slot a plain map tap fills. `activeSlot` is the mobile A/B
-  target; it stays `'primary'` on desktop so plain-click/Shift are unchanged). Server data
-  stays in React Query, never here.
+  view — `activeSlot`, which slot a plain map tap fills, and `aboutOpen`, the info dialog's
+  visibility. `activeSlot` is the mobile A/B target; it stays `'primary'` on desktop so
+  plain-click/Shift are unchanged). Server data stays in React Query, never here.
 - **`src/components/map/`** — `MapView` (the full-screen map + base tiles + markers + recenter).
   Rotation and pitch are locked (kept north-up). A plain tap fills `activeSlot`; Shift+click
   always fills comparison. `WmsOverlays` renders active satellite layers.
@@ -102,8 +103,17 @@ backend's `ALLOWED_ORIGINS` env var is set to `https://meteo-aggregator.pages.de
 - **`src/components/mobile/`** — the layout shown below the `md` breakpoint. `MobileShell`
   composes `MobileTopBar` (search + A/B target), `WeatherSheet` (draggable peek/half/full sheet
   with an A/B tab, embedding `HourlyChart`), and `MobileLayers` (Layers FAB + modal sheet).
+- **`src/components/about/`** — the in-app info / "how it works" dialog (opened from an info
+  button in both layouts; state via `appStore.aboutOpen`). `AboutDialog` is a light modal
+  documenting features, data sources, the aggregation/weighting algorithm (with worked
+  examples), and the satellite layers; `AboutButton` is the trigger; `aboutContent.ts` holds
+  the static figures **transcribed from the backend `config.py`/`aggregation.py`** — keep them
+  in sync if the backend's models, weights, or layer cadences change.
 - **`src/hooks/useMediaQuery.ts`** — `useMediaQuery`/`useIsMobile` (`max-width: 767px`).
   `App.tsx` renders `DesktopOverlays` or `MobileShell` over the shared `MapView` based on it.
+- **`src/hooks/useInitialLocation.ts`** — on load, seeds the primary location from the browser
+  geolocation, falling back silently to `DEFAULT_LOCATION` in **`src/lib/config.ts`** when it's
+  denied/unavailable. Runs once per mount; never overrides an existing selection; no persistence.
 - **`src/lib/weatherCode.ts`** — WMO `weather_code` → icon/label.
 
 > **Two layouts, one behavior:** presentation of selection / weather / layers is duplicated

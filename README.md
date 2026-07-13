@@ -6,7 +6,9 @@ a location and see the aggregated multi-model forecast; `Shift`+click adds a sec
 location for side-by-side comparison; tap a day in the forecast to open its
 hour-by-hour breakdown in a bottom sheet (temperature, precipitation, weather
 icons), with both locations overlaid on one chart when two are selected; toggleable
-EUMETSAT satellite WMS overlays.
+EUMETSAT satellite WMS overlays. On load it starts at your location (browser
+geolocation, else a configured default), and an info button opens a "how it works"
+page describing the data sources, the aggregation/weighting algorithm, and the layers.
 
 Pure frontend — Vite + React 19 + TypeScript + Tailwind v4 + MapLibre GL — talking
 directly to the FastAPI backend over HTTP. See [`CLAUDE.md`](CLAUDE.md) for

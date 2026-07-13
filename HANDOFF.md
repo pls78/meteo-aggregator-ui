@@ -14,8 +14,9 @@ the Python/FastAPI **meteo-aggregator** backend in the sibling repo `../meteo-ag
 
 ## Current status (working)
 
-- App is feature-complete for the MVP + six follow-ups; `npm run build` and `npm run lint`
-  pass.
+- App is feature-complete for the MVP plus twelve follow-ups (through the hourly-by-day view,
+  the mobile layout, deployment, default-location seeding on load, and the in-app info page);
+  `npm run build` and `npm run lint` pass.
 - Both dev servers were running during development: UI on `:5173`, backend on `:8000`.
 - **Deployed and live:** UI on Cloudflare Pages (<https://meteo-aggregator.pages.dev>),
   API on Google Cloud Run. See "Deployment" below and `CLAUDE.md`.
@@ -70,9 +71,9 @@ cd ../meteo-aggregator && uvicorn api.main:app --reload   # http://localhost:800
 3. **MapLibre specifics:**
    - `map.boxZoom.disable()` is required, else MapLibre's Shift+drag box-zoom eats **Shift+click**
      (our comparison-selection gesture). Already done in `MapView`.
-   - Map **rotation/tilt is enabled by default** (right-drag / two-finger). We chose to keep it.
-     If asked to lock north-up: `dragRotate.disable()`, `touchZoomRotate.disableRotation()`,
-     `keyboard` rotation off.
+   - Map **rotation/tilt is locked north-up** (`dragRotate.disable()`,
+     `touchZoomRotate.disableRotation()`, keyboard rotation off), set in the `mobile-ui` change
+     because a rotated map confuses the touch A/B selection. Don't re-enable it.
    - All layers are **Web Mercator (EPSG:3857)** — vector tiles, WMS overlays (requested with
      `srs=EPSG:3857` + `{bbox-epsg-3857}`), and markers. Don't introduce a source in another CRS.
    - WMS overlays are MapLibre **raster sources** added imperatively in `MapView` (not a separate
@@ -103,25 +104,37 @@ Used for: map markers, weather-card bullets, and search-bar dots.
 ## State model
 
 - **Server data** → React Query hooks in `src/hooks/queries.ts` (`useSearch`, `useForecast`,
-  `useHourly`, `useImagery`); forecast/hourly keyed by rounded lat/lon. `useImagery` re-polls
-  every ~60 s so overlays stay current (see gotcha #3).
+  `useHourly`, `useHourlyRange`, `useImagery`); forecast/hourly keyed by rounded lat/lon.
+  `useImagery` re-polls every ~60 s so overlays stay current (see gotcha #3).
 - **Client UI state** → `src/store/appStore.tsx` (Context): `primary`, `comparison`
-  (`SelectedLocation | null`), `activeLayers`, `opacity`, `focus`; actions `selectLocation`,
-  `clearLocation`, `toggleLayer`, `setOpacity`, `focusOn`. Plain click → primary; Shift → comparison.
+  (`SelectedLocation | null`), `activeLayers`, `opacity`, `focus`, `selectedDay` (the day open
+  in the hourly view), `activeSlot` (mobile A/B tap target), and `aboutOpen` (info dialog);
+  actions `selectLocation`, `clearLocation`, `toggleLayer`, `setOpacity`, `focusOn`, `selectDay`,
+  `setActiveSlot`, `setAboutOpen`. Plain click → primary; Shift → comparison.
+- **Startup seeding** → `useInitialLocation()` (called once from `App.tsx`) fills `primary` on
+  load from browser geolocation, else `DEFAULT_LOCATION` (`src/lib/config.ts`); silent fallback,
+  no persistence, never overrides an existing selection.
 
 ## Key files
 
 ```
 src/api/{types.ts,client.ts}      typed contract (mirror ../meteo-aggregator models) + fetch
 src/hooks/queries.ts              React Query hooks
+src/hooks/useMediaQuery.ts        useMediaQuery / useIsMobile (max-width:767px) — desktop vs mobile
+src/hooks/useInitialLocation.ts   seed primary on load (geolocation, else DEFAULT_LOCATION)
 src/store/appStore.tsx            UI state (Context)
 src/lib/weatherCode.ts            WMO code -> icon/label
+src/lib/layerLegends.ts           static colour keys for RGB composite overlays
+src/lib/config.ts                 DEFAULT_LOCATION (startup fallback)
 src/components/map/MapView.tsx    MapLibre map: style, click+place-label select, markers, recenter, WMS overlays
 src/components/search/{SearchBox,SearchPanel}.tsx   per-slot search + "+" add-comparison
 src/components/panels/LocationCard.tsx              current + daily forecast card
 src/components/compare/ComparisonPanel.tsx          1 or 2 cards, fade in/out
 src/components/layers/LayerControl.tsx              layer toggles, opacity, legends
-src/App.tsx                       composition (map + overlays)
+src/components/hourly/{HourlyPanel,HourlyChart}.tsx per-day hourly sheet + inline SVG chart
+src/components/mobile/{MobileShell,MobileTopBar,WeatherSheet,MobileLayers}.tsx   mobile layout
+src/components/about/{AboutDialog,AboutButton,aboutContent}.tsx   info / "how it works" page
+src/App.tsx                       composition: map + (DesktopOverlays | MobileShell) + AboutDialog
 ```
 
 ## OpenSpec workflow (IMPORTANT — this repo is spec-driven)
@@ -144,21 +157,29 @@ are available.
    syncs deltas into `openspec/specs/` and moves the change to `openspec/changes/archive/`.
 
 Current capabilities (baseline in `openspec/specs/`): `map-view`, `location-selection`,
-`location-search`, `weather-display`, `location-comparison`, `satellite-layers`, `api-access`.
-Run `openspec list --specs` for the live count.
+`location-search`, `weather-display`, `location-comparison`, `satellite-layers`, `api-access`,
+`info-page`. (The hourly view and mobile layout extend `weather-display`/`location-selection`
+rather than adding their own spec.) Run `openspec list --specs` for the live count.
 
 ### Archived changes so far
 `meteo-ui-mvp` → `add-comparison-search` → `add-layer-legends` → `vector-basemap`
-→ `add-place-label-selection` → `dev-api-proxy` → `auto-refresh-overlays`
-(all under `openspec/changes/archive/`).
+→ `add-place-label-selection` → `dev-api-proxy` → `auto-refresh-overlays` → `add-deployment`
+→ `add-rgb-color-keys` → `add-hourly-view` → `mobile-ui` → `add-default-location`
+→ `add-info-page` (all under `openspec/changes/archive/`).
+
+> Two small follow-ups to `add-info-page` (copy tightening, and worked examples in the
+> aggregation section) shipped as direct commits on `main`, not separate changes — they refine
+> content already covered by the `info-page` spec.
 
 ## Candidate next features (ideas raised, not yet specced)
 
-- **Lock map north-up** (or a "reset north" control) — disable rotation/tilt; purely UX.
 - **Code-split** MapLibre to cut the initial bundle.
-- **Hourly strip** in the weather card (the `/hourly` data beyond hour 0 is already fetched).
 - **Comparison emphasis** — highlight the warmer/wetter side in `ComparisonPanel`.
 - **Hover affordance** on place labels (cursor/highlight) to hint they're clickable.
+- **Derive info-page layer list from `/imagery`** so it can't drift from the backend catalog
+  (today `aboutContent.ts` mirrors it by hand).
+- **"Use my location" control** — the startup geolocation is silent-fallback only; a manual
+  retry button was intentionally left out.
 
 ## Notes
 
