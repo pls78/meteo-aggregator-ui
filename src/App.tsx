@@ -9,6 +9,7 @@ import { HourlyPanel } from './components/hourly/HourlyPanel'
 import { MobileShell } from './components/mobile/MobileShell'
 import { AboutDialog } from './components/about/AboutDialog'
 import { AboutButton } from './components/about/AboutButton'
+import { LocateButton } from './components/locate/LocateButton'
 import { useIsMobile } from './hooks/useMediaQuery'
 import { useInitialLocation } from './hooks/useInitialLocation'
 
@@ -30,9 +31,10 @@ function DesktopOverlays() {
           <LayerControl />
         </div>
 
-        {/* Lifted above the map's bottom-right attribution control so they don't overlap. */}
-        <div className="pointer-events-auto absolute bottom-10 right-4">
+        {/* Bottom-right stack, lifted above the map's attribution control: locate then info. */}
+        <div className="pointer-events-auto absolute bottom-10 right-4 flex flex-col-reverse gap-2">
           <AboutButton className="h-10 w-10" />
+          <LocateButton className="h-10 w-10" />
         </div>
       </div>
 
