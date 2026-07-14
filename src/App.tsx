@@ -30,7 +30,8 @@ function DesktopOverlays() {
           <LayerControl />
         </div>
 
-        <div className="pointer-events-auto absolute bottom-4 right-4">
+        {/* Lifted above the map's bottom-right attribution control so they don't overlap. */}
+        <div className="pointer-events-auto absolute bottom-10 right-4">
           <AboutButton className="h-10 w-10" />
         </div>
       </div>
