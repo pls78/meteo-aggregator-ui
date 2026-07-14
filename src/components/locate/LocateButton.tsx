@@ -50,7 +50,7 @@ export function LocateButton({ className = '' }: { className?: string }) {
       title="Use my location"
       onClick={locate}
       disabled={status === 'loading'}
-      className={`relative grid place-items-center rounded-full bg-white/95 text-slate-600 shadow-xl ring-1 ring-black/5 hover:text-slate-900 ${className}`}
+      className={`grid place-items-center rounded-full bg-white/95 text-slate-600 shadow-xl ring-1 ring-black/5 hover:text-slate-900 ${className}`}
     >
       {status === 'loading' ? (
         <svg className="h-5 w-5 animate-spin text-slate-500" viewBox="0 0 24 24" fill="none" aria-hidden="true">
