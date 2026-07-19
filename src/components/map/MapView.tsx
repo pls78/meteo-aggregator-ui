@@ -158,7 +158,9 @@ export function MapView() {
   // Satellite WMS overlays. Static mode shows one raster layer per active overlay
   // (its newest frame). Animation mode instead mounts one raster layer per frame
   // (all tiles preloaded) and reveals only the current frame via opacity, so the
-  // time-lapse plays without re-fetching tiles each tick.
+  // time-lapse plays without re-fetching tiles each tick. A short raster-opacity
+  // transition cross-fades between frames: the outgoing frame lingers while the
+  // incoming one appears, so the basemap never shows through between frames.
   useEffect(() => {
     const map = mapRef.current
     if (!map || !loaded) return
@@ -172,7 +174,10 @@ export function MapView() {
           id,
           type: 'raster',
           source: id,
-          paint: { 'raster-opacity': op, 'raster-fade-duration': 0 },
+          paint: {
+            'raster-opacity': op,
+            'raster-opacity-transition': { duration: 220, delay: 0 },
+          },
         })
         known[id] = url
       } else {
