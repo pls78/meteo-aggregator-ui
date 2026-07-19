@@ -1,8 +1,9 @@
-// Floating time-lapse control, overlaid on the map (bottom-center). It plays a
-// single layer: the one currently animating, or otherwise the topmost active
-// overlay. Shows the layer title and, while playing, the current frame's local
-// time. Hidden when no layer is active. Layer selection is locked elsewhere
-// while a layer plays (see LayerControl / MobileLayers), so only one animates.
+// Floating time-lapse control, overlaid on the map (bottom-center). Animation
+// plays a single layer, so the button is enabled only when exactly one overlay
+// is active; with two or more it stays visible but disabled. Hidden when no
+// layer is active. While playing it shows the layer title and the current
+// frame's local time; layer selection is locked elsewhere (see LayerControl /
+// MobileLayers) so the active layer can't change mid-play.
 
 import { useImagery } from '../../hooks/queries'
 import { useAppStore } from '../../store/appStore'
@@ -12,33 +13,40 @@ export function MapAnimateControl() {
   const { activeLayers, animatingLayer, frameIndex, toggleLayerAnimation } = useAppStore()
 
   const layers = imagery?.layers ?? []
-  // Prefer the layer that's already animating; else the topmost active overlay
-  // (last in draw order = rendered on top).
-  const target =
-    layers.find((l) => l.layer === animatingLayer) ??
-    [...layers].reverse().find((l) => activeLayers.includes(l.layer))
+  const active = layers.filter((l) => activeLayers.includes(l.layer))
 
-  if (!target) return null
+  if (active.length === 0) return null
 
-  const isThis = animatingLayer === target.layer
-  const frames = target.times ?? []
+  // Only a single active overlay can be animated.
+  const single = active.length === 1
+  const target = single ? active[0] : null
+  const isThis = target !== null && animatingLayer === target.layer
+
+  const frames = target?.times ?? []
   const t = isThis && frames.length ? frames[Math.min(frameIndex, frames.length - 1)] : null
   const label = t ? new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : null
+
+  const text = single ? target!.title : 'Select one layer to animate'
 
   return (
     <div className="pointer-events-auto flex items-center gap-2 rounded-full bg-white/95 py-1.5 pl-1.5 pr-3 shadow-xl ring-1 ring-black/5">
       <button
         type="button"
-        onClick={() => toggleLayerAnimation(target.layer)}
+        onClick={() => target && toggleLayerAnimation(target.layer)}
+        disabled={!single}
         aria-pressed={isThis}
         aria-label={isThis ? 'Pause animation' : 'Animate layer'}
-        className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-slate-900 text-white transition-colors hover:bg-slate-700"
+        className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-slate-900 text-white transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
       >
         <span aria-hidden className="text-xs leading-none">
           {isThis ? '⏸' : '▶'}
         </span>
       </button>
-      <span className="max-w-[9rem] truncate text-xs font-medium text-slate-700">{target.title}</span>
+      <span
+        className={`max-w-[11rem] truncate text-xs font-medium ${single ? 'text-slate-700' : 'text-slate-400'}`}
+      >
+        {text}
+      </span>
       {isThis && label && (
         <span className="font-mono text-xs tabular-nums text-slate-500">{label}</span>
       )}
