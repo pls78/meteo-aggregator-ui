@@ -138,8 +138,11 @@ export function AboutDialog() {
         {/* Header */}
         <div className="flex shrink-0 items-center gap-3 border-b border-slate-200 px-5 py-3.5">
           <span className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-sky-500 to-amber-500 text-white">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-              <path d="M17.5 19a4.5 4.5 0 0 0 0-9 6 6 0 0 0-11.6-1.5A4 4 0 0 0 6 19z" />
+            {/* Three stacked clouds, offset down-left toward the front, to evoke aggregation. Matches the favicon. */}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+              <path d="M17.5 19a4.5 4.5 0 0 0 0-9 6 6 0 0 0-11.6-1.5A4 4 0 0 0 6 19z" transform="translate(8.6 5.3) scale(0.6) translate(-1.9 -5.3)" opacity="0.42" vectorEffect="non-scaling-stroke" />
+              <path d="M17.5 19a4.5 4.5 0 0 0 0-9 6 6 0 0 0-11.6-1.5A4 4 0 0 0 6 19z" transform="translate(6 7.9) scale(0.6) translate(-1.9 -5.3)" opacity="0.72" vectorEffect="non-scaling-stroke" />
+              <path d="M17.5 19a4.5 4.5 0 0 0 0-9 6 6 0 0 0-11.6-1.5A4 4 0 0 0 6 19z" transform="translate(3.4 10.5) scale(0.6) translate(-1.9 -5.3)" vectorEffect="non-scaling-stroke" />
             </svg>
           </span>
           <div className="mr-auto min-w-0">
