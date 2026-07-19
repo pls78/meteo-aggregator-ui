@@ -57,50 +57,43 @@ export function RgbColorKey({ layerId }: { layerId: string }) {
   )
 }
 
-// Play/pause the time-lapse loop for the active overlays, showing the current
-// frame's local time. Disabled until at least one layer is on. Shared by the
-// desktop panel and the mobile sheet so both layouts stay in sync.
-export function AnimationControl() {
-  const { data: imagery } = useImagery()
-  const { activeLayers, animating, frameIndex, toggleAnimating } = useAppStore()
-  const hasLayers = activeLayers.length > 0
+// Play/pause a single layer's time-lapse loop, from its own row, showing the
+// current frame's local time while playing. While any layer is animating, the
+// other layers' Animate buttons are disabled (only one plays at a time). Shared
+// by the desktop panel and the mobile sheet so both layouts stay in sync.
+export function LayerAnimateButton({ params }: { params: WmsLayerParams }) {
+  const { animatingLayer, frameIndex, toggleLayerAnimation } = useAppStore()
+  const isThis = animatingLayer === params.layer
+  const busyOther = animatingLayer !== null && !isThis
 
-  const firstActive = imagery?.layers.find((l) => activeLayers.includes(l.layer))
-  const frames = firstActive?.times ?? []
-  const t = frames.length
-    ? frames[Math.min(frameIndex, frames.length - 1)]
-    : (firstActive?.time ?? null)
-  const label = t
-    ? new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    : 'latest'
+  const frames = params.times ?? []
+  const t = isThis && frames.length ? frames[Math.min(frameIndex, frames.length - 1)] : null
+  const label = t ? new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : null
 
   return (
-    <div className="mt-3 border-t border-slate-200 pt-3">
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={toggleAnimating}
-          disabled={!hasLayers}
-          aria-pressed={animating}
-          className="flex items-center gap-1.5 rounded-lg bg-slate-900 px-2.5 py-1.5 text-xs font-medium text-white transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300"
-        >
-          <span aria-hidden className="text-[10px] leading-none">
-            {animating ? '⏸' : '▶'}
-          </span>
-          {animating ? 'Pause' : 'Animate'}
-        </button>
-        {animating && hasLayers && (
-          <span className="font-mono text-xs tabular-nums text-slate-600">{label}</span>
-        )}
-        {!hasLayers && <span className="text-[11px] text-slate-400">Enable a layer to animate</span>}
-      </div>
+    <div className="ml-6 mt-1 flex items-center gap-2">
+      <button
+        type="button"
+        onClick={() => toggleLayerAnimation(params.layer)}
+        disabled={busyOther}
+        aria-pressed={isThis}
+        className="flex items-center gap-1 rounded-md bg-slate-900 px-2 py-1 text-[11px] font-medium text-white transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
+      >
+        <span aria-hidden className="text-[9px] leading-none">
+          {isThis ? '⏸' : '▶'}
+        </span>
+        {isThis ? 'Pause' : 'Animate'}
+      </button>
+      {isThis && label && (
+        <span className="font-mono text-[11px] tabular-nums text-slate-600">{label}</span>
+      )}
     </div>
   )
 }
 
 export function LayerControl() {
   const { data: imagery, isLoading, isError } = useImagery()
-  const { activeLayers, toggleLayer, opacity, setOpacity } = useAppStore()
+  const { activeLayers, toggleLayer, opacity, setOpacity, animatingLayer } = useAppStore()
   const [collapsed, setCollapsed] = useState(true)
 
   return (
@@ -136,25 +129,36 @@ export function LayerControl() {
             {isError && <p className="text-rose-600">Couldn’t load layers.</p>}
 
             <ul className="space-y-1.5">
-              {imagery?.layers.map((layer) => (
-                <li key={layer.layer}>
-                  <label className="flex cursor-pointer items-start gap-2 text-slate-700">
-                    <input
-                      type="checkbox"
-                      checked={activeLayers.includes(layer.layer)}
-                      onChange={() => toggleLayer(layer.layer)}
-                      className="mt-0.5"
-                    />
-                    <span>{layer.title}</span>
-                  </label>
-                  {activeLayers.includes(layer.layer) && (
-                    <>
-                      <LayerLegend params={layer} />
-                      <RgbColorKey layerId={layer.layer} />
-                    </>
-                  )}
-                </li>
-              ))}
+              {imagery?.layers.map((layer) => {
+                const on = activeLayers.includes(layer.layer)
+                // Lock the layer set while a time-lapse is playing.
+                const locked = animatingLayer !== null
+                return (
+                  <li key={layer.layer}>
+                    <label
+                      className={`flex items-start gap-2 text-slate-700 ${
+                        locked ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={on}
+                        disabled={locked}
+                        onChange={() => toggleLayer(layer.layer)}
+                        className="mt-0.5"
+                      />
+                      <span>{layer.title}</span>
+                    </label>
+                    {on && (
+                      <>
+                        <LayerAnimateButton params={layer} />
+                        <LayerLegend params={layer} />
+                        <RgbColorKey layerId={layer.layer} />
+                      </>
+                    )}
+                  </li>
+                )
+              })}
             </ul>
 
             <div className="mt-3 border-t border-slate-200 pt-3">
@@ -171,8 +175,6 @@ export function LayerControl() {
                 />
               </label>
             </div>
-
-            <AnimationControl />
           </div>
         </div>
       </div>

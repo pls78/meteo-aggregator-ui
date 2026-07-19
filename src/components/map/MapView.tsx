@@ -79,7 +79,7 @@ export function MapView() {
   // layer's snapped frame time actually advances — not on every opacity change.
   const layerUrls = useRef<Record<string, string>>({})
 
-  const { primary, comparison, focus, activeLayers, opacity, selectLocation, activeSlot, animating, frameIndex, setFrameIndex } =
+  const { primary, comparison, focus, activeLayers, opacity, selectLocation, activeSlot, animatingLayer, frameIndex, setFrameIndex } =
     useAppStore()
   const { data: imagery } = useImagery()
 
@@ -194,12 +194,13 @@ export function MapView() {
     for (const params of imagery?.layers ?? []) {
       const baseId = `wms-${params.layer}`
       const active = activeLayers.includes(params.layer)
+      const isAnimating = animatingLayer === params.layer
       const frames = params.times?.length ? params.times : [params.time]
 
       if (!active) {
         remove(baseId)
         for (let f = 0; f < IMAGERY_FRAMES; f++) remove(`${baseId}-f${f}`)
-      } else if (!animating) {
+      } else if (!isAnimating) {
         // Single newest-frame layer; tear down any leftover frame stack.
         for (let f = 0; f < IMAGERY_FRAMES; f++) remove(`${baseId}-f${f}`)
         ensure(baseId, frames[0], opacity, params)
@@ -213,18 +214,18 @@ export function MapView() {
         for (let f = frames.length; f < IMAGERY_FRAMES; f++) remove(`${baseId}-f${f}`)
       }
     }
-  }, [loaded, activeLayers, opacity, imagery, animating, frameIndex])
+  }, [loaded, activeLayers, opacity, imagery, animatingLayer, frameIndex])
 
-  // Animation clock: while playing, step the frame oldest→newest and loop. The
-  // interval is re-armed only when play state (or having any active layer)
-  // changes; the current index is read via a ref so ticks stay 550 ms apart.
+  // Animation clock: while a layer is playing, step the frame oldest→newest and
+  // loop. The interval is re-armed only when the animating layer changes; the
+  // current index is read via a ref so ticks stay 550 ms apart.
   useEffect(() => {
-    if (!animating || activeLayers.length === 0) return
+    if (!animatingLayer) return
     const id = window.setInterval(() => {
       setFrameIndex((frameIndexRef.current - 1 + IMAGERY_FRAMES) % IMAGERY_FRAMES)
     }, FRAME_MS)
     return () => window.clearInterval(id)
-  }, [animating, activeLayers.length, setFrameIndex])
+  }, [animatingLayer, setFrameIndex])
 
   return <div ref={containerRef} className="map-container absolute inset-0" />
 }

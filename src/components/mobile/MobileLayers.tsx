@@ -5,11 +5,11 @@
 import { useState } from 'react'
 import { useImagery } from '../../hooks/queries'
 import { useAppStore } from '../../store/appStore'
-import { AnimationControl, LayerLegend, RgbColorKey } from '../layers/LayerControl'
+import { LayerAnimateButton, LayerLegend, RgbColorKey } from '../layers/LayerControl'
 
 export function MobileLayers() {
   const { data: imagery, isLoading, isError } = useImagery()
-  const { activeLayers, toggleLayer, opacity, setOpacity } = useAppStore()
+  const { activeLayers, toggleLayer, opacity, setOpacity, animatingLayer } = useAppStore()
   const [open, setOpen] = useState(false)
 
   const activeCount = activeLayers.length
@@ -69,12 +69,19 @@ export function MobileLayers() {
           <ul className="divide-y divide-slate-100">
             {imagery?.layers.map((layer) => {
               const on = activeLayers.includes(layer.layer)
+              // Lock the layer set while a time-lapse is playing.
+              const locked = animatingLayer !== null
               return (
                 <li key={layer.layer} className="py-1">
-                  <label className="flex cursor-pointer items-center gap-3 py-2 text-sm text-slate-800">
+                  <label
+                    className={`flex items-center gap-3 py-2 text-sm text-slate-800 ${
+                      locked ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
+                    }`}
+                  >
                     <input
                       type="checkbox"
                       checked={on}
+                      disabled={locked}
                       onChange={() => toggleLayer(layer.layer)}
                       className="h-5 w-5 shrink-0"
                     />
@@ -82,6 +89,7 @@ export function MobileLayers() {
                   </label>
                   {on && (
                     <div className="pb-2">
+                      <LayerAnimateButton params={layer} />
                       <LayerLegend params={layer} />
                       <RgbColorKey layerId={layer.layer} />
                     </div>
@@ -105,7 +113,6 @@ export function MobileLayers() {
               className="mt-2 w-full"
             />
           </label>
-          <AnimationControl />
         </div>
       </section>
     </>

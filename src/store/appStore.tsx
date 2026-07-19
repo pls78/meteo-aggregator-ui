@@ -32,7 +32,7 @@ interface AppState {
   selectedDay: string | null // YYYY-MM-DD of the day open in the hourly view (shared by both locations)
   activeSlot: Slot // which slot a plain map tap fills (mobile A/B target); desktop stays 'primary'
   aboutOpen: boolean // whether the info / "how it works" dialog is open (shared by both layouts)
-  animating: boolean // whether the active overlays are playing a time-lapse loop
+  animatingLayer: string | null // the layer id currently playing a time-lapse, if any
   frameIndex: number // current animation frame; 0 = newest, higher = older
 
   /** Plain click selects primary; Shift+click selects comparison. */
@@ -40,8 +40,8 @@ interface AppState {
   clearLocation: (slot: Slot) => void
   toggleLayer: (layer: string) => void
   setOpacity: (opacity: number) => void
-  /** Start/stop the time-lapse loop; stopping snaps back to the newest frame. */
-  toggleAnimating: () => void
+  /** Start/stop the time-lapse loop for a single layer; stopping snaps back to the newest frame. */
+  toggleLayerAnimation: (layer: string) => void
   /** Set the current animation frame (driven by the map's animation clock). */
   setFrameIndex: (index: number) => void
   /** Request the map to recenter on a coordinate. */
@@ -66,7 +66,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
   const [selectedDay, setSelectedDay] = useState<string | null>(null)
   const [activeSlot, setActiveSlot] = useState<Slot>('primary')
   const [aboutOpen, setAboutOpen] = useState(false)
-  const [animating, setAnimating] = useState(false)
+  const [animatingLayer, setAnimatingLayer] = useState<string | null>(null)
   const [frameIndex, setFrameIndex] = useState(0)
 
   // New object identity each call so the map recenters even on the same coords.
@@ -88,11 +88,9 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     )
   }, [])
 
-  const toggleAnimating = useCallback(() => {
-    setAnimating((prev) => {
-      if (prev) setFrameIndex(0) // stopping returns to the newest frame
-      return !prev
-    })
+  const toggleLayerAnimation = useCallback((layer: string) => {
+    setFrameIndex(0) // start (and stop) from the newest frame
+    setAnimatingLayer((prev) => (prev === layer ? null : layer))
   }, [])
 
   const selectDay = useCallback(
@@ -106,13 +104,13 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     if (!primary && !comparison) setSelectedDay(null)
   }, [primary, comparison])
 
-  // Nothing to animate without an active overlay; stop and reset to the newest frame.
+  // If the animating layer is turned off, stop and reset to the newest frame.
   useEffect(() => {
-    if (activeLayers.length === 0 && animating) {
-      setAnimating(false)
+    if (animatingLayer && !activeLayers.includes(animatingLayer)) {
+      setAnimatingLayer(null)
       setFrameIndex(0)
     }
-  }, [activeLayers, animating])
+  }, [activeLayers, animatingLayer])
 
   // Without a comparison, a map tap can only mean the primary; keep the target there.
   useEffect(() => {
@@ -129,13 +127,13 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       selectedDay,
       activeSlot,
       aboutOpen,
-      animating,
+      animatingLayer,
       frameIndex,
       selectLocation,
       clearLocation,
       toggleLayer,
       setOpacity,
-      toggleAnimating,
+      toggleLayerAnimation,
       setFrameIndex,
       focusOn,
       selectDay,
@@ -143,7 +141,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       setActiveSlot,
       setAboutOpen,
     }),
-    [primary, comparison, activeLayers, opacity, focus, selectedDay, activeSlot, aboutOpen, animating, frameIndex, selectLocation, clearLocation, toggleLayer, toggleAnimating, focusOn, selectDay, clearDay],
+    [primary, comparison, activeLayers, opacity, focus, selectedDay, activeSlot, aboutOpen, animatingLayer, frameIndex, selectLocation, clearLocation, toggleLayer, toggleLayerAnimation, focusOn, selectDay, clearDay],
   )
 
   return <AppStoreContext.Provider value={value}>{children}</AppStoreContext.Provider>
