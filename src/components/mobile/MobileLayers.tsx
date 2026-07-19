@@ -5,7 +5,7 @@
 import { useState } from 'react'
 import { useImagery } from '../../hooks/queries'
 import { useAppStore } from '../../store/appStore'
-import { LayerAnimateButton, LayerLegend, RgbColorKey } from '../layers/LayerControl'
+import { LayerLegend, RgbColorKey } from '../layers/LayerControl'
 
 export function MobileLayers() {
   const { data: imagery, isLoading, isError } = useImagery()
@@ -89,7 +89,6 @@ export function MobileLayers() {
                   </label>
                   {on && (
                     <div className="pb-2">
-                      <LayerAnimateButton params={layer} />
                       <LayerLegend params={layer} />
                       <RgbColorKey layerId={layer.layer} />
                     </div>

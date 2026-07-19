@@ -2,6 +2,7 @@
 // (bottom-left), and weather/comparison cards (top-right).
 
 import { MapView } from './components/map/MapView'
+import { MapAnimateControl } from './components/map/MapAnimateControl'
 import { SearchPanel } from './components/search/SearchPanel'
 import { LayerControl } from './components/layers/LayerControl'
 import { ComparisonPanel } from './components/compare/ComparisonPanel'
@@ -29,6 +30,11 @@ function DesktopOverlays() {
 
         <div className="pointer-events-auto absolute bottom-4 left-4">
           <LayerControl />
+        </div>
+
+        {/* Time-lapse control, centered along the bottom of the map. */}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
+          <MapAnimateControl />
         </div>
 
         {/* Bottom-right stack, lifted above the map's attribution control: locate then info. */}

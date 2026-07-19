@@ -5,6 +5,7 @@
 import { MobileTopBar } from './MobileTopBar'
 import { WeatherSheet } from './WeatherSheet'
 import { MobileLayers } from './MobileLayers'
+import { MapAnimateControl } from '../map/MapAnimateControl'
 import { AboutButton } from '../about/AboutButton'
 import { LocateButton } from '../locate/LocateButton'
 
@@ -16,6 +17,10 @@ export function MobileShell() {
       {/* Right-side FAB stack under the Layers FAB (top-24): locate, then info. */}
       <LocateButton className="pointer-events-auto absolute right-3 top-[9.5rem] z-[1000] h-12 w-12" />
       <AboutButton className="pointer-events-auto absolute right-3 top-[13rem] z-[1000] h-12 w-12" />
+      {/* Time-lapse control, centered above the peeking weather sheet (96px). */}
+      <div className="absolute bottom-[6.5rem] left-1/2 z-[1000] -translate-x-1/2">
+        <MapAnimateControl />
+      </div>
       <WeatherSheet />
     </div>
   )

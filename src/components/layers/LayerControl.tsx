@@ -57,40 +57,6 @@ export function RgbColorKey({ layerId }: { layerId: string }) {
   )
 }
 
-// Play/pause a single layer's time-lapse loop, from its own row, showing the
-// current frame's local time while playing. While any layer is animating, the
-// other layers' Animate buttons are disabled (only one plays at a time). Shared
-// by the desktop panel and the mobile sheet so both layouts stay in sync.
-export function LayerAnimateButton({ params }: { params: WmsLayerParams }) {
-  const { animatingLayer, frameIndex, toggleLayerAnimation } = useAppStore()
-  const isThis = animatingLayer === params.layer
-  const busyOther = animatingLayer !== null && !isThis
-
-  const frames = params.times ?? []
-  const t = isThis && frames.length ? frames[Math.min(frameIndex, frames.length - 1)] : null
-  const label = t ? new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : null
-
-  return (
-    <div className="ml-6 mt-1 flex items-center gap-2">
-      <button
-        type="button"
-        onClick={() => toggleLayerAnimation(params.layer)}
-        disabled={busyOther}
-        aria-pressed={isThis}
-        className="flex items-center gap-1 rounded-md bg-slate-900 px-2 py-1 text-[11px] font-medium text-white transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
-      >
-        <span aria-hidden className="text-[9px] leading-none">
-          {isThis ? '⏸' : '▶'}
-        </span>
-        {isThis ? 'Pause' : 'Animate'}
-      </button>
-      {isThis && label && (
-        <span className="font-mono text-[11px] tabular-nums text-slate-600">{label}</span>
-      )}
-    </div>
-  )
-}
-
 export function LayerControl() {
   const { data: imagery, isLoading, isError } = useImagery()
   const { activeLayers, toggleLayer, opacity, setOpacity, animatingLayer } = useAppStore()
@@ -151,7 +117,6 @@ export function LayerControl() {
                     </label>
                     {on && (
                       <>
-                        <LayerAnimateButton params={layer} />
                         <LayerLegend params={layer} />
                         <RgbColorKey layerId={layer.layer} />
                       </>
