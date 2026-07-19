@@ -52,6 +52,6 @@ export function getHourly(
   return getJson<AggregatedHourlyForecast>('/hourly', { lat, lon, hours })
 }
 
-export function getImagery(time?: string): Promise<SatelliteImagery> {
-  return getJson<SatelliteImagery>('/imagery', { time })
+export function getImagery(time?: string, frames?: number): Promise<SatelliteImagery> {
+  return getJson<SatelliteImagery>('/imagery', { time, frames })
 }

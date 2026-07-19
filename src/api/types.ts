@@ -74,6 +74,7 @@ export interface WmsLayerParams {
   layer: string
   title: string
   time: string | null // ISO-8601 UTC, pre-snapped to the layer's cadence; null = latest
+  times: (string | null)[] // snapped frames, newest first (times[0] === time); [null] pre-archive
   crs: string // "EPSG:3857"
   format: string // "image/png"
 }

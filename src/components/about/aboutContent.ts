@@ -12,7 +12,7 @@ export const FEATURES: Feature[] = [
   { title: 'Compare two places', body: 'Shift-click (or the A / B target on mobile) to hold a second location side by side.' },
   { title: 'Hour by hour', body: 'Tap a day to open its hourly breakdown: a temperature line and precipitation bars.' },
   { title: 'Consensus + confidence', body: 'Each day shows one blended value, how much the models agree, and the full per-model breakdown.' },
-  { title: 'Live satellite layers', body: 'Toggle EUMETSAT imagery onto the map: cloud, dust, lightning, convection.' },
+  { title: 'Live satellite layers', body: 'Toggle EUMETSAT imagery onto the map: cloud, dust, lightning, convection. Play a time-lapse of recent frames.' },
   { title: 'Metric & keyless', body: 'Metric units throughout. No account, no API keys; it talks straight to open weather services.' },
 ]
 
@@ -26,7 +26,7 @@ export const SOURCES: Source[] = [
   { title: 'Forecast API', body: 'Five numerical models in one call; see the table below.', host: 'api.open-meteo.com' },
   { title: 'Ensemble API', body: 'ICON ensemble spread feeds the confidence score.', host: 'ensemble-api.open-meteo.com' },
   { title: 'Geocoding API', body: 'Turns a place name into coordinates for the search box.', host: 'geocoding-api.open-meteo.com' },
-  { title: 'EUMETView WMS', body: 'MTG, MSG and Sentinel-3 satellite layers, fetched by your browser.', host: 'view.eumetsat.int' },
+  { title: 'EUMETView WMS', body: 'MTG and MSG satellite layers, fetched by your browser.', host: 'view.eumetsat.int' },
 ]
 
 export type ModelRole = 'global' | 'local' | 'ml'
@@ -111,5 +111,4 @@ export const SATELLITE_LAYERS: SatelliteLayer[] = [
   { title: 'Lightning Flash Area', satellite: 'MTG', cadence: '5 min', cadenceKind: 'fast', description: 'Live lightning activity from the MTG Lightning Imager.' },
   { title: 'Cloud Mask', satellite: 'MSG 0°', cadence: '15 min', cadenceKind: 'normal', description: 'Where cloud is present versus clear sky.' },
   { title: 'IR 3.9 µm Rapid Scan', satellite: 'MSG', cadence: '5 min', cadenceKind: 'fast', description: 'Fog and low-cloud detection on a five-minute rapid scan.' },
-  { title: 'True-colour RGB', satellite: 'Sentinel-3', cadence: 'Daily', cadenceKind: 'daily', description: 'High-resolution polar-orbiter mosaic, complete worldwide, about 48 h behind.' },
 ]

@@ -32,12 +32,18 @@ interface AppState {
   selectedDay: string | null // YYYY-MM-DD of the day open in the hourly view (shared by both locations)
   activeSlot: Slot // which slot a plain map tap fills (mobile A/B target); desktop stays 'primary'
   aboutOpen: boolean // whether the info / "how it works" dialog is open (shared by both layouts)
+  animating: boolean // whether the active overlays are playing a time-lapse loop
+  frameIndex: number // current animation frame; 0 = newest, higher = older
 
   /** Plain click selects primary; Shift+click selects comparison. */
   selectLocation: (loc: SelectedLocation, slot: Slot) => void
   clearLocation: (slot: Slot) => void
   toggleLayer: (layer: string) => void
   setOpacity: (opacity: number) => void
+  /** Start/stop the time-lapse loop; stopping snaps back to the newest frame. */
+  toggleAnimating: () => void
+  /** Set the current animation frame (driven by the map's animation clock). */
+  setFrameIndex: (index: number) => void
   /** Request the map to recenter on a coordinate. */
   focusOn: (loc: LatLng) => void
   /** Open the hourly view for a day; selecting the already-open day closes it. */
@@ -60,6 +66,8 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
   const [selectedDay, setSelectedDay] = useState<string | null>(null)
   const [activeSlot, setActiveSlot] = useState<Slot>('primary')
   const [aboutOpen, setAboutOpen] = useState(false)
+  const [animating, setAnimating] = useState(false)
+  const [frameIndex, setFrameIndex] = useState(0)
 
   // New object identity each call so the map recenters even on the same coords.
   const focusOn = useCallback((loc: LatLng) => setFocus({ lat: loc.lat, lng: loc.lng }), [])
@@ -80,6 +88,13 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     )
   }, [])
 
+  const toggleAnimating = useCallback(() => {
+    setAnimating((prev) => {
+      if (prev) setFrameIndex(0) // stopping returns to the newest frame
+      return !prev
+    })
+  }, [])
+
   const selectDay = useCallback(
     (date: string) => setSelectedDay((prev) => (prev === date ? null : date)),
     [],
@@ -90,6 +105,14 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!primary && !comparison) setSelectedDay(null)
   }, [primary, comparison])
+
+  // Nothing to animate without an active overlay; stop and reset to the newest frame.
+  useEffect(() => {
+    if (activeLayers.length === 0 && animating) {
+      setAnimating(false)
+      setFrameIndex(0)
+    }
+  }, [activeLayers, animating])
 
   // Without a comparison, a map tap can only mean the primary; keep the target there.
   useEffect(() => {
@@ -106,17 +129,21 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       selectedDay,
       activeSlot,
       aboutOpen,
+      animating,
+      frameIndex,
       selectLocation,
       clearLocation,
       toggleLayer,
       setOpacity,
+      toggleAnimating,
+      setFrameIndex,
       focusOn,
       selectDay,
       clearDay,
       setActiveSlot,
       setAboutOpen,
     }),
-    [primary, comparison, activeLayers, opacity, focus, selectedDay, activeSlot, aboutOpen, selectLocation, clearLocation, toggleLayer, focusOn, selectDay, clearDay],
+    [primary, comparison, activeLayers, opacity, focus, selectedDay, activeSlot, aboutOpen, animating, frameIndex, selectLocation, clearLocation, toggleLayer, toggleAnimating, focusOn, selectDay, clearDay],
   )
 
   return <AppStoreContext.Provider value={value}>{children}</AppStoreContext.Provider>

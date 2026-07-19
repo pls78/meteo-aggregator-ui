@@ -58,10 +58,14 @@ export function useHourlyRange(
 // structural sharing makes an unchanged response between boundaries a no-op.
 const IMAGERY_REFETCH_MS = 60_000
 
+// Frames per layer to request, for the time-lapse animation (newest first). The
+// span depends on each layer's cadence: e.g. 12 × 10 min = 2 h, × 15 min = 3 h.
+export const IMAGERY_FRAMES = 12
+
 export function useImagery() {
   return useQuery({
-    queryKey: ['imagery'],
-    queryFn: () => getImagery(),
+    queryKey: ['imagery', IMAGERY_FRAMES],
+    queryFn: () => getImagery(undefined, IMAGERY_FRAMES),
     staleTime: IMAGERY_REFETCH_MS,
     refetchInterval: IMAGERY_REFETCH_MS,
   })

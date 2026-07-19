@@ -57,6 +57,47 @@ export function RgbColorKey({ layerId }: { layerId: string }) {
   )
 }
 
+// Play/pause the time-lapse loop for the active overlays, showing the current
+// frame's local time. Disabled until at least one layer is on. Shared by the
+// desktop panel and the mobile sheet so both layouts stay in sync.
+export function AnimationControl() {
+  const { data: imagery } = useImagery()
+  const { activeLayers, animating, frameIndex, toggleAnimating } = useAppStore()
+  const hasLayers = activeLayers.length > 0
+
+  const firstActive = imagery?.layers.find((l) => activeLayers.includes(l.layer))
+  const frames = firstActive?.times ?? []
+  const t = frames.length
+    ? frames[Math.min(frameIndex, frames.length - 1)]
+    : (firstActive?.time ?? null)
+  const label = t
+    ? new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    : 'latest'
+
+  return (
+    <div className="mt-3 border-t border-slate-200 pt-3">
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={toggleAnimating}
+          disabled={!hasLayers}
+          aria-pressed={animating}
+          className="flex items-center gap-1.5 rounded-lg bg-slate-900 px-2.5 py-1.5 text-xs font-medium text-white transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+        >
+          <span aria-hidden className="text-[10px] leading-none">
+            {animating ? '⏸' : '▶'}
+          </span>
+          {animating ? 'Pause' : 'Animate'}
+        </button>
+        {animating && hasLayers && (
+          <span className="font-mono text-xs tabular-nums text-slate-600">{label}</span>
+        )}
+        {!hasLayers && <span className="text-[11px] text-slate-400">Enable a layer to animate</span>}
+      </div>
+    </div>
+  )
+}
+
 export function LayerControl() {
   const { data: imagery, isLoading, isError } = useImagery()
   const { activeLayers, toggleLayer, opacity, setOpacity } = useAppStore()
@@ -130,6 +171,8 @@ export function LayerControl() {
                 />
               </label>
             </div>
+
+            <AnimationControl />
           </div>
         </div>
       </div>

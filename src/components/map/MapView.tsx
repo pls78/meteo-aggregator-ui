@@ -6,8 +6,12 @@ import { useEffect, useRef, useState } from 'react'
 import maplibregl from 'maplibre-gl'
 import { useAppStore } from '../../store/appStore'
 import type { SelectedLocation } from '../../store/appStore'
-import { useImagery } from '../../hooks/queries'
+import { useImagery, IMAGERY_FRAMES } from '../../hooks/queries'
 import type { WmsLayerParams } from '../../api/types'
+
+// Time-lapse cadence: how long each animation frame is shown. 12 frames at
+// ~550 ms ≈ a 6.5 s loop.
+const FRAME_MS = 550
 
 const STYLE_URL = 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json'
 const ITALY_CENTER: [number, number] = [12.5, 42.5] // [lng, lat]
@@ -17,13 +21,13 @@ const COMPARISON_COLOR = '#f59e0b'
 // WMS GetMap tile template for a MapLibre raster source. v1.1.1 + srs + the
 // {bbox-epsg-3857} token avoids WMS 1.3.0 axis-order pitfalls. time is omitted
 // when null so the WMS serves the latest image.
-function wmsTileUrl(params: WmsLayerParams): string {
+function wmsTileUrl(params: WmsLayerParams, time: string | null): string {
   const base =
     `${params.wms_url}?service=WMS&version=1.1.1&request=GetMap` +
     `&layers=${encodeURIComponent(params.layer)}&styles=` +
     `&format=image/png&transparent=true&srs=EPSG:3857` +
     `&width=256&height=256&bbox={bbox-epsg-3857}`
-  return params.time ? `${base}&time=${encodeURIComponent(params.time)}` : base
+  return time ? `${base}&time=${encodeURIComponent(time)}` : base
 }
 
 // If the click landed on a basemap place label, return that named place (using
@@ -75,8 +79,13 @@ export function MapView() {
   // layer's snapped frame time actually advances — not on every opacity change.
   const layerUrls = useRef<Record<string, string>>({})
 
-  const { primary, comparison, focus, activeLayers, opacity, selectLocation, activeSlot } = useAppStore()
+  const { primary, comparison, focus, activeLayers, opacity, selectLocation, activeSlot, animating, frameIndex, setFrameIndex } =
+    useAppStore()
   const { data: imagery } = useImagery()
+
+  // Latest frame index for the animation clock, read without re-arming the interval.
+  const frameIndexRef = useRef(frameIndex)
+  frameIndexRef.current = frameIndex
 
   // The click handler is attached once; read the latest values via refs.
   const selectRef = useRef(selectLocation)
@@ -146,36 +155,76 @@ export function MapView() {
     }
   }, [focus])
 
-  // Satellite WMS overlays: add/remove raster sources, update opacity, and refresh
-  // tiles in place when a layer's snapped frame time advances.
+  // Satellite WMS overlays. Static mode shows one raster layer per active overlay
+  // (its newest frame). Animation mode instead mounts one raster layer per frame
+  // (all tiles preloaded) and reveals only the current frame via opacity, so the
+  // time-lapse plays without re-fetching tiles each tick.
   useEffect(() => {
     const map = mapRef.current
     if (!map || !loaded) return
-    for (const params of imagery?.layers ?? []) {
-      const id = `wms-${params.layer}`
-      const active = activeLayers.includes(params.layer)
-      const exists = Boolean(map.getLayer(id))
-      const url = wmsTileUrl(params)
-      if (active && !exists) {
+    const known = layerUrls.current
+
+    const ensure = (id: string, time: string | null, op: number, params: WmsLayerParams) => {
+      const url = wmsTileUrl(params, time)
+      if (!map.getLayer(id)) {
         map.addSource(id, { type: 'raster', tiles: [url], tileSize: 256 })
-        map.addLayer({ id, type: 'raster', source: id, paint: { 'raster-opacity': opacity } })
-        layerUrls.current[id] = url
-      } else if (!active && exists) {
-        map.removeLayer(id)
-        map.removeSource(id)
-        delete layerUrls.current[id]
-      } else if (active && exists) {
-        // New frame (snapped time changed → new URL): swap tiles in place, only
-        // when actually changed so opacity drags don't trigger a reload.
-        if (layerUrls.current[id] !== url) {
-          const src = map.getSource(id) as maplibregl.RasterTileSource | undefined
-          src?.setTiles([url])
-          layerUrls.current[id] = url
+        map.addLayer({
+          id,
+          type: 'raster',
+          source: id,
+          paint: { 'raster-opacity': op, 'raster-fade-duration': 0 },
+        })
+        known[id] = url
+      } else {
+        if (known[id] !== url) {
+          ;(map.getSource(id) as maplibregl.RasterTileSource | undefined)?.setTiles([url])
+          known[id] = url
         }
-        map.setPaintProperty(id, 'raster-opacity', opacity)
+        map.setPaintProperty(id, 'raster-opacity', op)
       }
     }
-  }, [loaded, activeLayers, opacity, imagery])
+    const remove = (id: string) => {
+      if (map.getLayer(id)) {
+        map.removeLayer(id)
+        map.removeSource(id)
+        delete known[id]
+      }
+    }
+
+    for (const params of imagery?.layers ?? []) {
+      const baseId = `wms-${params.layer}`
+      const active = activeLayers.includes(params.layer)
+      const frames = params.times?.length ? params.times : [params.time]
+
+      if (!active) {
+        remove(baseId)
+        for (let f = 0; f < IMAGERY_FRAMES; f++) remove(`${baseId}-f${f}`)
+      } else if (!animating) {
+        // Single newest-frame layer; tear down any leftover frame stack.
+        for (let f = 0; f < IMAGERY_FRAMES; f++) remove(`${baseId}-f${f}`)
+        ensure(baseId, frames[0], opacity, params)
+      } else {
+        remove(baseId)
+        const idx = Math.min(frameIndex, frames.length - 1)
+        for (let f = 0; f < frames.length; f++) {
+          ensure(`${baseId}-f${f}`, frames[f], f === idx ? opacity : 0, params)
+        }
+        // A layer near its archive may have fewer frames than requested.
+        for (let f = frames.length; f < IMAGERY_FRAMES; f++) remove(`${baseId}-f${f}`)
+      }
+    }
+  }, [loaded, activeLayers, opacity, imagery, animating, frameIndex])
+
+  // Animation clock: while playing, step the frame oldest→newest and loop. The
+  // interval is re-armed only when play state (or having any active layer)
+  // changes; the current index is read via a ref so ticks stay 550 ms apart.
+  useEffect(() => {
+    if (!animating || activeLayers.length === 0) return
+    const id = window.setInterval(() => {
+      setFrameIndex((frameIndexRef.current - 1 + IMAGERY_FRAMES) % IMAGERY_FRAMES)
+    }, FRAME_MS)
+    return () => window.clearInterval(id)
+  }, [animating, activeLayers.length, setFrameIndex])
 
   return <div ref={containerRef} className="map-container absolute inset-0" />
 }

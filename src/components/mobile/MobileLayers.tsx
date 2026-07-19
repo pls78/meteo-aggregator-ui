@@ -5,7 +5,7 @@
 import { useState } from 'react'
 import { useImagery } from '../../hooks/queries'
 import { useAppStore } from '../../store/appStore'
-import { LayerLegend, RgbColorKey } from '../layers/LayerControl'
+import { AnimationControl, LayerLegend, RgbColorKey } from '../layers/LayerControl'
 
 export function MobileLayers() {
   const { data: imagery, isLoading, isError } = useImagery()
@@ -105,6 +105,7 @@ export function MobileLayers() {
               className="mt-2 w-full"
             />
           </label>
+          <AnimationControl />
         </div>
       </section>
     </>
