@@ -157,16 +157,24 @@ export function MapView() {
 
   // Satellite WMS overlays. Static mode shows one raster layer per active overlay
   // (its newest frame). Animation mode instead mounts one raster layer per frame
-  // (all tiles preloaded) and reveals only the current frame via opacity, so the
-  // time-lapse plays without re-fetching tiles each tick. A short raster-opacity
-  // transition cross-fades between frames: the outgoing frame lingers while the
-  // incoming one appears, so the basemap never shows through between frames.
+  // (all tiles preloaded) and reveals the current frame via opacity, so the
+  // time-lapse plays without re-fetching tiles each tick. To avoid a basemap
+  // flash between frames, the incoming frame is moved on top and snapped to full
+  // opacity instantly (its tiles are already loaded), while the outgoing frame
+  // only fades out beneath it — so the new frame always covers before the old
+  // one leaves, and no symmetric mid-swap dip lightens the overlay.
   useEffect(() => {
     const map = mapRef.current
     if (!map || !loaded) return
     const known = layerUrls.current
 
-    const ensure = (id: string, time: string | null, op: number, params: WmsLayerParams) => {
+    const ensure = (
+      id: string,
+      time: string | null,
+      op: number,
+      transitionMs: number,
+      params: WmsLayerParams,
+    ) => {
       const url = wmsTileUrl(params, time)
       if (!map.getLayer(id)) {
         map.addSource(id, { type: 'raster', tiles: [url], tileSize: 256 })
@@ -176,7 +184,7 @@ export function MapView() {
           source: id,
           paint: {
             'raster-opacity': op,
-            'raster-opacity-transition': { duration: 220, delay: 0 },
+            'raster-opacity-transition': { duration: transitionMs, delay: 0 },
           },
         })
         known[id] = url
@@ -185,6 +193,7 @@ export function MapView() {
           ;(map.getSource(id) as maplibregl.RasterTileSource | undefined)?.setTiles([url])
           known[id] = url
         }
+        map.setPaintProperty(id, 'raster-opacity-transition', { duration: transitionMs, delay: 0 })
         map.setPaintProperty(id, 'raster-opacity', op)
       }
     }
@@ -208,15 +217,20 @@ export function MapView() {
       } else if (!isAnimating) {
         // Single newest-frame layer; tear down any leftover frame stack.
         for (let f = 0; f < IMAGERY_FRAMES; f++) remove(`${baseId}-f${f}`)
-        ensure(baseId, frames[0], opacity, params)
+        ensure(baseId, frames[0], opacity, 180, params)
       } else {
         remove(baseId)
         const idx = Math.min(frameIndex, frames.length - 1)
         for (let f = 0; f < frames.length; f++) {
-          ensure(`${baseId}-f${f}`, frames[f], f === idx ? opacity : 0, params)
+          // Current frame snaps on instantly; the rest fade out (only the
+          // just-shown one is actually changing, from full to 0).
+          const isCur = f === idx
+          ensure(`${baseId}-f${f}`, frames[f], isCur ? opacity : 0, isCur ? 0 : 380, params)
         }
         // A layer near its archive may have fewer frames than requested.
         for (let f = frames.length; f < IMAGERY_FRAMES; f++) remove(`${baseId}-f${f}`)
+        // Keep the current frame on top so it covers the fading outgoing one.
+        map.moveLayer(`${baseId}-f${idx}`)
       }
     }
   }, [loaded, activeLayers, opacity, imagery, animatingLayer, frameIndex])
