@@ -5,11 +5,13 @@
 
 import { useEffect, useRef } from 'react'
 import { useAppStore } from '../../store/appStore'
+import { useImagery } from '../../hooks/queries'
+import { cadenceFromTimes, shortTitle } from '../../lib/layerMeta'
 import {
   CONFIDENCE,
   FEATURES,
+  LAYER_INFO,
   MODELS,
-  SATELLITE_LAYERS,
   SOURCES,
   WEIGHTS_NEAR_TERM,
   WEIGHTS_RANGE,
@@ -102,6 +104,7 @@ function WeightTable({ title, tag, rows }: { title: string; tag: string; rows: W
 
 export function AboutDialog() {
   const { aboutOpen, setAboutOpen } = useAppStore()
+  const { data: imagery } = useImagery()
   const panelRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -374,25 +377,38 @@ export function AboutDialog() {
             <Eyebrow>Satellite layers</Eyebrow>
             <h3 className="mb-1 text-lg font-semibold text-slate-900">What each overlay shows & how often it updates</h3>
             <p className="mb-4 max-w-[60ch] text-sm text-slate-600">
-              Imagery comes from EUMETSAT’s geostationary MTG and MSG satellites, plus the polar-orbiting Sentinel-3. The
-              badge on each layer is how often a fresh frame arrives.
+              Imagery comes from EUMETSAT’s geostationary MTG and MSG satellites. The badge on each
+              layer is how often a fresh frame arrives.
             </p>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {SATELLITE_LAYERS.map((l) => (
-                <div key={l.title} className="flex flex-col gap-1.5 rounded-xl border border-slate-200 bg-slate-50 p-3.5">
-                  <div className="flex items-center justify-between gap-2">
-                    <h4 className="text-sm font-semibold text-slate-900">{l.title}</h4>
-                    <span className={`whitespace-nowrap rounded-full px-2 py-0.5 font-mono text-[0.66rem] font-semibold ${CADENCE_BADGE[l.cadenceKind]}`}>
-                      {l.cadence}
-                    </span>
-                  </div>
-                  <p className="text-[0.82rem] text-slate-600">{l.description}</p>
-                  <span className="mt-auto w-fit rounded border border-slate-200 px-1.5 py-0.5 font-mono text-[0.62rem] uppercase tracking-wide text-slate-400">
-                    {l.satellite}
-                  </span>
-                </div>
-              ))}
-            </div>
+            {imagery ? (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {imagery.layers.map((layer) => {
+                  const info = LAYER_INFO[layer.layer]
+                  const name = info?.name ?? shortTitle(layer.title)
+                  const cadence = cadenceFromTimes(layer.times)
+                  return (
+                    <div key={layer.layer} className="flex flex-col gap-1.5 rounded-xl border border-slate-200 bg-slate-50 p-3.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <h4 className="text-sm font-semibold text-slate-900">{name}</h4>
+                        {cadence && (
+                          <span className={`whitespace-nowrap rounded-full px-2 py-0.5 font-mono text-[0.66rem] font-semibold ${CADENCE_BADGE[cadence.kind]}`}>
+                            {cadence.label}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[0.82rem] text-slate-600">{info?.description ?? name}</p>
+                      {info?.satellite && (
+                        <span className="mt-auto w-fit rounded border border-slate-200 px-1.5 py-0.5 font-mono text-[0.62rem] uppercase tracking-wide text-slate-400">
+                          {info.satellite}
+                        </span>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            ) : (
+              <p className="text-sm text-slate-500">Loading layers…</p>
+            )}
           </section>
 
           <footer className="flex flex-wrap justify-between gap-3 bg-slate-50 px-6 py-4 font-mono text-[0.72rem] text-slate-400">

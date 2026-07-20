@@ -111,8 +111,10 @@ backend's `ALLOWED_ORIGINS` env var is set to `https://meteo-aggregator.pages.de
   button in both layouts; state via `appStore.aboutOpen`). `AboutDialog` is a light modal
   documenting features, data sources, the aggregation/weighting algorithm (with worked
   examples), and the satellite layers; `AboutButton` is the trigger; `aboutContent.ts` holds
-  the static figures **transcribed from the backend `config.py`/`aggregation.py`** — keep them
-  in sync if the backend's models, weights, or layer cadences change.
+  the static figures **transcribed from the backend `config.py`/`aggregation.py`** — keep the
+  models/weights in sync if the backend changes. The **satellite-layer list is derived from
+  `GET /imagery`** (membership + cadence, via `lib/layerMeta.ts`); only per-layer editorial copy
+  is hand-authored in `aboutContent.ts`'s `LAYER_INFO`, keyed by layer id with a fallback.
 - **`src/hooks/useMediaQuery.ts`** — `useMediaQuery`/`useIsMobile` (`max-width: 767px`).
   `App.tsx` renders `DesktopOverlays` or `MobileShell` over the shared `MapView` based on it.
 - **`src/hooks/useInitialLocation.ts`** — on load, seeds the primary location from the browser

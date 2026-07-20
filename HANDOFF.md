@@ -99,8 +99,11 @@ cd ../meteo-aggregator && uvicorn api.main:app --reload   # http://localhost:800
 5. **Satellite legends** come from the WMS `GetLegendGraphic`. Layers without a real legend
    (e.g. IR 3.9) return a ~20×20 cross-hatched placeholder — `LayerLegend` hides anything
    `naturalWidth < 64` and stays out of layout until a real legend loads (avoids a bump).
-   (The Sentinel-3 true-colour daily layer was dropped backend-side; `aboutContent.ts` no longer
-   lists it. The info-page layer list is still hand-mirrored — see candidate next features.)
+   (The Sentinel-3 true-colour daily layer was dropped backend-side.) The info-page layer list is
+   now **derived from `GET /imagery`** (`derive-info-page-layers`): membership follows the live
+   catalog and cadence is computed from each layer's frame spacing (`lib/layerMeta.ts`). Only the
+   editorial copy (short name, satellite, description) is hand-authored, keyed by layer id in
+   `aboutContent.ts`'s `LAYER_INFO`, with a fallback so an unknown layer still renders.
 6. **Place-label click** uses `queryRenderedFeatures` filtered to the CARTO style's `place`
    source-layer (not hardcoded layer ids). Empty-area clicks fall back to raw lng/lat.
 7. **Benign lint warning:** `appStore.tsx` triggers an oxlint `only-export-components` (fast-refresh)
@@ -184,7 +187,8 @@ rather than adding their own spec.) Run `openspec list --specs` for the live cou
 `meteo-ui-mvp` → `add-comparison-search` → `add-layer-legends` → `vector-basemap`
 → `add-place-label-selection` → `dev-api-proxy` → `auto-refresh-overlays` → `add-deployment`
 → `add-rgb-color-keys` → `add-hourly-view` → `mobile-ui` → `add-default-location`
-→ `add-info-page` → `add-layer-animation` (all under `openspec/changes/archive/`).
+→ `add-info-page` → `add-layer-animation` → `derive-info-page-layers`
+(all under `openspec/changes/archive/`).
 
 > Two small follow-ups to `add-info-page` (copy tightening, and worked examples in the
 > aggregation section) shipped as direct commits on `main`, not separate changes — they refine
@@ -195,8 +199,6 @@ rather than adding their own spec.) Run `openspec list --specs` for the live cou
 - **Code-split** MapLibre to cut the initial bundle.
 - **Comparison emphasis** — highlight the warmer/wetter side in `ComparisonPanel`.
 - **Hover affordance** on place labels (cursor/highlight) to hint they're clickable.
-- **Derive info-page layer list from `/imagery`** so it can't drift from the backend catalog
-  (today `aboutContent.ts` mirrors it by hand).
 - **Time-align mixed-cadence animation** — frames currently step by index, so animating layers of
   different cadence together isn't time-synced; the control sidesteps this by allowing only one
   layer at a time. Could snap each layer to the nearest frame for a shared target time.

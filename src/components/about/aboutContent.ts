@@ -90,25 +90,25 @@ export const CONFIDENCE: ConfidenceBand[] = [
   { level: 'low', label: 'Low', range: '> 3.5 °C', note: 'models diverge; treat as indicative' },
 ]
 
-export type Cadence = 'fast' | 'normal' | 'daily'
-
-export interface SatelliteLayer {
-  title: string
+export interface LayerInfo {
+  name?: string // short display name; falls back to shortTitle(API title)
   satellite: string
-  cadence: string
-  cadenceKind: Cadence
   description: string
 }
 
-// config.EUMETVIEW_LAYERS: cadence_minutes → the update period; Sentinel-3 is a daily mosaic.
-export const SATELLITE_LAYERS: SatelliteLayer[] = [
-  { title: 'Geo Colour RGB', satellite: 'MTG', cadence: '10 min', cadenceKind: 'normal', description: 'True colour by day; infrared cloud tops and city lights by night.' },
-  { title: 'IR 10.5 µm', satellite: 'MTG', cadence: '10 min', cadenceKind: 'normal', description: 'Cloud-top temperature: colder means higher, thicker cloud. Works in the dark.' },
-  { title: 'Cloud Phase RGB', satellite: 'MTG', cadence: '10 min', cadenceKind: 'normal', description: 'Separates ice cloud from water cloud, a cue for storm structure.' },
-  { title: 'Dust RGB', satellite: 'MTG', cadence: '10 min', cadenceKind: 'normal', description: 'Tracks airborne Saharan dust as it moves across the region.' },
-  { title: 'Airmass RGB', satellite: 'MSG 0°', cadence: '15 min', cadenceKind: 'normal', description: 'Warm, cold and dry air masses; reveals jet streaks and stratospheric intrusions.' },
-  { title: 'Convection RGB', satellite: 'MSG 0°', cadence: '15 min', cadenceKind: 'normal', description: 'Highlights intense updraughts and severe-storm potential.' },
-  { title: 'Lightning Flash Area', satellite: 'MTG', cadence: '5 min', cadenceKind: 'fast', description: 'Live lightning activity from the MTG Lightning Imager.' },
-  { title: 'Cloud Mask', satellite: 'MSG 0°', cadence: '15 min', cadenceKind: 'normal', description: 'Where cloud is present versus clear sky.' },
-  { title: 'IR 3.9 µm Rapid Scan', satellite: 'MSG', cadence: '5 min', cadenceKind: 'fast', description: 'Fog and low-cloud detection on a five-minute rapid scan.' },
-]
+// Editorial copy for the info page, keyed by the stable WMS layer id from
+// GET /imagery. The layer *list* and each layer's *cadence* are derived from the
+// live API response (see AboutDialog + lib/layerMeta); only the satellite and the
+// human description live here. A layer id with no entry still renders via a
+// fallback, so a new backend layer surfaces without a UI edit.
+export const LAYER_INFO: Record<string, LayerInfo> = {
+  'mtg_fd:rgb_geocolour': { name: 'Geo Colour RGB', satellite: 'MTG', description: 'True colour by day; infrared cloud tops and city lights by night.' },
+  'mtg_fd:ir105_hrfi': { name: 'IR 10.5 µm', satellite: 'MTG', description: 'Cloud-top temperature: colder means higher, thicker cloud. Works in the dark.' },
+  'mtg_fd:rgb_cloudphase': { name: 'Cloud Phase RGB', satellite: 'MTG', description: 'Separates ice cloud from water cloud, a cue for storm structure.' },
+  'mtg_fd:rgb_dust': { name: 'Dust RGB', satellite: 'MTG', description: 'Tracks airborne Saharan dust as it moves across the region.' },
+  'msg_fes:rgb_airmass': { name: 'Airmass RGB', satellite: 'MSG 0°', description: 'Warm, cold and dry air masses; reveals jet streaks and stratospheric intrusions.' },
+  'msg_fes:rgb_convection': { name: 'Convection RGB', satellite: 'MSG 0°', description: 'Highlights intense updraughts and severe-storm potential.' },
+  'mtg_fd:li_afa': { name: 'Lightning Flash Area', satellite: 'MTG', description: 'Live lightning activity from the MTG Lightning Imager.' },
+  'msg_fes:clm': { name: 'Cloud Mask', satellite: 'MSG 0°', description: 'Where cloud is present versus clear sky.' },
+  'msg_rss:ir039_nrt': { name: 'IR 3.9 µm Rapid Scan', satellite: 'MSG', description: 'Fog and low-cloud detection on a five-minute rapid scan.' },
+}

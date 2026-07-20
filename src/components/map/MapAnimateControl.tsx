@@ -7,6 +7,7 @@
 
 import { useImagery } from '../../hooks/queries'
 import { useAppStore } from '../../store/appStore'
+import { shortTitle } from '../../lib/layerMeta'
 
 // Filled play/pause glyphs as inline SVG so they render identically everywhere
 // and sit optically centred (the play triangle is nudged right a hair).
@@ -25,16 +26,6 @@ function PauseIcon() {
       <rect x="13.5" y="5" width="4" height="14" rx="1.3" />
     </svg>
   )
-}
-
-// Compact display name: drop any parenthetical "(…)" groups and everything from
-// the first dash-delimited clause on, e.g. "Geo Colour RGB (day + night) – MTG"
-// → "Geo Colour RGB", "IR 10.5 µm – MTG (cloud imagery)" → "IR 10.5 µm".
-function shortTitle(title: string): string {
-  return title
-    .replace(/\s*\([^)]*\)/g, '')
-    .split(/\s+[–—-]\s+/)[0]
-    .trim()
 }
 
 // Small spinner shown beside the frame time while its tiles are still fetching.
