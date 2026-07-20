@@ -88,12 +88,16 @@ backend's `ALLOWED_ORIGINS` env var is set to `https://meteo-aggregator.pages.de
   enabled only while a day is open in the hourly view.
 - **`src/store/appStore.tsx`** — client UI state only (selected primary/comparison locations,
   active WMS layers, overlay opacity, map focus, `selectedDay` — the day open in the hourly
-  view — `activeSlot`, which slot a plain map tap fills, and `aboutOpen`, the info dialog's
-  visibility. `activeSlot` is the mobile A/B target; it stays `'primary'` on desktop so
+  view — `activeSlot`, which slot a plain map tap fills, `aboutOpen`, the info dialog's
+  visibility, and the time-lapse trio `animatingLayer`/`frameIndex`/`frameLoading` (the layer
+  playing, its current frame, and whether that frame's tiles are still loading — the latter two
+  driven by `MapView`). `activeSlot` is the mobile A/B target; it stays `'primary'` on desktop so
   plain-click/Shift are unchanged). Server data stays in React Query, never here.
-- **`src/components/map/`** — `MapView` (the full-screen map + base tiles + markers + recenter).
-  Rotation and pitch are locked (kept north-up). A plain tap fills `activeSlot`; Shift+click
-  always fills comparison. `WmsOverlays` renders active satellite layers.
+- **`src/components/map/`** — `MapView` (the full-screen map + base tiles + markers + recenter +
+  WMS overlays). Rotation and pitch are locked (kept north-up). A plain tap fills `activeSlot`;
+  Shift+click always fills comparison. Active satellite layers are rendered imperatively in
+  `MapView`; when one plays a time-lapse it mounts a preloaded raster layer per frame (see
+  HANDOFF gotcha #3). `MapAnimateControl` is the floating play/pause control (single active layer).
 - **`src/components/`** (desktop overlays) — `search/SearchBox` (accepts a `className` for
   width), `panels/LocationCard` (day rows are buttons that open the hourly view),
   `compare/ComparisonPanel`, `layers/LayerControl` (exports `LayerLegend`/`RgbColorKey` for
@@ -131,7 +135,7 @@ Four keyless GET endpoints; full reference in `../meteo-aggregator/api/README.md
 | `GET /search?name` | `Place[]` — name → coordinates for the search box |
 | `GET /forecast?lat&lon&days` | daily consensus; `values` keyed by variable, plus `confidence` + per-model `breakdown` |
 | `GET /hourly?lat&lon&hours` | hourly consensus; **`hours[0]` = current conditions** (`/forecast` has only daily max/min). Timestamps are **location-local** (backend uses `timezone=auto`), matching the daily `date`, so the hourly view groups hours under a tapped day via `date.slice(0,10)` — **do not** assume UTC here |
-| `GET /imagery?time` | EUMETSAT WMS layer params (`EPSG:3857`, transparent PNG). Tiles are fetched **directly from EUMETSAT by the browser**, not proxied; `time: null` ⇒ WMS serves the latest image |
+| `GET /imagery?time&frames` | EUMETSAT WMS layer params (`EPSG:3857`, transparent PNG). Each layer has `time` and a `times` array (`frames` recent frames, newest first; `time === times[0]`) for the time-lapse. Tiles are fetched **directly from EUMETSAT by the browser**, not proxied; `time: null` ⇒ WMS serves the latest image |
 
 `values` is `Record<string, number | string | null>`; `weather_code` is a WMO code, and
 `sunrise`/`sunset` are strings (non-blendable). Units are metric throughout.

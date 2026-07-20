@@ -8,15 +8,16 @@ on **current state, workflow, and gotchas** that aren't obvious from the code.
 
 A full-screen, map-driven weather UI. A MapLibre GL vector map; click (or search, or click a
 place label) to select a location and see aggregated weather overlaid; `Shift`+click adds a
-second location for comparison; toggleable EUMETSAT satellite WMS overlays with legends.
-Pure frontend (Vite + React 19 + TypeScript + Tailwind v4 + MapLibre GL) talking directly to
-the Python/FastAPI **meteo-aggregator** backend in the sibling repo `../meteo-aggregator`.
+second location for comparison; toggleable EUMETSAT satellite WMS overlays with legends, and a
+per-layer **time-lapse animation** of recent frames. Pure frontend (Vite + React 19 +
+TypeScript + Tailwind v4 + MapLibre GL) talking directly to the Python/FastAPI
+**meteo-aggregator** backend in the sibling repo `../meteo-aggregator`.
 
 ## Current status (working)
 
-- App is feature-complete for the MVP plus twelve follow-ups (through the hourly-by-day view,
-  the mobile layout, deployment, default-location seeding on load, and the in-app info page);
-  `npm run build` and `npm run lint` pass.
+- App is feature-complete for the MVP plus thirteen follow-ups (through the hourly-by-day view,
+  the mobile layout, deployment, default-location seeding on load, the in-app info page, and the
+  satellite-layer time-lapse animation); `npm run build` and `npm run lint` pass.
 - Both dev servers were running during development: UI on `:5173`, backend on `:8000`.
 - **Deployed and live:** UI on Cloudflare Pages (<https://meteo-aggregator.pages.dev>),
   API on Google Cloud Run. See "Deployment" below and `CLAUDE.md`.
@@ -82,11 +83,24 @@ cd ../meteo-aggregator && uvicorn api.main:app --reload   # http://localhost:800
      when a layer's snapped `time` (its tile URL) advances, `MapView` swaps the tiles in place via
      `RasterTileSource.setTiles([newUrl])`. Per-layer URL tracking keeps opacity-only updates from
      needlessly reloading tiles. This is the `auto-refresh-overlays` change.
+   - **Time-lapse animation (`add-layer-animation`):** `useImagery` requests `frames=IMAGERY_FRAMES`
+     (=12) and each layer returns a `times` array (newest first). Playing **one** layer, `MapView`
+     mounts one raster layer per frame (`wms-<layer>-fN`) — all preloaded, since MapLibre loads
+     tiles for opacity-0 `visible` layers — and a 550 ms clock steps `frameIndex` oldest→newest.
+     **Flash-free swap:** the incoming frame is `moveLayer`'d on top and snapped to full opacity
+     instantly while the outgoing one only fades out; a **symmetric** crossfade dips mid-swap and
+     flashes, so don't reintroduce it. `frameLoading` (from `map.isSourceLoaded`, refreshed on
+     `sourcedata`/`idle`) drives the control's spinner. The floating control is
+     `MapAnimateControl` (bottom-center, both layouts); it's enabled only when exactly one overlay
+     is active, and the layer checklist is locked while a layer plays. Mixed-cadence layers aren't
+     time-aligned (frames step by index), hence single-layer playback.
 4. **"Current conditions" = `/hourly` hour 0.** `/forecast` only has daily max/min. See
    `LocationCard`.
 5. **Satellite legends** come from the WMS `GetLegendGraphic`. Layers without a real legend
-   (IR 3.9, Sentinel-3 RGB) return a ~20×20 cross-hatched placeholder — `LayerLegend` hides
-   anything `naturalWidth < 64` and stays out of layout until a real legend loads (avoids a bump).
+   (e.g. IR 3.9) return a ~20×20 cross-hatched placeholder — `LayerLegend` hides anything
+   `naturalWidth < 64` and stays out of layout until a real legend loads (avoids a bump).
+   (The Sentinel-3 true-colour daily layer was dropped backend-side; `aboutContent.ts` no longer
+   lists it. The info-page layer list is still hand-mirrored — see candidate next features.)
 6. **Place-label click** uses `queryRenderedFeatures` filtered to the CARTO style's `place`
    source-layer (not hardcoded layer ids). Empty-area clicks fall back to raw lng/lat.
 7. **Benign lint warning:** `appStore.tsx` triggers an oxlint `only-export-components` (fast-refresh)
@@ -108,9 +122,13 @@ Used for: map markers, weather-card bullets, and search-bar dots.
   `useImagery` re-polls every ~60 s so overlays stay current (see gotcha #3).
 - **Client UI state** → `src/store/appStore.tsx` (Context): `primary`, `comparison`
   (`SelectedLocation | null`), `activeLayers`, `opacity`, `focus`, `selectedDay` (the day open
-  in the hourly view), `activeSlot` (mobile A/B tap target), and `aboutOpen` (info dialog);
-  actions `selectLocation`, `clearLocation`, `toggleLayer`, `setOpacity`, `focusOn`, `selectDay`,
-  `setActiveSlot`, `setAboutOpen`. Plain click → primary; Shift → comparison.
+  in the hourly view), `activeSlot` (mobile A/B tap target), `aboutOpen` (info dialog), and the
+  animation trio `animatingLayer` (layer id playing, or null), `frameIndex` (0 = newest), and
+  `frameLoading`; actions `selectLocation`, `clearLocation`, `toggleLayer`, `setOpacity`,
+  `toggleLayerAnimation`, `setFrameIndex`, `setFrameLoading`, `focusOn`, `selectDay`,
+  `setActiveSlot`, `setAboutOpen`. Plain click → primary; Shift → comparison. `frameIndex` and
+  `frameLoading` are driven by `MapView` (the animation clock / tile-load watcher); the control
+  only reads them.
 - **Startup seeding** → `useInitialLocation()` (called once from `App.tsx`) fills `primary` on
   load from browser geolocation, else `DEFAULT_LOCATION` (`src/lib/config.ts`); silent fallback,
   no persistence, never overrides an existing selection.
@@ -126,7 +144,8 @@ src/store/appStore.tsx            UI state (Context)
 src/lib/weatherCode.ts            WMO code -> icon/label
 src/lib/layerLegends.ts           static colour keys for RGB composite overlays
 src/lib/config.ts                 DEFAULT_LOCATION (startup fallback)
-src/components/map/MapView.tsx    MapLibre map: style, click+place-label select, markers, recenter, WMS overlays
+src/components/map/MapView.tsx    MapLibre map: style, click+place-label select, markers, recenter, WMS overlays, time-lapse frame stack + clock
+src/components/map/MapAnimateControl.tsx   floating time-lapse play/pause + frame time + loading spinner (single active layer)
 src/components/search/{SearchBox,SearchPanel}.tsx   per-slot search + "+" add-comparison
 src/components/panels/LocationCard.tsx              current + daily forecast card
 src/components/compare/ComparisonPanel.tsx          1 or 2 cards, fade in/out
@@ -165,7 +184,7 @@ rather than adding their own spec.) Run `openspec list --specs` for the live cou
 `meteo-ui-mvp` → `add-comparison-search` → `add-layer-legends` → `vector-basemap`
 → `add-place-label-selection` → `dev-api-proxy` → `auto-refresh-overlays` → `add-deployment`
 → `add-rgb-color-keys` → `add-hourly-view` → `mobile-ui` → `add-default-location`
-→ `add-info-page` (all under `openspec/changes/archive/`).
+→ `add-info-page` → `add-layer-animation` (all under `openspec/changes/archive/`).
 
 > Two small follow-ups to `add-info-page` (copy tightening, and worked examples in the
 > aggregation section) shipped as direct commits on `main`, not separate changes — they refine
@@ -178,6 +197,9 @@ rather than adding their own spec.) Run `openspec list --specs` for the live cou
 - **Hover affordance** on place labels (cursor/highlight) to hint they're clickable.
 - **Derive info-page layer list from `/imagery`** so it can't drift from the backend catalog
   (today `aboutContent.ts` mirrors it by hand).
+- **Time-align mixed-cadence animation** — frames currently step by index, so animating layers of
+  different cadence together isn't time-synced; the control sidesteps this by allowing only one
+  layer at a time. Could snap each layer to the nearest frame for a shared target time.
 - **"Use my location" control** — the startup geolocation is silent-fallback only; a manual
   retry button was intentionally left out.
 
