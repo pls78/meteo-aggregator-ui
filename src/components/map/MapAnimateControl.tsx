@@ -8,6 +8,25 @@
 import { useImagery } from '../../hooks/queries'
 import { useAppStore } from '../../store/appStore'
 
+// Filled play/pause glyphs as inline SVG so they render identically everywhere
+// and sit optically centred (the play triangle is nudged right a hair).
+function PlayIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden className="h-4 w-4 translate-x-px">
+      <path d="M8 5.2v13.6a1 1 0 0 0 1.52.86l11.02-6.8a1 1 0 0 0 0-1.72L9.52 4.34A1 1 0 0 0 8 5.2Z" />
+    </svg>
+  )
+}
+
+function PauseIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden className="h-4 w-4">
+      <rect x="6.5" y="5" width="4" height="14" rx="1.3" />
+      <rect x="13.5" y="5" width="4" height="14" rx="1.3" />
+    </svg>
+  )
+}
+
 export function MapAnimateControl() {
   const { data: imagery } = useImagery()
   const { activeLayers, animatingLayer, frameIndex, toggleLayerAnimation } = useAppStore()
@@ -29,27 +48,27 @@ export function MapAnimateControl() {
   const text = single ? target!.title : 'Select one layer to animate'
 
   return (
-    <div className="pointer-events-auto flex items-center gap-2 rounded-full bg-white/95 py-1.5 pl-1.5 pr-3 shadow-xl ring-1 ring-black/5">
+    <div className="pointer-events-auto flex items-center gap-2.5 rounded-full bg-white/95 py-1.5 pl-1.5 pr-4 shadow-xl ring-1 ring-black/5 backdrop-blur">
       <button
         type="button"
         onClick={() => target && toggleLayerAnimation(target.layer)}
         disabled={!single}
         aria-pressed={isThis}
         aria-label={isThis ? 'Pause animation' : 'Animate layer'}
-        className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-slate-900 text-white transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
+        className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-blue-600 text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none"
       >
-        <span aria-hidden className="text-xs leading-none">
-          {isThis ? '⏸' : '▶'}
-        </span>
+        {isThis ? <PauseIcon /> : <PlayIcon />}
       </button>
-      <span
-        className={`max-w-[11rem] truncate text-xs font-medium ${single ? 'text-slate-700' : 'text-slate-400'}`}
-      >
-        {text}
-      </span>
-      {isThis && label && (
-        <span className="font-mono text-xs tabular-nums text-slate-500">{label}</span>
-      )}
+      <div className="flex min-w-0 max-w-[13rem] flex-col leading-tight">
+        <span
+          className={`truncate text-sm font-semibold ${single ? 'text-slate-800' : 'text-slate-400'}`}
+        >
+          {text}
+        </span>
+        {isThis && label && (
+          <span className="font-mono text-xs tabular-nums text-slate-500">{label}</span>
+        )}
+      </div>
     </div>
   )
 }
