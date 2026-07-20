@@ -27,6 +27,16 @@ function PauseIcon() {
   )
 }
 
+// Compact display name: drop any parenthetical "(…)" groups and everything from
+// the first dash-delimited clause on, e.g. "Geo Colour RGB (day + night) – MTG"
+// → "Geo Colour RGB", "IR 10.5 µm – MTG (cloud imagery)" → "IR 10.5 µm".
+function shortTitle(title: string): string {
+  return title
+    .replace(/\s*\([^)]*\)/g, '')
+    .split(/\s+[–—-]\s+/)[0]
+    .trim()
+}
+
 export function MapAnimateControl() {
   const { data: imagery } = useImagery()
   const { activeLayers, animatingLayer, frameIndex, toggleLayerAnimation } = useAppStore()
@@ -45,7 +55,7 @@ export function MapAnimateControl() {
   const t = isThis && frames.length ? frames[Math.min(frameIndex, frames.length - 1)] : null
   const label = t ? new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : null
 
-  const text = single ? target!.title : 'Select one layer to animate'
+  const text = single ? shortTitle(target!.title) : 'Select one layer to animate'
 
   return (
     <div className="pointer-events-auto flex items-center gap-2.5 rounded-full bg-white/95 py-1.5 pl-1.5 pr-4 shadow-xl ring-1 ring-black/5 backdrop-blur">
@@ -61,6 +71,7 @@ export function MapAnimateControl() {
       </button>
       <div className="flex min-w-0 max-w-[13rem] flex-col leading-tight">
         <span
+          title={single ? target!.title : undefined}
           className={`truncate text-sm font-semibold ${single ? 'text-slate-800' : 'text-slate-400'}`}
         >
           {text}
