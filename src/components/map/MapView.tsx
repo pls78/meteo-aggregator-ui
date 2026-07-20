@@ -30,6 +30,14 @@ function wmsTileUrl(params: WmsLayerParams, time: string | null): string {
   return time ? `${base}&time=${encodeURIComponent(time)}` : base
 }
 
+// True when the given frame source exists but hasn't finished loading its
+// viewport tiles. Guards against a source removed mid-teardown (isSourceLoaded
+// throws for an unknown id).
+function frameStillLoading(map: maplibregl.Map, id: string | null): boolean {
+  if (!id || !map.getSource(id)) return false
+  return !map.isSourceLoaded(id)
+}
+
 // If the click landed on a basemap place label, return that named place (using
 // the label's own coordinates); otherwise null. A small pixel box makes labels
 // easy to hit, and filtering by source-layer avoids depending on style layer ids.
@@ -79,13 +87,16 @@ export function MapView() {
   // layer's snapped frame time actually advances — not on every opacity change.
   const layerUrls = useRef<Record<string, string>>({})
 
-  const { primary, comparison, focus, activeLayers, opacity, selectLocation, activeSlot, animatingLayer, frameIndex, setFrameIndex } =
+  const { primary, comparison, focus, activeLayers, opacity, selectLocation, activeSlot, animatingLayer, frameIndex, setFrameIndex, setFrameLoading } =
     useAppStore()
   const { data: imagery } = useImagery()
 
   // Latest frame index for the animation clock, read without re-arming the interval.
   const frameIndexRef = useRef(frameIndex)
   frameIndexRef.current = frameIndex
+  // The current frame's raster source id, so the tile-load watcher can report
+  // whether the frame on screen is still fetching.
+  const currentFrameSourceRef = useRef<string | null>(null)
 
   // The click handler is attached once; read the latest values via refs.
   const selectRef = useRef(selectLocation)
@@ -205,6 +216,7 @@ export function MapView() {
       }
     }
 
+    let currentFrameId: string | null = null
     for (const params of imagery?.layers ?? []) {
       const baseId = `wms-${params.layer}`
       const active = activeLayers.includes(params.layer)
@@ -229,11 +241,31 @@ export function MapView() {
         }
         // A layer near its archive may have fewer frames than requested.
         for (let f = frames.length; f < IMAGERY_FRAMES; f++) remove(`${baseId}-f${f}`)
+        currentFrameId = `${baseId}-f${idx}`
         // Keep the current frame on top so it covers the fading outgoing one.
-        map.moveLayer(`${baseId}-f${idx}`)
+        map.moveLayer(currentFrameId)
       }
     }
-  }, [loaded, activeLayers, opacity, imagery, animatingLayer, frameIndex])
+
+    // Report whether the frame now on screen still needs tiles (so the control
+    // can show a spinner). isSourceLoaded is false until its viewport tiles land.
+    currentFrameSourceRef.current = currentFrameId
+    setFrameLoading(frameStillLoading(map, currentFrameId))
+  }, [loaded, activeLayers, opacity, imagery, animatingLayer, frameIndex, setFrameLoading])
+
+  // Keep the loading flag fresh as tiles arrive between clock ticks: re-check the
+  // current frame's source whenever the map reports tile data or goes idle.
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || !loaded) return
+    const refresh = () => setFrameLoading(frameStillLoading(map, currentFrameSourceRef.current))
+    map.on('sourcedata', refresh)
+    map.on('idle', refresh)
+    return () => {
+      map.off('sourcedata', refresh)
+      map.off('idle', refresh)
+    }
+  }, [loaded, setFrameLoading])
 
   // Animation clock: while a layer is playing, step the frame oldest→newest and
   // loop. The interval is re-armed only when the animating layer changes; the

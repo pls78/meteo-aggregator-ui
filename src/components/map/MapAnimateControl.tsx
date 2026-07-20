@@ -37,9 +37,19 @@ function shortTitle(title: string): string {
     .trim()
 }
 
+// Small spinner shown beside the frame time while its tiles are still fetching.
+function Spinner() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden className="h-3.5 w-3.5 animate-spin text-slate-400">
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5" opacity="0.25" />
+      <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 export function MapAnimateControl() {
   const { data: imagery } = useImagery()
-  const { activeLayers, animatingLayer, frameIndex, toggleLayerAnimation } = useAppStore()
+  const { activeLayers, animatingLayer, frameIndex, frameLoading, toggleLayerAnimation } = useAppStore()
 
   const layers = imagery?.layers ?? []
   const active = layers.filter((l) => activeLayers.includes(l.layer))
@@ -77,7 +87,10 @@ export function MapAnimateControl() {
           {text}
         </span>
         {isThis && label && (
-          <span className="font-mono text-xs tabular-nums text-slate-500">{label}</span>
+          <span className="flex items-center gap-1.5 font-mono text-xs tabular-nums text-slate-500">
+            {label}
+            {frameLoading && <Spinner />}
+          </span>
         )}
       </div>
     </div>

@@ -34,6 +34,7 @@ interface AppState {
   aboutOpen: boolean // whether the info / "how it works" dialog is open (shared by both layouts)
   animatingLayer: string | null // the layer id currently playing a time-lapse, if any
   frameIndex: number // current animation frame; 0 = newest, higher = older
+  frameLoading: boolean // whether the current animation frame's tiles are still loading
 
   /** Plain click selects primary; Shift+click selects comparison. */
   selectLocation: (loc: SelectedLocation, slot: Slot) => void
@@ -44,6 +45,8 @@ interface AppState {
   toggleLayerAnimation: (layer: string) => void
   /** Set the current animation frame (driven by the map's animation clock). */
   setFrameIndex: (index: number) => void
+  /** Report whether the current frame's tiles are still loading (driven by the map). */
+  setFrameLoading: (loading: boolean) => void
   /** Request the map to recenter on a coordinate. */
   focusOn: (loc: LatLng) => void
   /** Open the hourly view for a day; selecting the already-open day closes it. */
@@ -68,6 +71,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
   const [aboutOpen, setAboutOpen] = useState(false)
   const [animatingLayer, setAnimatingLayer] = useState<string | null>(null)
   const [frameIndex, setFrameIndex] = useState(0)
+  const [frameLoading, setFrameLoading] = useState(false)
 
   // New object identity each call so the map recenters even on the same coords.
   const focusOn = useCallback((loc: LatLng) => setFocus({ lat: loc.lat, lng: loc.lng }), [])
@@ -129,19 +133,21 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       aboutOpen,
       animatingLayer,
       frameIndex,
+      frameLoading,
       selectLocation,
       clearLocation,
       toggleLayer,
       setOpacity,
       toggleLayerAnimation,
       setFrameIndex,
+      setFrameLoading,
       focusOn,
       selectDay,
       clearDay,
       setActiveSlot,
       setAboutOpen,
     }),
-    [primary, comparison, activeLayers, opacity, focus, selectedDay, activeSlot, aboutOpen, animatingLayer, frameIndex, selectLocation, clearLocation, toggleLayer, toggleLayerAnimation, focusOn, selectDay, clearDay],
+    [primary, comparison, activeLayers, opacity, focus, selectedDay, activeSlot, aboutOpen, animatingLayer, frameIndex, frameLoading, selectLocation, clearLocation, toggleLayer, toggleLayerAnimation, focusOn, selectDay, clearDay],
   )
 
   return <AppStoreContext.Provider value={value}>{children}</AppStoreContext.Provider>
