@@ -10,6 +10,7 @@ import type { SelectedLocation, Slot } from '../../store/appStore'
 import type { AggregatedHourlyForecast, DailyValue } from '../../api/types'
 import { weatherInfo } from '../../lib/weatherCode'
 import { HourlyChart, type ChartSeries } from '../hourly/HourlyChart'
+import { ConfidenceDetail } from '../confidence/ConfidenceDetail'
 
 const PRIMARY = '#2563eb'
 const COMPARISON = '#f59e0b'
@@ -67,7 +68,8 @@ function CurrentBlock({
 }
 
 export function WeatherSheet() {
-  const { primary, comparison, selectedDay, selectDay } = useAppStore()
+  const { primary, comparison, selectedDay, selectedDayView, selectDay, showDayConfidence } = useAppStore()
+  const showConfidence = selectedDayView === 'confidence'
   const [tab, setTab] = useState<Slot>('primary')
   const [snap, setSnap] = useState<Snap>('half')
   const [dragH, setDragH] = useState<number | null>(null)
@@ -84,9 +86,12 @@ export function WeatherSheet() {
   const pHourly = useHourly(primary)
   const cHourly = useHourly(comparison)
 
-  const dayOpen = selectedDay !== null
+  // The hourly week is only needed for the hourly view; the confidence detail
+  // reuses the daily `forecast` already loaded above.
+  const dayOpen = selectedDay !== null && !showConfidence
   const pWeek = useHourlyRange(primary, { enabled: dayOpen })
   const cWeek = useHourlyRange(comparison, { enabled: dayOpen })
+  const shownDay = forecast.data?.days.find((d) => d.date === selectedDay)
 
   if (!primary && !comparison) return null
 
@@ -178,37 +183,65 @@ export function WeatherSheet() {
               const active = day.date === selectedDay
               return (
                 <li key={day.date}>
-                  <button
-                    type="button"
-                    onClick={() => selectDay(day.date)}
-                    aria-pressed={active}
-                    className={`grid w-full grid-cols-[2.5rem_1.5rem_1fr_auto] items-center gap-2 rounded px-1 py-1.5 text-left text-sm ${
+                  {/* Day area opens hourly; the confidence label opens the
+                      confidence detail (separate targets — a nested button is
+                      invalid HTML). */}
+                  <div
+                    className={`flex items-center gap-2 rounded pr-1 text-sm ${
                       active ? 'bg-slate-100 ring-1 ring-slate-300' : ''
                     }`}
                   >
-                    <span className="text-slate-500">{WEEKDAY(day.date)}</span>
-                    <span>{weatherInfo(day.values.weather_code).icon}</span>
-                    <span className="text-slate-800">
-                      <span className="font-medium tabular-nums">{num(day.values.temperature_2m_max)}°</span>
-                      <span className="tabular-nums text-slate-400"> / {num(day.values.temperature_2m_min)}°</span>
-                      {typeof day.values.precipitation_sum === 'number' && day.values.precipitation_sum > 0 && (
-                        <span className="ml-1 text-blue-500">{num(day.values.precipitation_sum, 1)}mm</span>
-                      )}
-                    </span>
-                    <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${CONF[day.confidence.level] ?? ''}`}>
+                    <button
+                      type="button"
+                      onClick={() => selectDay(day.date)}
+                      aria-pressed={active && selectedDayView === 'hourly'}
+                      className="grid flex-1 grid-cols-[2.5rem_1.5rem_1fr] items-center gap-2 rounded px-1 py-1.5 text-left"
+                    >
+                      <span className="text-slate-500">{WEEKDAY(day.date)}</span>
+                      <span>{weatherInfo(day.values.weather_code).icon}</span>
+                      <span className="text-slate-800">
+                        <span className="font-medium tabular-nums">{num(day.values.temperature_2m_max)}°</span>
+                        <span className="tabular-nums text-slate-400"> / {num(day.values.temperature_2m_min)}°</span>
+                        {typeof day.values.precipitation_sum === 'number' && day.values.precipitation_sum > 0 && (
+                          <span className="ml-1 text-blue-500">{num(day.values.precipitation_sum, 1)}mm</span>
+                        )}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => showDayConfidence(day.date)}
+                      aria-pressed={active && selectedDayView === 'confidence'}
+                      aria-label={`Why ${day.confidence.level} confidence?`}
+                      className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${CONF[day.confidence.level] ?? ''}`}
+                    >
                       {day.confidence.level}
-                    </span>
-                  </button>
+                    </button>
+                  </div>
                 </li>
               )
             })}
           </ul>
         )}
 
-        {/* Hourly for the tapped day (overlays both locations) */}
+        {/* Detail for the tapped day: hourly chart, or confidence detail when the
+            confidence label was tapped. */}
         <div className="mt-4 border-t border-slate-200 pt-3">
           {!selectedDay ? (
             <p className="text-center text-xs text-slate-400">Tap a day for its hour-by-hour forecast</p>
+          ) : showConfidence ? (
+            <>
+              <div className="mb-2 flex items-baseline gap-2">
+                <h3 className="text-sm font-semibold text-slate-900">{prettyDay(selectedDay)}</h3>
+                <span className="text-xs text-slate-400">confidence</span>
+              </div>
+              {forecast.isError ? (
+                <p className="py-3 text-center text-sm text-rose-600">Couldn’t load forecast.</p>
+              ) : shownDay ? (
+                <ConfidenceDetail day={shownDay} />
+              ) : (
+                <p className="py-3 text-center text-sm text-slate-500">Loading…</p>
+              )}
+            </>
           ) : (
             <>
               <div className="mb-1 flex items-center justify-between">

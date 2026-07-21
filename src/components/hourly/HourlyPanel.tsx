@@ -6,11 +6,12 @@
 // timezone so `date.slice(0,10)` groups hours under the tapped day.
 
 import { useEffect, useState } from 'react'
-import { useHourlyRange } from '../../hooks/queries'
+import { useForecast, useHourlyRange } from '../../hooks/queries'
 import { useAppStore } from '../../store/appStore'
 import type { SelectedLocation } from '../../store/appStore'
-import type { AggregatedHourlyForecast } from '../../api/types'
+import type { AggregatedHourlyForecast, DayConsensus } from '../../api/types'
 import { HourlyChart, type ChartSeries } from './HourlyChart'
+import { ConfidenceDetail } from '../confidence/ConfidenceDetail'
 
 const PRIMARY_ACCENT = '#2563eb'
 const COMPARISON_ACCENT = '#f59e0b'
@@ -27,8 +28,11 @@ const prettyDay = (iso: string) =>
   })
 
 export function HourlyPanel() {
-  const { selectedDay, primary, comparison, clearDay } = useAppStore()
-  const enabled = selectedDay !== null
+  const { selectedDay, selectedDayView, primary, comparison, clearDay } = useAppStore()
+  const showConfidence = selectedDayView === 'confidence'
+  // Only fetch the hourly week for the hourly view; confidence reuses the cached
+  // daily forecast the location cards already loaded.
+  const enabled = selectedDay !== null && !showConfidence
 
   // Enter/exit animation: `rendered` lags `selectedDay` so the sheet can fade out.
   const [rendered, setRendered] = useState<string | null>(selectedDay)
@@ -36,6 +40,8 @@ export function HourlyPanel() {
 
   const pWeek = useHourlyRange(primary, { enabled })
   const cWeek = useHourlyRange(comparison, { enabled })
+  const pForecast = useForecast(primary)
+  const cForecast = useForecast(comparison)
 
   useEffect(() => {
     if (selectedDay) {
@@ -63,6 +69,12 @@ export function HourlyPanel() {
   const isError = present.some((q) => q.isError)
   const hasHours = series.some((s) => s.hours.length > 0)
 
+  // Confidence detail is per-location (unlike the shared-day hourly chart), so
+  // show one panel per present location, side by side when comparing.
+  const confidencePanels: ConfidencePanel[] = []
+  if (primary) confidencePanels.push({ name: labelOf(primary), accent: PRIMARY_ACCENT, q: pForecast })
+  if (comparison) confidencePanels.push({ name: labelOf(comparison), accent: COMPARISON_ACCENT, q: cForecast })
+
   return (
     <div
       className={`mx-auto max-w-5xl transition-[opacity,transform] duration-300 ease-out ${
@@ -73,12 +85,12 @@ export function HourlyPanel() {
         <header className="mb-2 flex items-center justify-between gap-3">
           <div className="flex items-baseline gap-2">
             <h2 className="text-sm font-semibold text-slate-900">{prettyDay(day)}</h2>
-            <span className="text-xs text-slate-400">hourly</span>
+            <span className="text-xs text-slate-400">{showConfidence ? 'confidence' : 'hourly'}</span>
           </div>
 
           <div className="flex items-center gap-4">
             {/* Legend — required for two series; carries identity beside the colored marks. */}
-            {series.length > 1 && (
+            {!showConfidence && series.length > 1 && (
               <ul className="flex items-center gap-3">
                 {series.map((s) => (
                   <li key={s.name} className="flex items-center gap-1.5 text-xs text-slate-600">
@@ -99,7 +111,9 @@ export function HourlyPanel() {
           </div>
         </header>
 
-        {isError ? (
+        {showConfidence ? (
+          <ConfidenceView day={day} panels={confidencePanels} />
+        ) : isError ? (
           <p className="py-6 text-center text-sm text-rose-600">
             Couldn’t load hourly data. Is the backend running?
           </p>
@@ -113,6 +127,41 @@ export function HourlyPanel() {
           </div>
         )}
       </section>
+    </div>
+  )
+}
+
+interface ConfidencePanel {
+  name: string
+  accent: string
+  q: ReturnType<typeof useForecast>
+}
+
+// The confidence body: one column per location, each showing that location's
+// per-model temps + explanation for the selected day.
+function ConfidenceView({ day, panels }: { day: string; panels: ConfidencePanel[] }) {
+  return (
+    <div className={`grid gap-6 ${panels.length > 1 ? 'sm:grid-cols-2' : ''}`}>
+      {panels.map(({ name, accent, q }) => {
+        const dayData: DayConsensus | undefined = q.data?.days.find((d) => d.date === day)
+        return (
+          <div key={name}>
+            {panels.length > 1 && (
+              <div className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-slate-600">
+                <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: accent }} />
+                <span className="max-w-[10rem] truncate">{name}</span>
+              </div>
+            )}
+            {q.isError ? (
+              <p className="py-4 text-sm text-rose-600">Couldn’t load forecast.</p>
+            ) : dayData ? (
+              <ConfidenceDetail day={dayData} />
+            ) : (
+              <p className="py-4 text-sm text-slate-500">Loading…</p>
+            )}
+          </div>
+        )
+      })}
     </div>
   )
 }

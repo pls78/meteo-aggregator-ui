@@ -28,7 +28,7 @@ interface Props {
 }
 
 export function LocationCard({ location, slot, accent }: Props) {
-  const { clearLocation, selectedDay, selectDay } = useAppStore()
+  const { clearLocation, selectedDay, selectedDayView, selectDay, showDayConfidence } = useAppStore()
   const forecast = useForecast(location)
   const hourly = useHourly(location)
 
@@ -82,35 +82,47 @@ export function LocationCard({ location, slot, accent }: Props) {
             const active = day.date === selectedDay
             return (
               <li key={day.date}>
-                <button
-                  type="button"
-                  onClick={() => selectDay(day.date)}
-                  aria-pressed={active}
-                  title="Show hourly forecast for this day"
-                  className={`grid w-full cursor-pointer grid-cols-[2.5rem_1.5rem_1fr_auto] items-center gap-2 rounded px-1 py-0.5 text-left text-sm hover:bg-slate-100 ${
+                {/* Two targets per row: the day area opens hourly, the confidence
+                    label opens the confidence detail. (A nested button is invalid
+                    HTML, so this is a grid container rather than one button.) */}
+                <div
+                  className={`flex items-center gap-2 rounded pr-1 text-sm ${
                     active ? 'bg-slate-100 ring-1 ring-slate-300' : ''
                   }`}
                 >
-                  <span className="text-slate-500">{WEEKDAY(day.date)}</span>
-                  <span>{weatherInfo(day.values.weather_code).icon}</span>
-                  <span className="text-slate-800">
-                    <span className="font-medium">{num(day.values.temperature_2m_max)}°</span>
-                    <span className="text-slate-400"> / {num(day.values.temperature_2m_min)}°</span>
-                    {typeof day.values.precipitation_sum === 'number' &&
-                      day.values.precipitation_sum > 0 && (
-                        <span className="ml-1 text-blue-500">
-                          {num(day.values.precipitation_sum, 1)}mm
-                        </span>
-                      )}
-                  </span>
-                  <span
-                    className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${
+                  <button
+                    type="button"
+                    onClick={() => selectDay(day.date)}
+                    aria-pressed={active && selectedDayView === 'hourly'}
+                    title="Show hourly forecast for this day"
+                    className="grid flex-1 cursor-pointer grid-cols-[2.5rem_1.5rem_1fr] items-center gap-2 rounded px-1 py-0.5 text-left hover:bg-slate-100"
+                  >
+                    <span className="text-slate-500">{WEEKDAY(day.date)}</span>
+                    <span>{weatherInfo(day.values.weather_code).icon}</span>
+                    <span className="text-slate-800">
+                      <span className="font-medium">{num(day.values.temperature_2m_max)}°</span>
+                      <span className="text-slate-400"> / {num(day.values.temperature_2m_min)}°</span>
+                      {typeof day.values.precipitation_sum === 'number' &&
+                        day.values.precipitation_sum > 0 && (
+                          <span className="ml-1 text-blue-500">
+                            {num(day.values.precipitation_sum, 1)}mm
+                          </span>
+                        )}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => showDayConfidence(day.date)}
+                    aria-pressed={active && selectedDayView === 'confidence'}
+                    aria-label={`Why ${day.confidence.level} confidence?`}
+                    title="Why this confidence?"
+                    className={`cursor-pointer rounded px-1.5 py-0.5 text-[10px] font-medium hover:ring-1 hover:ring-slate-300 ${
                       CONFIDENCE_STYLE[day.confidence.level] ?? ''
                     }`}
                   >
                     {day.confidence.level}
-                  </span>
-                </button>
+                  </button>
+                </div>
               </li>
             )
           })}
