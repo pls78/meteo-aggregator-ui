@@ -11,6 +11,7 @@ import type { AggregatedHourlyForecast, DailyValue } from '../../api/types'
 import { weatherInfo } from '../../lib/weatherCode'
 import { HourlyChart, type ChartSeries } from '../hourly/HourlyChart'
 import { ConfidenceDetail } from '../confidence/ConfidenceDetail'
+import { ConfidenceTag } from '../confidence/ConfidenceTag'
 
 const PRIMARY = '#2563eb'
 const COMPARISON = '#f59e0b'
@@ -22,12 +23,6 @@ const label = (l: SelectedLocation) => l.name ?? `${l.lat.toFixed(3)}, ${l.lng.t
 const WEEKDAY = (iso: string) => new Date(iso).toLocaleDateString(undefined, { weekday: 'short' })
 const prettyDay = (iso: string) =>
   new Date(`${iso}T00:00`).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'short' })
-
-const CONF: Record<string, string> = {
-  high: 'bg-emerald-100 text-emerald-700',
-  medium: 'bg-amber-100 text-amber-700',
-  low: 'bg-rose-100 text-rose-700',
-}
 
 function snapPx(s: Snap) {
   const h = window.innerHeight
@@ -181,21 +176,21 @@ export function WeatherSheet() {
           <ul className="space-y-0.5">
             {forecast.data?.days.map((day) => {
               const active = day.date === selectedDay
+              const hourlyActive = active && selectedDayView === 'hourly'
+              const confActive = active && selectedDayView === 'confidence'
               return (
                 <li key={day.date}>
-                  {/* Day area opens hourly; the confidence label opens the
-                      confidence detail (separate targets — a nested button is
-                      invalid HTML). */}
-                  <div
-                    className={`flex items-center gap-2 rounded pr-1 text-sm ${
-                      active ? 'bg-slate-100 ring-1 ring-slate-300' : ''
-                    }`}
-                  >
+                  {/* Day area opens hourly; the confidence tag opens the confidence
+                      detail. Each highlights only when it's the open view.
+                      (Separate targets — a nested button is invalid HTML.) */}
+                  <div className="flex items-center gap-2 text-sm">
                     <button
                       type="button"
                       onClick={() => selectDay(day.date)}
-                      aria-pressed={active && selectedDayView === 'hourly'}
-                      className="grid flex-1 grid-cols-[2.5rem_1.5rem_1fr] items-center gap-2 rounded px-1 py-1.5 text-left"
+                      aria-pressed={hourlyActive}
+                      className={`grid flex-1 grid-cols-[2.5rem_1.5rem_1fr] items-center gap-2 rounded px-1 py-1.5 text-left ${
+                        hourlyActive ? 'bg-slate-100 ring-1 ring-slate-300' : ''
+                      }`}
                     >
                       <span className="text-slate-500">{WEEKDAY(day.date)}</span>
                       <span>{weatherInfo(day.values.weather_code).icon}</span>
@@ -207,15 +202,11 @@ export function WeatherSheet() {
                         )}
                       </span>
                     </button>
-                    <button
-                      type="button"
+                    <ConfidenceTag
+                      level={day.confidence.level}
+                      active={confActive}
                       onClick={() => showDayConfidence(day.date)}
-                      aria-pressed={active && selectedDayView === 'confidence'}
-                      aria-label={`Why ${day.confidence.level} confidence?`}
-                      className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${CONF[day.confidence.level] ?? ''}`}
-                    >
-                      {day.confidence.level}
-                    </button>
+                    />
                   </div>
                 </li>
               )
