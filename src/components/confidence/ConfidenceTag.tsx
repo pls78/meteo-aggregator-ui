@@ -9,6 +9,9 @@ const STYLE: Record<string, string> = {
   low: 'bg-rose-100 text-rose-700',
 }
 
+// Short display label so the tag (with its info cue) doesn't wrap the row.
+const SHORT: Record<string, string> = { high: 'high', medium: 'med', low: 'low' }
+
 function InfoIcon() {
   return (
     <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="h-3 w-3 opacity-70">
@@ -37,12 +40,12 @@ export function ConfidenceTag({
       aria-pressed={active}
       aria-label={`Why ${level} confidence?`}
       title="Why this confidence?"
-      className={`flex cursor-pointer items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] font-medium hover:ring-1 hover:ring-slate-300 ${
+      className={`flex shrink-0 cursor-pointer items-center gap-0.5 whitespace-nowrap rounded px-1.5 py-0.5 text-[10px] font-medium hover:ring-1 hover:ring-slate-300 ${
         STYLE[level] ?? ''
       } ${active ? 'ring-2 ring-slate-400' : ''}`}
     >
       <InfoIcon />
-      {level}
+      {SHORT[level] ?? level}
     </button>
   )
 }
