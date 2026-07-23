@@ -8,6 +8,15 @@ body,
   margin: 0;
 }
 
+/* Full-screen app: the page itself must never scroll. #root clips its overlays,
+   but also clip at html/body so no absolutely-positioned descendant that escapes
+   #root's containing block can paint page scrollbars (Firefox does this where
+   Chrome does not). */
+html,
+body {
+  overflow: hidden;
+}
+
 #root {
   /* The map is the full-screen surface; overlays are absolutely positioned above it. */
   position: relative;
