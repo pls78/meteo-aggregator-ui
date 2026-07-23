@@ -127,9 +127,11 @@ function Chart({
     return picked
   }
 
-  // Axis/icon ticks: every 3 h, but at least as sparse as the point stride.
-  const tickStep = Math.max(3, stride)
-  const axisHours = allHours.filter((h) => (h - hMin) % tickStep === 0)
+  // Weather icons stay at >= 3 h so they never crowd; hour labels sit under every
+  // plotted temperature point (same hours the line samples).
+  const iconStep = Math.max(3, stride)
+  const pointHours = allHours.filter((h) => (h - hMin) % stride === 0)
+  if (pointHours.length && pointHours[pointHours.length - 1] !== hMax) pointHours.push(hMax)
 
   return (
     <svg
@@ -213,17 +215,17 @@ function Chart({
         )
       })}
 
-      {/* Weather icons (primary series) on the axis ticks */}
+      {/* Weather icons (primary series) */}
       {clean[0]?.hours
-        .filter((h) => (hourOf(h) - hMin) % tickStep === 0)
+        .filter((h) => (hourOf(h) - hMin) % iconStep === 0)
         .map((h) => (
           <text key={`ic${hourOf(h)}`} x={x(hourOf(h))} y={ICON_H - 6} textAnchor="middle" fontSize={13}>
             {weatherInfo(h.values.weather_code).icon}
           </text>
         ))}
 
-      {/* Hour axis */}
-      {axisHours.map((h) => (
+      {/* Hour axis — one label under each plotted point */}
+      {pointHours.map((h) => (
         <text key={`ax${h}`} x={x(h)} y={height - 6} textAnchor="middle" fontSize={10} fill={AXIS_INK}>
           {pad2(h)}
         </text>
