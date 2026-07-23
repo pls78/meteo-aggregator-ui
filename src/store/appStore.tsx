@@ -132,17 +132,15 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     [selectedDay, selectedDayView],
   )
 
-  const clearDay = useCallback(() => {
-    setSelectedDay(null)
-    setSelectedDayView('hourly')
-  }, [])
+  // Only clear the open day — keep the view as-is so the panel's close animation
+  // fades out the same content it was showing (flipping it to 'hourly' here makes
+  // the hourly chart flash during the fade-out). The next open sets the view.
+  const clearDay = useCallback(() => setSelectedDay(null), [])
 
   // The expansion has nothing to show once no location is selected; close it.
+  // (Leave the view untouched — see clearDay — so it doesn't flip during fade-out.)
   useEffect(() => {
-    if (!primary && !comparison) {
-      setSelectedDay(null)
-      setSelectedDayView('hourly')
-    }
+    if (!primary && !comparison) setSelectedDay(null)
   }, [primary, comparison])
 
   // If the animating layer is turned off, stop and reset to the newest frame.
