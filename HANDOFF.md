@@ -18,6 +18,14 @@ TypeScript + Tailwind v4 + MapLibre GL) talking directly to the Python/FastAPI
 - App is feature-complete for the MVP plus thirteen follow-ups (through the hourly-by-day view,
   the mobile layout, deployment, default-location seeding on load, the in-app info page, and the
   satellite-layer time-lapse animation); `npm run build` and `npm run lint` pass.
+- **Shipped since, as direct commits on `main` (no OpenSpec change here — see note below):**
+  a **confidence detail** view (tap a day's confidence tag → per-model temperatures, each
+  model's blend weight, and how the level was computed, in place of the hourly chart); an
+  **interactive hourly chart** (fills its width, adapts point density 3 h→2 h→1 h to the space,
+  labels each point with its hour, and shows a crosshair + value on hover/tap); and **slightly
+  transparent** map overlays (`bg-white/70` + `backdrop-blur`). The confidence detail's OpenSpec
+  change (`day-confidence-detail`) was authored in the **backend** repo
+  (`../meteo-aggregator/openspec/specs/confidence-detail/`), not here — the rest has no spec yet.
 - Both dev servers were running during development: UI on `:5173`, backend on `:8000`.
 - **Deployed and live:** UI on Cloudflare Pages (<https://meteo-aggregator.pages.dev>),
   API on Google Cloud Run. See "Deployment" below and `CLAUDE.md`.
@@ -125,11 +133,13 @@ Used for: map markers, weather-card bullets, and search-bar dots.
   `useImagery` re-polls every ~60 s so overlays stay current (see gotcha #3).
 - **Client UI state** → `src/store/appStore.tsx` (Context): `primary`, `comparison`
   (`SelectedLocation | null`), `activeLayers`, `opacity`, `focus`, `selectedDay` (the day open
-  in the hourly view), `activeSlot` (mobile A/B tap target), `aboutOpen` (info dialog), and the
+  in the bottom expansion) and `selectedDayView` (`'hourly'` | `'confidence'` — which view that
+  day shows), `activeSlot` (mobile A/B tap target), `aboutOpen` (info dialog), and the
   animation trio `animatingLayer` (layer id playing, or null), `frameIndex` (0 = newest), and
   `frameLoading`; actions `selectLocation`, `clearLocation`, `toggleLayer`, `setOpacity`,
   `toggleLayerAnimation`, `setFrameIndex`, `setFrameLoading`, `focusOn`, `selectDay`,
-  `setActiveSlot`, `setAboutOpen`. Plain click → primary; Shift → comparison. `frameIndex` and
+  `showDayConfidence`, `setActiveSlot`, `setAboutOpen`. `selectDay`/`showDayConfidence` set the
+  view; `clearDay` leaves it untouched so the panel's close animation doesn't flip content mid-fade. Plain click → primary; Shift → comparison. `frameIndex` and
   `frameLoading` are driven by `MapView` (the animation clock / tile-load watcher); the control
   only reads them.
 - **Startup seeding** → `useInitialLocation()` (called once from `App.tsx`) fills `primary` on
@@ -153,7 +163,8 @@ src/components/search/{SearchBox,SearchPanel}.tsx   per-slot search + "+" add-co
 src/components/panels/LocationCard.tsx              current + daily forecast card
 src/components/compare/ComparisonPanel.tsx          1 or 2 cards, fade in/out
 src/components/layers/LayerControl.tsx              layer toggles, opacity, legends
-src/components/hourly/{HourlyPanel,HourlyChart}.tsx per-day hourly sheet + inline SVG chart
+src/components/hourly/{HourlyPanel,HourlyChart}.tsx per-day hourly sheet + inline SVG chart (adaptive density + hover/tap crosshair)
+src/components/confidence/{ConfidenceDetail,ConfidenceTag}.tsx   per-model temps + blend weights + why the confidence level; the clickable tag (shared w/ mobile)
 src/components/mobile/{MobileShell,MobileTopBar,WeatherSheet,MobileLayers}.tsx   mobile layout
 src/components/about/{AboutDialog,AboutButton,aboutContent}.tsx   info / "how it works" page
 src/App.tsx                       composition: map + (DesktopOverlays | MobileShell) + AboutDialog
@@ -202,8 +213,6 @@ rather than adding their own spec.) Run `openspec list --specs` for the live cou
 - **Time-align mixed-cadence animation** — frames currently step by index, so animating layers of
   different cadence together isn't time-synced; the control sidesteps this by allowing only one
   layer at a time. Could snap each layer to the nearest frame for a shared target time.
-- **"Use my location" control** — the startup geolocation is silent-fallback only; a manual
-  retry button was intentionally left out.
 
 ## Notes
 

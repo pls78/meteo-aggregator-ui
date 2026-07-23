@@ -10,8 +10,8 @@ export interface Feature {
 export const FEATURES: Feature[] = [
   { title: 'Point anywhere', body: 'Click the map or search a town. On first load it starts at your location, or a configured default.' },
   { title: 'Compare two places', body: 'Shift-click (or the A / B target on mobile) to hold a second location side by side.' },
-  { title: 'Hour by hour', body: 'Tap a day to open its hourly breakdown: a temperature line and precipitation bars.' },
-  { title: 'Consensus + confidence', body: 'Each day shows one blended value, how much the models agree, and the full per-model breakdown.' },
+  { title: 'Hour by hour', body: 'Tap a day for its hour-by-hour temperature line and precipitation bars; hover (or tap) a point for its exact value.' },
+  { title: 'Consensus + confidence', body: 'Each day shows one blended value and a confidence tag; tap the tag to see every model’s temperature, its blend weight, and how the confidence was computed.' },
   { title: 'Live satellite layers', body: 'Toggle EUMETSAT imagery onto the map: cloud, dust, lightning, convection. Play a time-lapse of recent frames.' },
   { title: 'Metric & keyless', body: 'Metric units throughout. No account, no API keys; it talks straight to open weather services.' },
 ]

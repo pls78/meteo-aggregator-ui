@@ -5,8 +5,10 @@ A full-screen MapLibre GL map: click (or search, or click a place label) to sele
 a location and see the aggregated multi-model forecast; `Shift`+click adds a second
 location for side-by-side comparison; tap a day in the forecast to open its
 hour-by-hour breakdown in a bottom sheet (temperature, precipitation, weather
-icons), with both locations overlaid on one chart when two are selected; toggleable
-EUMETSAT satellite WMS overlays. On load it starts at your location (browser
+icons — hover/tap a point for its exact value), with both locations overlaid on
+one chart when two are selected; tap a day's confidence tag instead to see the
+per-model temperatures, their blend weights, and how that confidence was
+computed; toggleable EUMETSAT satellite WMS overlays. On load it starts at your location (browser
 geolocation, else a configured default), and an info button opens a "how it works"
 page describing the data sources, the aggregation/weighting algorithm, and the layers.
 

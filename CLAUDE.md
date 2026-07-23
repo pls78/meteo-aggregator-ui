@@ -87,8 +87,9 @@ backend's `ALLOWED_ORIGINS` env var is set to `https://meteo-aggregator.pages.de
   fetches 24 h for current conditions; `useHourlyRange` lazily fetches the full 168 h week,
   enabled only while a day is open in the hourly view.
 - **`src/store/appStore.tsx`** — client UI state only (selected primary/comparison locations,
-  active WMS layers, overlay opacity, map focus, `selectedDay` — the day open in the hourly
-  view — `activeSlot`, which slot a plain map tap fills, `aboutOpen`, the info dialog's
+  active WMS layers, overlay opacity, map focus, `selectedDay` (the day open in the bottom
+  expansion) and `selectedDayView` (`'hourly'` | `'confidence'` — whether that day shows its
+  hourly chart or its confidence detail), `activeSlot`, which slot a plain map tap fills, `aboutOpen`, the info dialog's
   visibility, and the time-lapse trio `animatingLayer`/`frameIndex`/`frameLoading` (the layer
   playing, its current frame, and whether that frame's tiles are still loading — the latter two
   driven by `MapView`). `activeSlot` is the mobile A/B target; it stays `'primary'` on desktop so
@@ -99,11 +100,18 @@ backend's `ALLOWED_ORIGINS` env var is set to `https://meteo-aggregator.pages.de
   `MapView`; when one plays a time-lapse it mounts a preloaded raster layer per frame (see
   HANDOFF gotcha #3). `MapAnimateControl` is the floating play/pause control (single active layer).
 - **`src/components/`** (desktop overlays) — `search/SearchBox` (accepts a `className` for
-  width), `panels/LocationCard` (day rows are buttons that open the hourly view),
+  width), `panels/LocationCard` (each day row has two click targets — the day area opens the
+  hourly view, the confidence tag opens the confidence detail),
   `compare/ComparisonPanel`, `layers/LayerControl` (exports `LayerLegend`/`RgbColorKey` for
-  reuse), and `hourly/` — `HourlyPanel` (full-width bottom sheet) + `HourlyChart`
-  (dependency-free inline SVG; temperature line and precipitation bars in **separate stacked
-  panels** sharing one x-axis — never a dual-axis chart).
+  reuse), `confidence/` (`ConfidenceDetail` — the per-model temperatures, blend weights, and a
+  plain-language explanation of the confidence level, all derived from the `/forecast`
+  `breakdown` + `confidence`; `ConfidenceTag` — the clickable confidence label, shared with the
+  mobile layout), and `hourly/` — `HourlyPanel` (bottom sheet: hourly chart, or the confidence
+  detail in the same slot) + `HourlyChart` (dependency-free inline SVG; temperature line and
+  precipitation bars in **separate stacked panels** sharing one x-axis — never a dual-axis
+  chart; it fills its container's width and adapts point density to it — a point every 3 h when
+  narrow up to every hour when wide — labels each point with its hour, and shows a crosshair +
+  value on hover/tap).
 - **`src/components/mobile/`** — the layout shown below the `md` breakpoint. `MobileShell`
   composes `MobileTopBar` (search + A/B target), `WeatherSheet` (draggable peek/half/full sheet
   with an A/B tab, embedding `HourlyChart`), and `MobileLayers` (Layers FAB + modal sheet).
