@@ -20,7 +20,7 @@ export function MobileLayers() {
         type="button"
         aria-label="Satellite layers"
         onClick={() => setOpen(true)}
-        className="pointer-events-auto absolute right-3 top-24 z-[1000] grid h-12 w-12 place-items-center rounded-2xl bg-white/80 text-slate-700 shadow-xl ring-1 ring-black/5 backdrop-blur"
+        className="pointer-events-auto absolute right-3 top-24 z-[1000] grid h-12 w-12 place-items-center rounded-2xl bg-white/85 text-slate-700 shadow-xl ring-1 ring-black/5 backdrop-blur"
       >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" className="h-6 w-6">
           <path d="M12 3 3 8l9 5 9-5-9-5z" />
@@ -44,7 +44,7 @@ export function MobileLayers() {
       {/* Sheet */}
       <section
         aria-label="Satellite layers"
-        className={`pointer-events-auto absolute inset-x-0 bottom-0 z-[1002] flex max-h-[74%] flex-col rounded-t-2xl bg-white/80 shadow-[0_-8px_30px_-8px_rgba(15,23,42,0.3)] backdrop-blur transition-transform duration-300 ${
+        className={`pointer-events-auto absolute inset-x-0 bottom-0 z-[1002] flex max-h-[74%] flex-col rounded-t-2xl bg-white/85 shadow-[0_-8px_30px_-8px_rgba(15,23,42,0.3)] backdrop-blur transition-transform duration-300 ${
           open ? 'translate-y-0' : 'translate-y-full'
         }`}
       >

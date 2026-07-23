@@ -32,7 +32,7 @@ export function LocationCard({ location, slot, accent }: Props) {
     location.name ?? `${location.lat.toFixed(3)}, ${location.lng.toFixed(3)}`
 
   return (
-    <section className="w-72 rounded-xl bg-white/80 p-4 shadow-xl ring-1 ring-black/5 backdrop-blur">
+    <section className="w-72 rounded-xl bg-white/85 p-4 shadow-xl ring-1 ring-black/5 backdrop-blur">
       <header className="mb-3 flex items-start justify-between gap-2">
         <div className="flex items-center gap-2">
           <span
