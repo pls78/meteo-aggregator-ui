@@ -59,7 +59,7 @@ export function MapAnimateControl() {
   const text = single ? shortTitle(target!.title) : 'Select one layer to animate'
 
   return (
-    <div className="pointer-events-auto flex items-center gap-2.5 rounded-full bg-white/95 py-1.5 pl-1.5 pr-4 shadow-xl ring-1 ring-black/5 backdrop-blur">
+    <div className="pointer-events-auto flex items-center gap-2.5 rounded-full bg-white/80 py-1.5 pl-1.5 pr-4 shadow-xl ring-1 ring-black/5 backdrop-blur">
       <button
         type="button"
         onClick={() => target && toggleLayerAnimation(target.layer)}
