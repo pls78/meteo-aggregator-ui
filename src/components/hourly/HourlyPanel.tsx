@@ -77,9 +77,9 @@ export function HourlyPanel() {
 
   return (
     <div
-      className={`mx-auto max-w-5xl transition-[opacity,transform] duration-300 ease-out ${
+      className={`mx-auto transition-[opacity,transform] duration-300 ease-out ${
         visible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
-      }`}
+      } ${showConfidence ? 'w-fit max-w-full' : 'max-w-5xl'}`}
     >
       <section className="rounded-t-2xl bg-white/97 p-4 shadow-2xl ring-1 ring-black/5 backdrop-blur">
         <header className="mb-2 flex items-center justify-between gap-3">
@@ -141,7 +141,7 @@ interface ConfidencePanel {
 // per-model temps + explanation for the selected day.
 function ConfidenceView({ day, panels }: { day: string; panels: ConfidencePanel[] }) {
   return (
-    <div className={`grid gap-6 ${panels.length > 1 ? 'sm:grid-cols-2' : ''}`}>
+    <div className="flex flex-col gap-6 sm:flex-row">
       {panels.map(({ name, accent, q }) => {
         const dayData: DayConsensus | undefined = q.data?.days.find((d) => d.date === day)
         return (

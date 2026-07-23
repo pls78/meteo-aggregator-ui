@@ -109,7 +109,7 @@ export function ConfidenceDetail({ day }: { day: DayConsensus }) {
               </>
             )}
           </div>
-          <p className="text-[11px] text-slate-400">
+          <p className="max-w-[17rem] text-[11px] text-slate-400">
             Weight is each model’s share of the blended consensus for this day.
           </p>
         </div>
@@ -117,8 +117,9 @@ export function ConfidenceDetail({ day }: { day: DayConsensus }) {
         <p className="text-sm text-slate-500">No per-model temperatures available for this day.</p>
       )}
 
-      {/* Why this level */}
-      <p className="text-xs leading-relaxed text-slate-500">
+      {/* Why this level. Capped so the desktop card can hug the table width
+          instead of stretching to this sentence's length. */}
+      <p className="max-w-[17rem] text-xs leading-relaxed text-slate-500">
         Confidence reflects how much the models disagree on the day’s high (plus the
         ICON ensemble spread, when available)
         {spreadText ? <> — here the spread is <span className="font-medium text-slate-600">{spreadText}</span></> : null}.
