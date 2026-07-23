@@ -18,14 +18,15 @@ TypeScript + Tailwind v4 + MapLibre GL) talking directly to the Python/FastAPI
 - App is feature-complete for the MVP plus thirteen follow-ups (through the hourly-by-day view,
   the mobile layout, deployment, default-location seeding on load, the in-app info page, and the
   satellite-layer time-lapse animation); `npm run build` and `npm run lint` pass.
-- **Shipped since, as direct commits on `main` (no OpenSpec change here — see note below):**
+- **Shipped since (implemented as direct commits, then backfilled as OpenSpec changes):**
   a **confidence detail** view (tap a day's confidence tag → per-model temperatures, each
-  model's blend weight, and how the level was computed, in place of the hourly chart); an
-  **interactive hourly chart** (fills its width, adapts point density 3 h→2 h→1 h to the space,
-  labels each point with its hour, and shows a crosshair + value on hover/tap); and **slightly
-  transparent** map overlays (`bg-white/70` + `backdrop-blur`). The confidence detail's OpenSpec
-  change (`day-confidence-detail`) was authored in the **backend** repo
-  (`../meteo-aggregator/openspec/specs/confidence-detail/`), not here — the rest has no spec yet.
+  model's blend weight, and how the level was computed, in place of the hourly chart —
+  `confidence-detail-view`); an **interactive hourly chart** (fills its width, adapts point
+  density 3 h→2 h→1 h to the space, labels each point with its hour, and shows a crosshair +
+  value on hover/tap — `interactive-hourly-chart`); and **slightly transparent** map overlays
+  (`bg-white/70` + `backdrop-blur` — `overlay-transparency`). These extend `weather-display` /
+  `map-view`. The backend confidence-computation capability has its own spec in the sibling repo
+  (`../meteo-aggregator/openspec/specs/confidence-detail/`).
 - Both dev servers were running during development: UI on `:5173`, backend on `:8000`.
 - **Deployed and live:** UI on Cloudflare Pages (<https://meteo-aggregator.pages.dev>),
   API on Google Cloud Run. See "Deployment" below and `CLAUDE.md`.
@@ -199,6 +200,7 @@ rather than adding their own spec.) Run `openspec list --specs` for the live cou
 → `add-place-label-selection` → `dev-api-proxy` → `auto-refresh-overlays` → `add-deployment`
 → `add-rgb-color-keys` → `add-hourly-view` → `mobile-ui` → `add-default-location`
 → `add-info-page` → `add-layer-animation` → `derive-info-page-layers`
+→ `confidence-detail-view` → `interactive-hourly-chart` → `overlay-transparency`
 (all under `openspec/changes/archive/`).
 
 > Two small follow-ups to `add-info-page` (copy tightening, and worked examples in the

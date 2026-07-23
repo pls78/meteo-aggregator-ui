@@ -122,3 +122,109 @@ within the sheet without panning the map.
 
 - **WHEN** the user taps a day in the sheet's daily list
 - **THEN** that day's hourly chart is shown within the sheet (no separate panel)
+
+### Requirement: Confidence label is a distinct, discoverable control
+
+Within a day row, the confidence label (high/medium/low) SHALL be its own
+click/tap target, visually distinct from the rest of the row and carrying an
+affordance that it is actionable (so it reads as tappable on touch as well as
+hover). Activating the label SHALL NOT trigger the day's hourly view, and
+activating the rest of the row SHALL NOT trigger the confidence detail. This
+SHALL hold in both the desktop and mobile layouts.
+
+#### Scenario: Label is separately actionable
+
+- **WHEN** the user activates a day's confidence label
+- **THEN** the day's confidence detail opens and its hourly view does not
+
+#### Scenario: Rest of the row keeps hourly behaviour
+
+- **WHEN** the user activates any part of the day row other than the confidence
+  label
+- **THEN** the day's hourly view opens, unchanged
+
+#### Scenario: Label is keyboard operable
+
+- **WHEN** the user focuses the confidence label and activates it via keyboard
+- **THEN** the confidence detail for that day opens
+
+### Requirement: Per-day confidence detail
+
+The system SHALL present, for a day whose confidence label is activated, a
+confidence detail in place of that day's hourly view. The detail SHALL list each
+model present in the day's `breakdown` with its day-high temperature and its
+blend weight for that day (renormalized over the models present, matching how the
+consensus is blended), show the consensus day-high, and give a plain-language
+explanation of how the confidence level was derived — that it reflects how much
+the models disagree on the day's high (and ensemble spread when available), the
+resulting spread, and the thresholds that map spread to high/medium/low. All
+values SHALL come from the existing `/forecast` response; no extra request SHALL
+be required. Only one of the hourly view and the confidence detail SHALL be
+visible for the selected day at a time.
+
+#### Scenario: Show the per-model breakdown and explanation
+
+- **WHEN** the confidence detail is shown for a day
+- **THEN** it lists each contributing model with its day-high temperature and
+  blend weight, shows the consensus, and explains how the confidence level was
+  computed, consistent with the label shown
+
+#### Scenario: Detail takes the hourly slot
+
+- **WHEN** the confidence detail is shown for a day
+- **THEN** it occupies the same area the hourly view uses and that day's hourly
+  chart is not shown
+
+#### Scenario: Switch back to hourly
+
+- **WHEN** the confidence detail is shown and the user then activates the rest of
+  the same day row
+- **THEN** the view switches to that day's hourly forecast
+
+#### Scenario: Missing model is omitted
+
+- **WHEN** a model provides no value for the selected day
+- **THEN** that model is omitted from the detail rather than shown empty
+
+### Requirement: Hourly chart fills the width and adapts point density
+
+The hourly detail chart SHALL fill the width available in its container rather
+than a fixed width, and SHALL choose how many temperature points to plot from
+that width: a point roughly every 3 hours when narrow, every 2 hours at medium
+width, and every hour when wide. Each plotted point SHALL be labelled with its
+hour, and hour-axis labels SHALL NOT be denser than the plotted points. The
+choice SHALL update if the container is resized.
+
+#### Scenario: Wide container shows hourly detail
+
+- **WHEN** the chart is rendered in a wide container (e.g. the desktop panel)
+- **THEN** it spans the container width and plots a temperature point for every
+  hour, each labelled with its hour
+
+#### Scenario: Narrow container stays uncluttered
+
+- **WHEN** the chart is rendered in a narrow container (e.g. the mobile sheet)
+- **THEN** it spans the container width and plots fewer points (about every 3
+  hours) so labels and markers do not crowd
+
+### Requirement: Inspect a point's value
+
+The system SHALL let the user read the value at a plotted point: on a
+pointer-capable device, hovering the chart SHALL snap to the nearest plotted
+point; on touch, tapping SHALL select the nearest plotted point. The selected
+point SHALL be marked with a vertical crosshair and its temperature value, for
+each series shown. Moving the mouse away SHALL clear the indicator; a touch
+selection MAY persist until the next tap.
+
+#### Scenario: Hover shows the value
+
+- **WHEN** the user hovers over the hourly chart on a pointer device
+- **THEN** a crosshair marks the nearest plotted point and its temperature value
+  is shown for each series
+
+#### Scenario: Tap shows the value on touch
+
+- **WHEN** the user taps a point on the hourly chart on a touch device
+- **THEN** a crosshair marks the nearest plotted point and its temperature value
+  is shown
+
