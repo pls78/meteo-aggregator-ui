@@ -4,7 +4,12 @@
 // and precip never share a scale. Colors are the fixed location accents (blue
 // primary / amber comparison); identity is carried by the legend (rendered by the
 // panel), so the amber line's lower contrast on white is backed by a visible label.
+//
+// The chart fills its container's width and adapts how many temperature points it
+// plots to the space available: a point every 3 h when narrow, every 2 h at medium
+// width, every hour when wide — so wider space shows more detail.
 
+import { useLayoutEffect, useRef, useState } from 'react'
 import type { HourConsensus } from '../../api/types'
 import { weatherInfo } from '../../lib/weatherCode'
 
@@ -14,7 +19,6 @@ export interface ChartSeries {
   hours: HourConsensus[] // already filtered to the day
 }
 
-const STEP = 36 // px per hour
 const PAD_L = 40
 const PAD_R = 34 // room for the end-of-line value label (e.g. "30°")
 const ICON_H = 22
@@ -32,7 +36,23 @@ const num = (v: number | string | null | undefined): number | null =>
 const hourOf = (h: HourConsensus) => Number(String(h.date).slice(11, 13))
 const pad2 = (n: number) => String(n).padStart(2, '0')
 
+// Hours between plotted temperature points, chosen from the available width.
+const strideFor = (w: number) => (w >= 640 ? 1 : w >= 420 ? 2 : 3)
+
 export function HourlyChart({ series }: { series: ChartSeries[] }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [w, setW] = useState(0)
+
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const measure = () => setW(el.clientWidth)
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+
   const clean = series.map((s) => ({
     ...s,
     hours: [...s.hours].sort((a, b) => hourOf(a) - hourOf(b)),
@@ -42,19 +62,37 @@ export function HourlyChart({ series }: { series: ChartSeries[] }) {
   const allHours = Array.from(
     new Set(clean.flatMap((s) => s.hours.map(hourOf))),
   ).sort((a, b) => a - b)
-  if (allHours.length === 0) return null
+
+  return (
+    <div ref={ref} className="w-full">
+      {w > 0 && allHours.length > 0 && <Chart clean={clean} allHours={allHours} width={w} />}
+    </div>
+  )
+}
+
+function Chart({
+  clean,
+  allHours,
+  width,
+}: {
+  clean: ChartSeries[]
+  allHours: number[]
+  width: number
+}) {
   const hMin = allHours[0]
   const hMax = allHours[allHours.length - 1]
   const span = Math.max(1, hMax - hMin)
+  const stride = strideFor(width)
 
-  const width = PAD_L + span * STEP + PAD_R
   const tempTop = ICON_H
   const tempBot = tempTop + TEMP_H
   const precipTop = tempBot + GAP
   const precipBot = precipTop + PRECIP_H
   const height = precipBot + AXIS_H
 
-  const x = (hour: number) => PAD_L + (hour - hMin) * STEP
+  const plotW = Math.max(1, width - PAD_L - PAD_R)
+  const pxPerHour = plotW / span
+  const x = (hour: number) => PAD_L + (hour - hMin) * pxPerHour
 
   // Temperature scale (padded), shared across both series.
   const temps = clean.flatMap((s) =>
@@ -73,7 +111,25 @@ export function HourlyChart({ series }: { series: ChartSeries[] }) {
   const yPrecip = (v: number) => precipBot - (pMax > 0 ? (v / pMax) * PRECIP_H : 0)
 
   const tempTicks = [tLo, (tLo + tHi) / 2, tHi]
-  const barW = clean.length > 1 ? STEP * 0.26 : STEP * 0.5
+  const barW = clean.length > 1 ? pxPerHour * 0.26 : pxPerHour * 0.5
+
+  // Plotted temperature hours: every `stride` from the start, always including the
+  // last hour so the line reaches the right edge.
+  const sample = (hours: HourConsensus[]) => {
+    const byHour = new Map(hours.map((h) => [hourOf(h), h]))
+    const picked: HourConsensus[] = []
+    for (let hh = hMin; hh <= hMax; hh += stride) {
+      const h = byHour.get(hh)
+      if (h) picked.push(h)
+    }
+    const lastH = byHour.get(hMax)
+    if (lastH && picked[picked.length - 1] !== lastH) picked.push(lastH)
+    return picked
+  }
+
+  // Axis/icon ticks: every 3 h, but at least as sparse as the point stride.
+  const tickStep = Math.max(3, stride)
+  const axisHours = allHours.filter((h) => (h - hMin) % tickStep === 0)
 
   return (
     <svg
@@ -127,21 +183,22 @@ export function HourlyChart({ series }: { series: ChartSeries[] }) {
         }),
       )}
 
-      {/* Temperature line + per-hour dots per series */}
+      {/* Temperature line + dots per series, at the chosen point stride */}
       {clean.map((s, si) => {
-        const pts = s.hours
+        const picked = sample(s.hours)
+        const pts = picked
           .map((h) => {
             const t = num(h.values.temperature_2m)
             return t === null ? null : `${x(hourOf(h))},${yTemp(t)}`
           })
           .filter((p): p is string => p !== null)
         if (pts.length === 0) return null
-        const last = s.hours[s.hours.length - 1]
+        const last = picked[picked.length - 1]
         const lastT = num(last?.values.temperature_2m)
         return (
           <g key={`t${si}`}>
             <polyline points={pts.join(' ')} fill="none" stroke={s.accent} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
-            {s.hours.map((h) => {
+            {picked.map((h) => {
               const t = num(h.values.temperature_2m)
               return t === null ? null : (
                 <circle key={`d${si}-${hourOf(h)}`} cx={x(hourOf(h))} cy={yTemp(t)} r={1.8} fill={s.accent} />
@@ -156,23 +213,21 @@ export function HourlyChart({ series }: { series: ChartSeries[] }) {
         )
       })}
 
-      {/* Weather icons (primary series) every 3 hours */}
+      {/* Weather icons (primary series) on the axis ticks */}
       {clean[0]?.hours
-        .filter((h) => hourOf(h) % 3 === 0)
+        .filter((h) => (hourOf(h) - hMin) % tickStep === 0)
         .map((h) => (
           <text key={`ic${hourOf(h)}`} x={x(hourOf(h))} y={ICON_H - 6} textAnchor="middle" fontSize={13}>
             {weatherInfo(h.values.weather_code).icon}
           </text>
         ))}
 
-      {/* Hour axis, every 3 hours */}
-      {allHours
-        .filter((h) => h % 3 === 0)
-        .map((h) => (
-          <text key={`ax${h}`} x={x(h)} y={height - 6} textAnchor="middle" fontSize={10} fill={AXIS_INK}>
-            {pad2(h)}
-          </text>
-        ))}
+      {/* Hour axis */}
+      {axisHours.map((h) => (
+        <text key={`ax${h}`} x={x(h)} y={height - 6} textAnchor="middle" fontSize={10} fill={AXIS_INK}>
+          {pad2(h)}
+        </text>
+      ))}
     </svg>
   )
 }
