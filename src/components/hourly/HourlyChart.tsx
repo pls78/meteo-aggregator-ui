@@ -84,6 +84,10 @@ function Chart({
   const span = Math.max(1, hMax - hMin)
   const stride = strideFor(width)
 
+  // Hovered (mouse) / tapped (touch) point: shows a crosshair + value readout.
+  const [active, setActive] = useState<number | null>(null)
+  const svgRef = useRef<SVGSVGElement>(null)
+
   const tempTop = ICON_H
   const tempBot = tempTop + TEMP_H
   const precipTop = tempBot + GAP
@@ -133,14 +137,39 @@ function Chart({
   const pointHours = allHours.filter((h) => (h - hMin) % stride === 0)
   if (pointHours.length && pointHours[pointHours.length - 1] !== hMax) pointHours.push(hMax)
 
+  // Snap a pointer x (client coords) to the nearest visible point.
+  const pick = (clientX: number) => {
+    const rect = svgRef.current?.getBoundingClientRect()
+    if (!rect) return
+    const px = clientX - rect.left
+    let best = pointHours[0]
+    let bestD = Infinity
+    for (const h of pointHours) {
+      const d = Math.abs(x(h) - px)
+      if (d < bestD) {
+        bestD = d
+        best = h
+      }
+    }
+    setActive(best)
+  }
+  const tempAt = (s: ChartSeries, hour: number) => {
+    const h = s.hours.find((hh) => hourOf(hh) === hour)
+    return h ? num(h.values.temperature_2m) : null
+  }
+
   return (
     <svg
+      ref={svgRef}
       width={width}
       height={height}
       viewBox={`0 0 ${width} ${height}`}
       role="img"
       aria-label="Hourly temperature and precipitation"
-      className="block"
+      className="block touch-pan-y"
+      onPointerMove={(e) => e.pointerType === 'mouse' && pick(e.clientX)}
+      onPointerDown={(e) => pick(e.clientX)}
+      onPointerLeave={(e) => e.pointerType === 'mouse' && setActive(null)}
     >
       {/* Temperature gridlines + °C labels */}
       {tempTicks.map((t, i) => (
@@ -226,10 +255,55 @@ function Chart({
 
       {/* Hour axis — one label under each plotted point */}
       {pointHours.map((h) => (
-        <text key={`ax${h}`} x={x(h)} y={height - 6} textAnchor="middle" fontSize={10} fill={AXIS_INK}>
+        <text
+          key={`ax${h}`}
+          x={x(h)}
+          y={height - 6}
+          textAnchor="middle"
+          fontSize={10}
+          fontWeight={h === active ? 700 : 400}
+          fill={h === active ? VALUE_INK : AXIS_INK}
+        >
           {pad2(h)}
         </text>
       ))}
+
+      {/* Crosshair for the hovered/tapped point */}
+      {active !== null && (
+        <g pointerEvents="none">
+          <line
+            x1={x(active)}
+            y1={tempTop}
+            x2={x(active)}
+            y2={precipBot}
+            stroke={AXIS_INK}
+            strokeWidth={1}
+            strokeDasharray="3 3"
+            opacity={0.7}
+          />
+          {clean.map((s, si) => {
+            const t = tempAt(s, active)
+            if (t === null) return null
+            const xa = x(active)
+            const nearRight = xa > width - PAD_R - 30
+            return (
+              <g key={`hl${si}`}>
+                <circle cx={xa} cy={yTemp(t)} r={3.5} fill={s.accent} stroke="#fff" strokeWidth={1.5} />
+                <text
+                  x={nearRight ? xa - 7 : xa + 7}
+                  y={yTemp(t) - 5}
+                  textAnchor={nearRight ? 'end' : 'start'}
+                  fontSize={11}
+                  fontWeight={700}
+                  fill={s.accent}
+                >
+                  {Math.round(t)}°
+                </text>
+              </g>
+            )
+          })}
+        </g>
+      )}
     </svg>
   )
 }
