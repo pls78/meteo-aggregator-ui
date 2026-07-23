@@ -3,6 +3,7 @@
 // was derived. Shown in place of the hourly chart when a day's confidence label
 // is tapped. Reads only data already in the /forecast response — no extra fetch.
 
+import { Fragment } from 'react'
 import type { DayConsensus, DailyValue } from '../../api/types'
 
 // Band thresholds on the model spread, transcribed from the backend config
@@ -85,26 +86,31 @@ export function ConfidenceDetail({ day }: { day: DayConsensus }) {
 
       {/* Per-model day-high temperatures + blend weight behind the consensus */}
       {rows.length > 0 ? (
-        <div className="space-y-1">
-          <ul className="space-y-1">
+        <div className="space-y-1.5">
+          <div className="inline-grid grid-cols-[6.5rem_2.75rem_3.5rem] items-baseline gap-x-3 text-sm">
+            {/* Header */}
+            <span className="text-[10px] font-medium uppercase tracking-wide text-slate-400">Model</span>
+            <span className="text-right text-[10px] font-medium uppercase tracking-wide text-slate-400">Weight</span>
+            <span className="text-right text-[10px] font-medium uppercase tracking-wide text-slate-400">Temp</span>
+
             {rows.map((r) => (
-              <li key={r.name} className="flex items-center justify-between text-sm">
+              <Fragment key={r.name}>
                 <span className="text-slate-600">{r.name}</span>
-                <span className="flex items-baseline gap-2">
-                  <span className="tabular-nums text-xs text-slate-400">{pct(r.weight)}</span>
-                  <span className="w-12 text-right font-medium tabular-nums text-slate-900">{fmt(r.value)}</span>
-                </span>
-              </li>
+                <span className="text-right tabular-nums text-slate-500">{pct(r.weight)}</span>
+                <span className="text-right font-medium tabular-nums text-slate-900">{fmt(r.value)}</span>
+              </Fragment>
             ))}
+
             {isNum(consensus) && (
-              <li className="flex items-center justify-between border-t border-slate-200 pt-1 text-sm">
-                <span className="font-medium text-slate-700">Consensus</span>
-                <span className="w-12 text-right font-semibold tabular-nums text-slate-900">{fmt(consensus)}</span>
-              </li>
+              <>
+                <span className="col-span-3 mt-1 border-t border-slate-200" />
+                <span className="col-span-2 font-medium text-slate-700">Consensus</span>
+                <span className="text-right font-semibold tabular-nums text-slate-900">{fmt(consensus)}</span>
+              </>
             )}
-          </ul>
+          </div>
           <p className="text-[11px] text-slate-400">
-            % is each model’s weight in the blended consensus for this day.
+            Weight is each model’s share of the blended consensus for this day.
           </p>
         </div>
       ) : (
