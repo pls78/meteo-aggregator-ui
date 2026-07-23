@@ -63,7 +63,7 @@ export function SearchBox({ slot, accent, onRemove, className = 'w-80 max-w-[80v
 
   return (
     <div className={`relative ${className}`}>
-      <div className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white/85 px-3 py-2 shadow-lg backdrop-blur focus-within:border-blue-500">
+      <div className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white/75 px-3 py-2 shadow-lg backdrop-blur focus-within:border-blue-500">
         <span
           className="inline-block h-3 w-3 shrink-0 rounded-full"
           style={{ background: accent }}

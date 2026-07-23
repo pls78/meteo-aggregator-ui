@@ -81,7 +81,7 @@ export function HourlyPanel() {
         visible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
       } ${showConfidence ? 'w-fit max-w-full' : 'max-w-5xl'}`}
     >
-      <section className="rounded-t-2xl bg-white/85 p-4 shadow-2xl ring-1 ring-black/5 backdrop-blur">
+      <section className="rounded-t-2xl bg-white/75 p-4 shadow-2xl ring-1 ring-black/5 backdrop-blur">
         <header className="mb-2 flex items-center justify-between gap-3">
           <div className="flex items-baseline gap-2">
             <h2 className="text-sm font-semibold text-slate-900">{prettyDay(day)}</h2>

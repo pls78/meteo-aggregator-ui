@@ -28,7 +28,7 @@ export function SearchPanel() {
             title={primary ? 'Add comparison location' : 'Select a location first'}
             onClick={addComparison}
             disabled={!primary}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-300 bg-white/85 text-xl leading-none text-slate-600 shadow-lg backdrop-blur hover:bg-white hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-300 bg-white/75 text-xl leading-none text-slate-600 shadow-lg backdrop-blur hover:bg-white hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40"
           >
             +
           </button>

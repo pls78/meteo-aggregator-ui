@@ -44,13 +44,13 @@ export function MobileTopBar() {
             type="button"
             onClick={addCompare}
             disabled={!primary}
-            className="flex items-center gap-2 rounded-full border border-dashed border-slate-300 bg-white/85 px-3 py-1.5 text-sm font-semibold text-slate-600 shadow-lg backdrop-blur disabled:opacity-40"
+            className="flex items-center gap-2 rounded-full border border-dashed border-slate-300 bg-white/75 px-3 py-1.5 text-sm font-semibold text-slate-600 shadow-lg backdrop-blur disabled:opacity-40"
           >
             <span className="h-2.5 w-2.5 rounded-full" style={{ background: COMPARISON }} />
             + Compare a place
           </button>
         ) : (
-          <div className="flex rounded-xl bg-white/85 p-1 shadow-lg ring-1 ring-black/5 backdrop-blur">
+          <div className="flex rounded-xl bg-white/75 p-1 shadow-lg ring-1 ring-black/5 backdrop-blur">
             <button
               type="button"
               onClick={() => setActiveSlot('primary')}
