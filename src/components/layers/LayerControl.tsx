@@ -63,7 +63,7 @@ export function LayerControl() {
   const [collapsed, setCollapsed] = useState(true)
 
   return (
-    <div className="w-64 rounded-xl bg-white/75 p-3 text-sm shadow-xl ring-1 ring-black/5 backdrop-blur">
+    <div className="w-64 rounded-xl bg-white/70 p-3 text-sm shadow-xl ring-1 ring-black/5 backdrop-blur">
       <button
         type="button"
         onClick={() => setCollapsed((c) => !c)}

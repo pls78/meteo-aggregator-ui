@@ -121,7 +121,7 @@ export function WeatherSheet() {
 
   return (
     <section
-      className="pointer-events-auto absolute inset-x-0 bottom-0 z-[1000] flex flex-col overflow-hidden rounded-t-2xl bg-white/75 shadow-[0_-8px_30px_-8px_rgba(15,23,42,0.28)] ring-1 ring-black/5 backdrop-blur"
+      className="pointer-events-auto absolute inset-x-0 bottom-0 z-[1000] flex flex-col overflow-hidden rounded-t-2xl bg-white/70 shadow-[0_-8px_30px_-8px_rgba(15,23,42,0.28)] ring-1 ring-black/5 backdrop-blur"
       style={{ height, transition: dragH != null ? 'none' : 'height 0.3s cubic-bezier(0.2,0.8,0.2,1)', touchAction: 'none' }}
     >
       {/* Grip: tap cycles peek/half/full, drag snaps to nearest. */}
