@@ -58,7 +58,7 @@ function DesktopOverlays() {
         }`}
       >
         <div className="pointer-events-auto">
-          <HourlyPanel />
+          <HourlyPanel floating={layerActive} />
         </div>
       </div>
     </>

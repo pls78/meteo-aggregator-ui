@@ -27,7 +27,9 @@ const prettyDay = (iso: string) =>
     month: 'short',
   })
 
-export function HourlyPanel() {
+// `floating` = the sheet is lifted off the bottom edge (above the animate control),
+// so all corners round; otherwise it sits flush and only the top corners round.
+export function HourlyPanel({ floating = false }: { floating?: boolean }) {
   const { selectedDay, selectedDayView, primary, comparison, clearDay } = useAppStore()
   const showConfidence = selectedDayView === 'confidence'
   // Only fetch the hourly week for the hourly view; confidence reuses the cached
@@ -81,7 +83,7 @@ export function HourlyPanel() {
         visible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
       } ${showConfidence ? 'w-fit max-w-full' : 'max-w-5xl'}`}
     >
-      <section className="rounded-t-2xl bg-white/70 p-4 shadow-2xl ring-1 ring-black/5 backdrop-blur">
+      <section className={`bg-white/70 p-4 shadow-2xl ring-1 ring-black/5 backdrop-blur ${floating ? 'rounded-2xl' : 'rounded-t-2xl'}`}>
         <header className="mb-2 flex items-center justify-between gap-3">
           <div className="flex items-baseline gap-2">
             <h2 className="text-sm font-semibold text-slate-900">{prettyDay(day)}</h2>
