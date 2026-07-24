@@ -1,6 +1,6 @@
 ## 1. Layout
 
-- [x] 1.1 In `App.tsx` (desktop overlays), remove the absolutely-positioned `bottom-4` animate-control slot and instead put `MapAnimateControl` and `HourlyPanel` in one bottom-anchored `flex flex-col items-center` stack (control above the sheet), with `mb-4` on the control for its resting offset / gap to the sheet.
+- [x] 1.1 In `App.tsx` (desktop overlays), keep the animate control's fixed `bottom-4 left-1/2` slot, and give the hourly-sheet container a conditional bottom offset — `bottom-20` when `activeLayers.length > 0` (clears the control), else `bottom-0` (flush).
 
 ## 2. Verify
 

@@ -7,10 +7,10 @@ longer pause or read the frame time while viewing the forecast.
 
 ## What Changes
 
-- On the desktop layout, the time-lapse control SHALL sit **above** the hourly
-  detail sheet when that sheet is open, instead of being covered by it — while
-  still resting near the bottom of the map when no sheet is open. The sheet stays
-  flush at the bottom.
+- On the desktop layout, the time-lapse control keeps its fixed bottom-centre
+  position; when a satellite layer is active (so the control is shown), the hourly
+  detail sheet is lifted to render **above** the control instead of covering it.
+  When no layer is active, the sheet sits flush at the bottom as before.
 
 ## Capabilities
 

@@ -16,21 +16,21 @@ measuring the sheet height.
 
 ## Decisions
 
-**One bottom-anchored flex column.** Put the control and the hourly sheet in a
-single `absolute inset-x-0 bottom-0 flex flex-col items-center` stack: the control
-first, the sheet last. Because the sheet is the last child of a bottom-pinned
-column, it stays flush at the bottom; the control sits above it in normal flow, so
-it lifts by exactly the sheet's height with no measurement.
+**Keep the control fixed; lift the sheet.** The user prefers the control to stay
+put. The animate control keeps its `absolute bottom-4 left-1/2` slot unchanged.
+The sheet's bottom offset is conditional: `bottom-20` when a layer is active (so
+it clears the control, which is only shown then), else `bottom-0` (flush). The
+condition is `activeLayers.length > 0` from the store — a reliable proxy for "the
+control is shown" (the control renders `null` when no layer is active).
 
-A `mb-4` on the control does double duty: it's the control's resting gap from the
-bottom when the sheet is absent (≈ the old `bottom-4`), and the gap between the
-control and the sheet when the sheet is present. The control component already
-returns `null` when no layer is active, so the slot simply collapses then.
-
-*Alternative — lift the control by the measured sheet height via `ResizeObserver`:*
-rejected; flow-based stacking needs no measurement and can't drift.
+*Alternatives:* (a) lift the control above the sheet in a flex column — rejected,
+it moves the control, which the user wants fixed; (b) measure the control's height
+and offset the sheet by it — rejected, the control's size is stable, so a fixed
+`bottom-20` is simpler and the value is easy to tune.
 
 ## Risks / Trade-offs
 
-- **Control jumps up the instant the sheet mounts** (its height is reserved before
-  the fade-in completes) → acceptable; it's never covered at any point.
+- **Fixed clearance value** (`bottom-20`) is tied to the control's height → the
+  control's size is stable; a one-token change if it ever grows.
+- **Sheet's bottom corners are square while lifted** (it uses `rounded-t`) → only
+  when a layer is active; acceptable, adjustable later if desired.

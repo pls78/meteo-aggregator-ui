@@ -13,9 +13,15 @@ import { AboutButton } from './components/about/AboutButton'
 import { LocateButton } from './components/locate/LocateButton'
 import { useIsMobile } from './hooks/useMediaQuery'
 import { useInitialLocation } from './hooks/useInitialLocation'
+import { useAppStore } from './store/appStore'
 
 // Desktop overlay layout (≥ md): floating cards, inline layer panel, hourly sheet.
 function DesktopOverlays() {
+  // The time-lapse control floats bottom-centre whenever a layer is active. Lift
+  // the detail sheet above it in that case so the sheet renders above the fixed
+  // control instead of covering it; otherwise the sheet sits flush at the bottom.
+  const { activeLayers } = useAppStore()
+  const layerActive = activeLayers.length > 0
   return (
     <>
       {/* Overlays. The wrapper is click-through; children re-enable pointer events. */}
@@ -32,6 +38,11 @@ function DesktopOverlays() {
           <LayerControl />
         </div>
 
+        {/* Time-lapse control, centered along the bottom of the map (fixed here). */}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
+          <MapAnimateControl />
+        </div>
+
         {/* Bottom-right stack, lifted above the map's attribution control: locate then info. */}
         <div className="pointer-events-auto absolute bottom-10 right-4 flex flex-col-reverse gap-2">
           <AboutButton className="h-10 w-10" />
@@ -39,15 +50,14 @@ function DesktopOverlays() {
         </div>
       </div>
 
-      {/* Bottom-center stack: the time-lapse control rides just above the hourly
-          detail sheet, so opening a day's forecast never covers the play/pause
-          control. Control rests near the bottom (`mb-4`) when no sheet is open;
-          the sheet stays flush at the bottom. */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1001] flex flex-col items-center px-2">
-        <div className="pointer-events-auto mb-4">
-          <MapAnimateControl />
-        </div>
-        <div className="pointer-events-auto w-full">
+      {/* Hourly / confidence detail sheet, anchored to the bottom — lifted above
+          the animate control when a layer is active so the control stays clear. */}
+      <div
+        className={`pointer-events-none absolute inset-x-0 z-[1001] px-2 ${
+          layerActive ? 'bottom-20' : 'bottom-0'
+        }`}
+      >
+        <div className="pointer-events-auto">
           <HourlyPanel />
         </div>
       </div>
