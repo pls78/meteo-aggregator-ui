@@ -32,11 +32,6 @@ function DesktopOverlays() {
           <LayerControl />
         </div>
 
-        {/* Time-lapse control, centered along the bottom of the map. */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
-          <MapAnimateControl />
-        </div>
-
         {/* Bottom-right stack, lifted above the map's attribution control: locate then info. */}
         <div className="pointer-events-auto absolute bottom-10 right-4 flex flex-col-reverse gap-2">
           <AboutButton className="h-10 w-10" />
@@ -44,9 +39,15 @@ function DesktopOverlays() {
         </div>
       </div>
 
-      {/* Hourly detail sheet: full-width, anchored to the bottom, above the map. */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1001] px-2">
-        <div className="pointer-events-auto">
+      {/* Bottom-center stack: the time-lapse control rides just above the hourly
+          detail sheet, so opening a day's forecast never covers the play/pause
+          control. Control rests near the bottom (`mb-4`) when no sheet is open;
+          the sheet stays flush at the bottom. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1001] flex flex-col items-center px-2">
+        <div className="pointer-events-auto mb-4">
+          <MapAnimateControl />
+        </div>
+        <div className="pointer-events-auto w-full">
           <HourlyPanel />
         </div>
       </div>
