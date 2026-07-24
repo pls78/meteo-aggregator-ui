@@ -34,10 +34,6 @@ function DesktopOverlays() {
           <ComparisonPanel />
         </div>
 
-        <div className="pointer-events-auto absolute bottom-4 left-4">
-          <LayerControl />
-        </div>
-
         {/* Time-lapse control, centered along the bottom of the map (fixed here). */}
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
           <MapAnimateControl />
@@ -60,6 +56,12 @@ function DesktopOverlays() {
         <div className="pointer-events-auto">
           <HourlyPanel floating={layerActive} />
         </div>
+      </div>
+
+      {/* Layer control — above the detail sheet (z-1002 > z-1001) so its options
+          stay clickable when the wide sheet overlaps its bottom-left corner. */}
+      <div className="pointer-events-auto absolute bottom-4 left-4 z-[1002]">
+        <LayerControl />
       </div>
     </>
   )
