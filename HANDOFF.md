@@ -27,6 +27,11 @@ TypeScript + Tailwind v4 + MapLibre GL) talking directly to the Python/FastAPI
   (`bg-white/70` + `backdrop-blur` — `overlay-transparency`). These extend `weather-display` /
   `map-view`. The backend confidence-computation capability has its own spec in the sibling repo
   (`../meteo-aggregator/openspec/specs/confidence-detail/`).
+- **Also shipped:** the time-lapse control now stays clear of the open detail sheet
+  (`animate-control-clears-forecast` — the control keeps its fixed bottom-centre slot and the
+  sheet lifts above it when a layer is active); the sheet rounds all corners while lifted; and
+  the Satellite-layers panel was raised to `z-1002` so its options stay clickable when the wide
+  sheet overlaps its bottom-left corner (bug fix, direct commit — restores existing behaviour).
 - Both dev servers were running during development: UI on `:5173`, backend on `:8000`.
 - **Deployed and live:** UI on Cloudflare Pages (<https://meteo-aggregator.pages.dev>),
   API on Google Cloud Run. See "Deployment" below and `CLAUDE.md`.
@@ -119,6 +124,20 @@ cd ../meteo-aggregator && uvicorn api.main:app --reload   # http://localhost:800
    warning because it exports both the provider and the `useAppStore` hook. Left as-is.
 8. **Bundle size:** ~1.3 MB (MapLibre). Vite prints a chunk-size warning — non-fatal. Code-split
    if it ever matters.
+9. **Bottom-overlay layering (desktop, `App.tsx`).** Three stacked layers share the bottom of the
+   map, so mind the z-order and overlap:
+   - The floating overlay wrapper is `z-1000`; the hourly/confidence **detail sheet** is `z-1001`;
+     the **Satellite-layers** control is pulled out to `z-1002` so the wide centered sheet can't
+     cover its options (it does overlap the bottom-left corner). Don't drop the layer control back
+     inside the `z-1000` wrapper — that wrapper is a stacking context, so a child there can never
+     rise above the sheet however high its own `z-*`.
+   - The **time-lapse control** keeps a fixed `bottom-4` slot; the sheet gets a conditional
+     `bottom-20` (vs `bottom-0`) driven by `activeLayers.length > 0` so it lifts above the control
+     only when a layer is active (`animate-control-clears-forecast`). The `floating` prop rounds
+     all the sheet's corners while lifted.
+   - Known, unfixed: the sheet's `pointer-events-auto` wrapper is full-width, so it still eats map
+     clicks in the transparent strips beside the centered sheet. Constraining it needs care — the
+     chart sizes itself from its container width, so don't wrap it in `w-fit`.
 
 ## Accent colors (used in 3 places — keep consistent)
 
@@ -199,8 +218,9 @@ rather than adding their own spec.) Run `openspec list --specs` for the live cou
 `meteo-ui-mvp` → `add-comparison-search` → `add-layer-legends` → `vector-basemap`
 → `add-place-label-selection` → `dev-api-proxy` → `auto-refresh-overlays` → `add-deployment`
 → `add-rgb-color-keys` → `add-hourly-view` → `mobile-ui` → `add-default-location`
-→ `add-info-page` → `add-layer-animation` → `derive-info-page-layers`
+→ `add-info-page` → `add-locate-button` → `add-layer-animation` → `derive-info-page-layers`
 → `confidence-detail-view` → `interactive-hourly-chart` → `overlay-transparency`
+→ `animate-control-clears-forecast`
 (all under `openspec/changes/archive/`).
 
 > Two small follow-ups to `add-info-page` (copy tightening, and worked examples in the
