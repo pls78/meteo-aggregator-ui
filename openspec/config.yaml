@@ -10,7 +10,7 @@ context: |
   Tech stack: Vite + React + TypeScript + Tailwind CSS + react-leaflet (Leaflet).
   Server state via @tanstack/react-query; client UI state in a small store.
 
-  Backend: the Python/FastAPI aggregator at ../meteo-aggregator (no PHP). The UI calls it
+  Backend: the Python/FastAPI aggregator at ../meteo-aggregator-api (no PHP). The UI calls it
   directly over HTTP at VITE_API_BASE_URL. Keyless GET endpoints:
     - GET /search?name&count&language  -> Place[] (name -> lat/lon)
     - GET /forecast?lat&lon&days       -> daily consensus + confidence + per-model breakdown

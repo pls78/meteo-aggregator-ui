@@ -11,7 +11,7 @@ place label) to select a location and see aggregated weather overlaid; `Shift`+c
 second location for comparison; toggleable EUMETSAT satellite WMS overlays with legends, and a
 per-layer **time-lapse animation** of recent frames. Pure frontend (Vite + React 19 +
 TypeScript + Tailwind v4 + MapLibre GL) talking directly to the Python/FastAPI
-**meteo-aggregator** backend in the sibling repo `../meteo-aggregator`.
+**meteo-aggregator** backend in the sibling repo `../meteo-aggregator-api`.
 
 ## Current status (working)
 
@@ -26,7 +26,7 @@ TypeScript + Tailwind v4 + MapLibre GL) talking directly to the Python/FastAPI
   value on hover/tap — `interactive-hourly-chart`); and **slightly transparent** map overlays
   (`bg-white/70` + `backdrop-blur` — `overlay-transparency`). These extend `weather-display` /
   `map-view`. The backend confidence-computation capability has its own spec in the sibling repo
-  (`../meteo-aggregator/openspec/specs/confidence-detail/`).
+  (`../meteo-aggregator-api/openspec/specs/confidence-detail/`).
 - **Also shipped:** the time-lapse control now stays clear of the open detail sheet
   (`animate-control-clears-forecast` — the control keeps its fixed bottom-centre slot and the
   sheet lifts above it when a layer is active); the sheet rounds all corners while lifted; and
@@ -63,7 +63,7 @@ nvm use                 # Node 22 — REQUIRED (see "Gotchas"); .nvmrc pins it
 npm install
 npm run dev             # http://localhost:5173
 # backend (separate repo), needed for data:
-cd ../meteo-aggregator && uvicorn api.main:app --reload   # http://localhost:8000
+cd ../meteo-aggregator-api && uvicorn api.main:app --reload   # http://localhost:8000
 ```
 
 `npm run build` (tsc + vite), `npm run lint` (oxlint), `npm run preview`. No test runner yet.
@@ -169,7 +169,7 @@ Used for: map markers, weather-card bullets, and search-bar dots.
 ## Key files
 
 ```
-src/api/{types.ts,client.ts}      typed contract (mirror ../meteo-aggregator models) + fetch
+src/api/{types.ts,client.ts}      typed contract (mirror ../meteo-aggregator-api models) + fetch
 src/hooks/queries.ts              React Query hooks
 src/hooks/useMediaQuery.ts        useMediaQuery / useIsMobile (max-width:767px) — desktop vs mobile
 src/hooks/useInitialLocation.ts   seed primary on load (geolocation, else DEFAULT_LOCATION)
@@ -238,5 +238,5 @@ rather than adding their own spec.) Run `openspec list --specs` for the live cou
 
 ## Notes
 
-- Backend HTTP/response reference: `../meteo-aggregator/api/README.md`; models:
-  `../meteo-aggregator/meteo_aggregator/models.py` — keep `src/api/types.ts` in sync.
+- Backend HTTP/response reference: `../meteo-aggregator-api/api/README.md`; models:
+  `../meteo-aggregator-api/meteo_aggregator/models.py` — keep `src/api/types.ts` in sync.

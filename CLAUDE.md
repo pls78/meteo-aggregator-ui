@@ -13,7 +13,7 @@ an info button opens a "how it works" page. Below the `md` breakpoint it switche
 **mobile layout** — a draggable weather bottom sheet, an on-screen **A/B tap target** in place
 of Shift+click, and a satellite-layers sheet. It is a pure frontend (Vite + React + TypeScript
 + Tailwind v4 + MapLibre GL) that talks directly to the Python/FastAPI **meteo-aggregator**
-backend in the sibling repo `../meteo-aggregator`.
+backend in the sibling repo `../meteo-aggregator-api`.
 
 ## Node version
 
@@ -40,7 +40,7 @@ The UI needs the aggregator running. In dev the Vite proxy forwards `/api` to it
 (target `VITE_API_PROXY_TARGET`, default `http://localhost:8000`, see `.env`):
 
 ```bash
-cd ../meteo-aggregator && uvicorn api.main:app --reload
+cd ../meteo-aggregator-api && uvicorn api.main:app --reload
 ```
 
 **CORS:** in dev the browser talks to the Vite server **same-origin** — it calls
@@ -74,12 +74,12 @@ npx wrangler pages deploy dist --project-name=meteo-aggregator
 Use the stable `meteo-aggregator.pages.dev` URL — the per-deploy `<hash>.…pages.dev`
 alias changes each upload and is **not** on the backend CORS allow-list. The
 backend's `ALLOWED_ORIGINS` env var is set to `https://meteo-aggregator.pages.dev`
-(see `../meteo-aggregator/api/README.md`); update it if the UI origin changes.
+(see `../meteo-aggregator-api/api/README.md`); update it if the UI origin changes.
 
 ## Architecture
 
 - **`src/api/`** — the typed contract. `types.ts` mirrors the backend pydantic models
-  (`../meteo-aggregator/meteo_aggregator/models.py`) — **keep them in sync**. `client.ts` is
+  (`../meteo-aggregator-api/meteo_aggregator/models.py`) — **keep them in sync**. `client.ts` is
   a thin `fetch` wrapper (one function per endpoint).
 - **`src/hooks/queries.ts`** — React Query hooks (`useSearch`, `useForecast`, `useHourly`,
   `useHourlyRange`, `useImagery`). Forecast/hourly query keys include rounded lat/lon so
@@ -138,7 +138,7 @@ backend's `ALLOWED_ORIGINS` env var is set to `https://meteo-aggregator.pages.de
 
 ### Backend contract (consumed, not owned here)
 
-Four keyless GET endpoints; full reference in `../meteo-aggregator/api/README.md`:
+Four keyless GET endpoints; full reference in `../meteo-aggregator-api/api/README.md`:
 
 | Endpoint | Notes |
 |----------|-------|

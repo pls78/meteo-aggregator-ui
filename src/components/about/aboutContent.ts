@@ -1,5 +1,5 @@
 // Static content for the info / "how it works" dialog. Figures here are transcribed
-// from the backend config (../meteo-aggregator/meteo_aggregator/config.py) and the
+// from the backend config (../meteo-aggregator-api/meteo_aggregator/config.py) and the
 // aggregation method (aggregation.py). Keep them in sync if the backend changes.
 
 export interface Feature {

@@ -1,5 +1,5 @@
 // TypeScript mirror of the backend pydantic models
-// (../meteo-aggregator/meteo_aggregator/models.py). Keep in sync with that file.
+// (../meteo-aggregator-api/meteo_aggregator/models.py). Keep in sync with that file.
 
 export type Role = 'general' | 'local'
 export type ConfidenceLevel = 'high' | 'medium' | 'low'

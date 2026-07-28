@@ -1,6 +1,6 @@
 # meteo-aggregator-ui
 
-A map-driven weather UI for the [meteo-aggregator](../meteo-aggregator) backend.
+A map-driven weather UI for the [meteo-aggregator](../meteo-aggregator-api) backend.
 A full-screen MapLibre GL map: click (or search, or click a place label) to select
 a location and see the aggregated multi-model forecast; `Shift`+click adds a second
 location for side-by-side comparison; tap a day in the forecast to open its
@@ -36,7 +36,7 @@ The UI needs the backend running for data. In dev, Vite proxies `/api` to it
 (same-origin, so no backend CORS is needed):
 
 ```bash
-cd ../meteo-aggregator && uvicorn api.main:app --reload   # http://localhost:8000
+cd ../meteo-aggregator-api && uvicorn api.main:app --reload   # http://localhost:8000
 ```
 
 Other scripts: `npm run build` (typecheck + production build), `npm run lint`
@@ -72,5 +72,5 @@ also mints a per-deploy `<hash>.meteo-aggregator.pages.dev` alias — don't rely
 it: it changes every upload and is not on the backend's CORS allow-list.
 
 > After changing the deployed UI origin, update the backend's `ALLOWED_ORIGINS`
-> (see [`../meteo-aggregator/api/README.md`](../meteo-aggregator/api/README.md#browser-clients-cors)),
+> (see [`../meteo-aggregator-api/api/README.md`](../meteo-aggregator-api/api/README.md#browser-clients-cors)),
 > or browser calls will be blocked by CORS.

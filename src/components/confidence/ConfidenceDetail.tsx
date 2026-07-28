@@ -7,7 +7,7 @@ import { Fragment } from 'react'
 import type { DayConsensus, DailyValue } from '../../api/types'
 
 // Band thresholds on the model spread, transcribed from the backend config
-// (../meteo-aggregator/meteo_aggregator/config.py: CONFIDENCE_HIGH_MAX / _MEDIUM_MAX).
+// (../meteo-aggregator-api/meteo_aggregator/config.py: CONFIDENCE_HIGH_MAX / _MEDIUM_MAX).
 // Keep in sync if the backend changes.
 const HIGH_MAX = 1.5
 const MEDIUM_MAX = 3.5
