@@ -1,4 +1,4 @@
-// Thin typed client over the meteo-aggregator FastAPI backend.
+// Thin typed client over the meteo-aggregator-api FastAPI backend.
 // Base URL comes from VITE_API_BASE_URL (see .env), defaulting to the relative
 // `/api` path — in dev the Vite proxy (vite.config.ts) forwards /api to the
 // backend (same-origin, no CORS). No logic here beyond building the request and

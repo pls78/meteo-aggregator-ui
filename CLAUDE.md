@@ -12,7 +12,7 @@ map. On load it seeds a starting location (browser geolocation, else a configure
 an info button opens a "how it works" page. Below the `md` breakpoint it switches to a
 **mobile layout** — a draggable weather bottom sheet, an on-screen **A/B tap target** in place
 of Shift+click, and a satellite-layers sheet. It is a pure frontend (Vite + React + TypeScript
-+ Tailwind v4 + MapLibre GL) that talks directly to the Python/FastAPI **meteo-aggregator**
++ Tailwind v4 + MapLibre GL) that talks directly to the Python/FastAPI **meteo-aggregator-api**
 backend in the sibling repo `../meteo-aggregator-api`.
 
 ## Node version

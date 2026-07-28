@@ -11,7 +11,7 @@ place label) to select a location and see aggregated weather overlaid; `Shift`+c
 second location for comparison; toggleable EUMETSAT satellite WMS overlays with legends, and a
 per-layer **time-lapse animation** of recent frames. Pure frontend (Vite + React 19 +
 TypeScript + Tailwind v4 + MapLibre GL) talking directly to the Python/FastAPI
-**meteo-aggregator** backend in the sibling repo `../meteo-aggregator-api`.
+**meteo-aggregator-api** backend in the sibling repo `../meteo-aggregator-api`.
 
 ## Current status (working)
 

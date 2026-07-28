@@ -1,6 +1,6 @@
 # meteo-aggregator-ui
 
-A map-driven weather UI for the [meteo-aggregator](../meteo-aggregator-api) backend.
+A map-driven weather UI for the [meteo-aggregator-api](../meteo-aggregator-api) backend.
 A full-screen MapLibre GL map: click (or search, or click a place label) to select
 a location and see the aggregated multi-model forecast; `Shift`+click adds a second
 location for side-by-side comparison; tap a day in the forecast to open its
