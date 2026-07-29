@@ -74,3 +74,16 @@ it: it changes every upload and is not on the backend's CORS allow-list.
 > After changing the deployed UI origin, update the backend's `ALLOWED_ORIGINS`
 > (see [`../meteo-aggregator-api/api/README.md`](../meteo-aggregator-api/api/README.md#browser-clients-cors)),
 > or browser calls will be blocked by CORS.
+
+## License
+
+MIT — see [`LICENSE`](LICENSE).
+
+That covers this code only. Forecasts and place search come from
+[Open-Meteo](https://open-meteo.com) (data under CC-BY-4.0, free for
+non-commercial use) via the backend, and the map tiles and satellite layers
+carry their own terms — [EUMETSAT](https://view.eumetsat.int) for the imagery,
+and [CARTO](https://carto.com/basemaps/) Voyager, built on OpenStreetMap data,
+for the basemap. The in-app "how it works" dialog credits the weather and
+imagery sources; basemap attribution is rendered by MapLibre from the CARTO
+style.
