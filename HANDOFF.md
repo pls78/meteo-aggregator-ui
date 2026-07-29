@@ -42,7 +42,8 @@ Two free, separate services; **local dev and the deployed build never collide**
 because the API target is chosen by Vite mode:
 
 - `npm run dev` → `.env` (`/api`) → dev proxy → **local** backend `:8000`.
-- `npm run build` → committed `.env.production` → **deployed** Cloud Run API.
+- `npm run build` → `.env.production` (placeholder) overridden by gitignored
+  `.env.production.local` → **your deployed** backend. The repo ships no backend URL.
 
 Redeploy the UI (static, direct upload — no Git integration):
 

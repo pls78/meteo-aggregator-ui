@@ -55,14 +55,19 @@ wired up — see "Deployment" below.
 Deployed as two free, separate services:
 
 - **UI** → Cloudflare Pages (static, direct upload): <https://meteo-aggregator.pages.dev>
-- **API** → Google Cloud Run (scale-to-zero container): `https://your-backend.example.com`
+- **API** → your own Cloud Run (or any container host); the repo ships no backend
+  URL, see `.env.production`
 
 The API target is selected by Vite mode, so **local and deployed never collide**:
 
 - `npm run dev` (development mode) → `.env` (`/api`) → dev proxy → **local** backend on `:8000`.
-- `npm run build` (production mode) → **committed** `.env.production` (`VITE_API_BASE_URL` = Cloud Run URL) → **deployed** backend.
+- `npm run build` (production mode) → `.env.production` (`VITE_API_BASE_URL`) → **deployed** backend.
 
-`.env` is gitignored (local); `.env.production` is committed (public URL, no secret).
+`.env` is gitignored (local). `.env.production` is committed but holds only a
+**placeholder**; the real backend URL goes in `.env.production.local`
+(gitignored via `*.local`, loaded ahead of it), or is passed as
+`VITE_API_BASE_URL=… npm run build`. Whatever wins is baked into the bundle and
+is therefore public to anyone loading the site — never a secret.
 
 Redeploy the UI:
 

@@ -50,11 +50,23 @@ never collide:
 | Command | Mode | API target | Mechanism |
 |---------|------|-----------|-----------|
 | `npm run dev` | development | **local** `:8000` | `.env` (`VITE_API_BASE_URL=/api`) → Vite dev proxy |
-| `npm run build` | production | **deployed** Cloud Run | `.env.production` (committed) |
+| `npm run build` | production | **your deployed backend** | `.env.production` + `.env.production.local` |
 
-`.env` is gitignored (personal/local); `.env.production` is committed and holds
-the public API URL (no secret). To retarget the deployed build, edit
-`.env.production`. See [`.env.example`](.env.example).
+`.env` is gitignored (personal/local). `.env.production` is committed but ships
+only a **placeholder** — this repo deliberately contains no backend URL.
+
+**You must deploy the backend yourself** ([`meteo-aggregator-api`](https://github.com/pls78/meteo-aggregator-api),
+one `gcloud run deploy`) and point the build at it, either by creating
+`.env.production.local` with your URL (gitignored via `*.local`, and loaded
+ahead of `.env.production`):
+
+```bash
+echo 'VITE_API_BASE_URL=https://your-backend' > .env.production.local
+```
+
+or per build: `VITE_API_BASE_URL=https://your-backend npm run build`. Set the
+backend's `ALLOWED_ORIGINS` to your UI origin or the browser will block the
+calls. See [`.env.example`](.env.example).
 
 ## Deploy
 
