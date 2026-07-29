@@ -42,8 +42,8 @@ Two free, separate services; **local dev and the deployed build never collide**
 because the API target is chosen by Vite mode:
 
 - `npm run dev` → `.env` (`/api`) → dev proxy → **local** backend `:8000`.
-- `npm run build` → `.env.production` (placeholder) overridden by gitignored
-  `.env.production.local` → **your deployed** backend. The repo ships no backend URL.
+- `npm run build` → `.env.production` (`/api`) → Pages Function proxy
+  (`functions/api/`) → **your deployed** backend. No backend URL in the repo or bundle.
 
 Redeploy the UI (static, direct upload — no Git integration):
 
@@ -52,10 +52,11 @@ nvm use && npm run build
 npx wrangler pages deploy dist --project-name=meteo-aggregator   # -> meteo-aggregator.pages.dev
 ```
 
-Gotcha: use the stable `meteo-aggregator.pages.dev` URL, **not** the per-deploy
-`<hash>.…pages.dev` alias — the hash changes each upload and is not on the backend
-CORS allow-list, so the app would fail with CORS errors there. The backend's
-`ALLOWED_ORIGINS` is set to the production Pages origin; update it if that changes.
+The backend URL is **not** in the repo: it is the `API_ORIGIN` secret on the Pages
+project (`npx wrangler pages secret put API_ORIGIN --project-name=meteo-aggregator`,
+plus `--env preview` for preview deploys). Per-deploy `<hash>.…pages.dev` aliases
+work fully now — all calls are same-origin through `functions/api/`, so no CORS
+allow-list is involved.
 
 ## Run it
 
@@ -79,11 +80,11 @@ cd ../meteo-aggregator-api && uvicorn api.main:app --reload   # http://localhost
    backend **same-origin** via a Vite dev proxy: `client.ts` uses a relative base (`/api` by
    default), and `vite.config.ts`'s `server.proxy` forwards `/api/*` to
    `VITE_API_PROXY_TARGET` (default `http://localhost:8000`), stripping the `/api` prefix. So
-   in dev the browser only ever talks to `:5173` and no CORS is involved. **Production caveat:**
-   the proxy does NOT run in a production build — if the UI and API are served from different
-   origins there, the backend must send CORS headers (or the API must be served under a
-   same-origin `/api` route), and `VITE_API_BASE_URL` must point at the absolute API URL. This
-   is the `api-access` capability (`openspec/specs/api-access/spec.md`).
+   in dev the browser only ever talks to `:5173` and no CORS is involved. **Production works the
+   same way:** `.env.production` also sets `/api`, and the Cloudflare Pages Function in
+   `functions/api/` proxies it to the backend (URL held in the `API_ORIGIN` secret). So CORS is
+   never involved in either mode, and no backend URL reaches the bundle. This is the
+   `api-access` capability (`openspec/specs/api-access/spec.md`).
 3. **MapLibre specifics:**
    - `map.boxZoom.disable()` is required, else MapLibre's Shift+drag box-zoom eats **Shift+click**
      (our comparison-selection gesture). Already done in `MapView`.

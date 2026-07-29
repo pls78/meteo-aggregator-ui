@@ -50,23 +50,22 @@ never collide:
 | Command | Mode | API target | Mechanism |
 |---------|------|-----------|-----------|
 | `npm run dev` | development | **local** `:8000` | `.env` (`VITE_API_BASE_URL=/api`) → Vite dev proxy |
-| `npm run build` | production | **your deployed backend** | `.env.production` + `.env.production.local` |
+| `npm run build` | production | **your backend, via the Pages proxy** | `.env.production` (`/api`) → `functions/api/` |
 
-`.env` is gitignored (personal/local). `.env.production` is committed but ships
-only a **placeholder** — this repo deliberately contains no backend URL.
+Both modes call `/api` on the page's own origin. In dev, Vite's `server.proxy`
+forwards it; in production, the Cloudflare Pages Function in
+[`functions/api/`](functions/api/) does. The browser never talks cross-origin, so
+**CORS is never involved and no backend URL is in the bundle**.
 
 **You must deploy the backend yourself** ([`meteo-aggregator-api`](https://github.com/pls78/meteo-aggregator-api),
-one `gcloud run deploy`) and point the build at it, either by creating
-`.env.production.local` with your URL (gitignored via `*.local`, and loaded
-ahead of `.env.production`):
+one `gcloud run deploy`) and give its URL to the Pages project as a secret:
 
 ```bash
-echo 'VITE_API_BASE_URL=https://your-backend' > .env.production.local
+npx wrangler pages secret put API_ORIGIN --project-name=<your-project>
 ```
 
-or per build: `VITE_API_BASE_URL=https://your-backend npm run build`. Set the
-backend's `ALLOWED_ORIGINS` to your UI origin or the browser will block the
-calls. See [`.env.example`](.env.example).
+The proxy caches responses at the edge (5 min), so repeat queries never reach
+your backend. See [`.env.example`](.env.example).
 
 ## Deploy
 
@@ -75,17 +74,20 @@ no Git integration required):
 
 ```bash
 nvm use
-npm run build                                                   # bakes in .env.production's API URL
+npm run build
 npx wrangler pages deploy dist --project-name=meteo-aggregator  # -> https://meteo-aggregator.pages.dev
 ```
 
-Use the stable production URL `https://meteo-aggregator.pages.dev`. Cloudflare
-also mints a per-deploy `<hash>.meteo-aggregator.pages.dev` alias — don't rely on
-it: it changes every upload and is not on the backend's CORS allow-list.
+`wrangler` uploads `functions/` alongside `dist/`, so the proxy ships with the
+site. Set the backend URL once per environment:
 
-> After changing the deployed UI origin, update the backend's `ALLOWED_ORIGINS`
-> (see [`../meteo-aggregator-api/api/README.md`](../meteo-aggregator-api/api/README.md#browser-clients-cors)),
-> or browser calls will be blocked by CORS.
+```bash
+npx wrangler pages secret put API_ORIGIN --project-name=meteo-aggregator
+npx wrangler pages secret put API_ORIGIN --project-name=meteo-aggregator --env preview
+```
+
+Without it, `/api/*` returns 503. Per-deploy `<hash>.meteo-aggregator.pages.dev`
+aliases work fully — every call is same-origin, so no allow-list is involved.
 
 ## License
 

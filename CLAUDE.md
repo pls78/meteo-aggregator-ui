@@ -43,31 +43,29 @@ The UI needs the aggregator running. In dev the Vite proxy forwards `/api` to it
 cd ../meteo-aggregator-api && uvicorn api.main:app --reload
 ```
 
-**CORS:** in dev the browser talks to the Vite server **same-origin** — it calls
-`/api/*` (`VITE_API_BASE_URL` defaults to `/api`) and Vite's `server.proxy`
-forwards that to the backend, so **no backend CORS is needed** in development. In
-**production** the proxy does not run: the deployed build calls the backend's
-absolute origin cross-origin, so the backend must allow the UI origin. This is
-wired up — see "Deployment" below.
+**CORS: never involved, in either mode.** The browser always calls `/api/*` on
+its own origin. In dev, Vite's `server.proxy` forwards it; in production, the
+Cloudflare Pages Function in `functions/api/` does. The backend still has an
+`ALLOWED_ORIGINS` allow-list, but nothing in this app depends on it — the proxy
+calls the backend server-side, where CORS does not apply.
 
 ## Deployment
 
 Deployed as two free, separate services:
 
 - **UI** → Cloudflare Pages (static, direct upload): <https://meteo-aggregator.pages.dev>
-- **API** → your own Cloud Run (or any container host); the repo ships no backend
-  URL, see `.env.production`
+- **API** → your own Cloud Run (or any container host), reached only through the
+  Pages Function proxy; the repo ships no backend URL
 
 The API target is selected by Vite mode, so **local and deployed never collide**:
 
 - `npm run dev` (development mode) → `.env` (`/api`) → dev proxy → **local** backend on `:8000`.
-- `npm run build` (production mode) → `.env.production` (`VITE_API_BASE_URL`) → **deployed** backend.
+- `npm run build` (production mode) → `.env.production` (`/api`) → the Pages Function in `functions/api/` → backend.
 
-`.env` is gitignored (local). `.env.production` is committed but holds only a
-**placeholder**; the real backend URL goes in `.env.production.local`
-(gitignored via `*.local`, loaded ahead of it), or is passed as
-`VITE_API_BASE_URL=… npm run build`. Whatever wins is baked into the bundle and
-is therefore public to anyone loading the site — never a secret.
+Both modes are same-origin `/api`, so **CORS is never involved** and the bundle
+contains no backend URL. The real URL is the `API_ORIGIN` secret on the
+Cloudflare Pages project (`wrangler pages secret put`). Anything you put in a
+`VITE_*` var is baked into the bundle and public — never a secret.
 
 Redeploy the UI:
 
@@ -76,10 +74,10 @@ nvm use && npm run build
 npx wrangler pages deploy dist --project-name=meteo-aggregator
 ```
 
-Use the stable `meteo-aggregator.pages.dev` URL — the per-deploy `<hash>.…pages.dev`
-alias changes each upload and is **not** on the backend CORS allow-list. The
-backend's `ALLOWED_ORIGINS` env var is set to `https://meteo-aggregator.pages.dev`
-(see `../meteo-aggregator-api/api/README.md`); update it if the UI origin changes.
+Prefer the stable `meteo-aggregator.pages.dev` URL for sharing, though per-deploy
+`<hash>.…pages.dev` aliases now work fully too: every call is same-origin through
+the Function, so no origin allow-list is involved. Set `API_ORIGIN` for the
+preview environment as well (`--env preview`) or preview deploys return 503.
 
 ## Architecture
 
