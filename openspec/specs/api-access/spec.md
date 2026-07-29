@@ -3,11 +3,13 @@
 ## Purpose
 TBD - created by archiving change dev-api-proxy. Update Purpose after archive.
 ## Requirements
-### Requirement: Same-origin backend access in development
+### Requirement: Same-origin backend access in every environment
 
-In development the UI SHALL reach the backend through a same-origin path (a
-dev-server proxy) rather than calling the backend's origin directly, so that
-development requires no cross-origin (CORS) configuration on the backend.
+The UI SHALL reach the backend through a same-origin `/api` path in both
+development and production, rather than calling the backend's origin directly,
+so that no cross-origin (CORS) configuration is required on the backend. In
+development a dev-server proxy forwards `/api`; in production an edge function
+served from the UI's own origin does.
 
 #### Scenario: Data requests are same-origin in dev
 
@@ -43,12 +45,14 @@ default) or point at an absolute backend URL without code changes.
 
 ### Requirement: Environment-selected API target
 
-The production build SHALL target the deployed backend without affecting local
-development. `VITE_API_BASE_URL` SHALL be resolved per Vite mode: development
-(`npm run dev`) uses the dev-proxy base (`/api`), while the production build
-(`npm run build`) SHALL read the deployed backend's absolute URL from a committed
-`.env.production`. The two targets therefore never collide and no build-time flag
-is required.
+The production build SHALL reach the deployed backend without affecting local
+development, and without embedding the backend's address in the shipped bundle.
+Both modes resolve `VITE_API_BASE_URL` to the same-origin `/api` base; what
+differs is the forwarder. Development (`npm run dev`) uses the dev-server proxy
+to a locally running backend. Production (`npm run build`) is served by an edge
+function that forwards `/api` to the deployed backend, whose URL SHALL be read
+from a platform secret at request time rather than from any committed file. The
+two targets therefore never collide and no build-time flag is required.
 
 #### Scenario: Development build targets the local backend
 
@@ -58,7 +62,19 @@ is required.
 
 #### Scenario: Production build targets the deployed backend
 
-- **WHEN** the app is built via `npm run build` (production mode)
-- **THEN** requests target the deployed backend's absolute URL taken from
-  `.env.production`
+- **WHEN** the app is built via `npm run build` (production mode) and deployed
+- **THEN** requests use the `/api` base on the deployed origin, and the edge
+  function forwards them to the backend named by the deployment's secret
+
+#### Scenario: No backend address in the shipped bundle
+
+- **WHEN** the production bundle is inspected by anyone loading the site
+- **THEN** it contains no absolute backend URL, because the address is resolved
+  server-side by the edge function and never reaches the client
+
+#### Scenario: Missing backend configuration is reported, not guessed
+
+- **WHEN** the deployment has no backend URL configured
+- **THEN** `/api` requests fail with an explicit server error identifying the
+  missing configuration, rather than returning a 404 or a silent empty result
 
