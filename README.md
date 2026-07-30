@@ -18,6 +18,12 @@ architecture and the backend contract.
 
 **Live:** <https://meteo-aggregator.pages.dev>
 
+> A demo on free-tier infrastructure, capped to a single backend instance — it may
+> be slow to wake, and it will not hold up under load. It also draws on Open-Meteo's
+> free non-commercial tier. For anything real, deploy your own: the backend is one
+> `gcloud run deploy` ([meteo-aggregator-api](https://github.com/pls78/meteo-aggregator-api)),
+> and this UI points at it via a single secret — see [Deploy](#deploy).
+
 ## Node version
 
 The toolchain (Vite 8) requires **Node ≥ 20.19** — use **Node 22** (`.nvmrc` pins
