@@ -12,6 +12,13 @@ computed; toggleable EUMETSAT satellite WMS overlays. On load it starts at your 
 geolocation, else a configured default), and an info button opens a "how it works"
 page describing the data sources, the aggregation/weighting algorithm, and the layers.
 
+<p>
+  <img src="docs/screenshot-desktop.jpg" width="70%" align="top"
+       alt="Desktop layout: a full-screen map of northern Italy under a Geo Colour satellite overlay, with the place search top-left, the satellite layer list bottom-left, and the Milan forecast card top-right showing current conditions and seven days with per-day confidence tags.">
+  <img src="docs/screenshot-mobile.png" width="26%" align="top"
+       alt="Mobile layout: the same map with a search bar on top and the draggable weather sheet below, showing current conditions and the seven-day forecast.">
+</p>
+
 Pure frontend — Vite + React 19 + TypeScript + Tailwind v4 + MapLibre GL — talking
 directly to the FastAPI backend over HTTP. See [`CLAUDE.md`](CLAUDE.md) for
 architecture and the backend contract.
