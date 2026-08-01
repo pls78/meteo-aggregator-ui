@@ -31,15 +31,17 @@ export function LocationCard({ location, slot, accent }: Props) {
   const title =
     location.name ?? `${location.lat.toFixed(3)}, ${location.lng.toFixed(3)}`
 
+  // The card sizes to its widest day rather than wrapping one, bounded so it stays an
+  // overlay on the map (and so two cards still fit side by side when comparing).
   return (
-    <section className="w-72 rounded-xl bg-white/70 p-4 shadow-xl ring-1 ring-black/5 backdrop-blur">
+    <section className="w-max min-w-72 max-w-[22rem] rounded-xl bg-white/70 p-4 shadow-xl ring-1 ring-black/5 backdrop-blur">
       <header className="mb-3 flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 items-center gap-2">
           <span
             className="inline-block h-3 w-3 rounded-full"
             style={{ background: accent }}
           />
-          <h2 className="text-sm font-semibold text-slate-900">{title}</h2>
+          <h2 className="truncate text-sm font-semibold text-slate-900">{title}</h2>
         </div>
         <button
           type="button"
@@ -95,9 +97,10 @@ export function LocationCard({ location, slot, accent }: Props) {
                   >
                     <span className="text-slate-500">{WEEKDAY(day.date)}</span>
                     <span>{weatherInfo(day.values.weather_code).icon}</span>
-                    <span className="text-slate-800">
-                      <span className="font-medium">{num(day.values.temperature_2m_max)}°</span>
-                      <span className="text-slate-400"> / {num(day.values.temperature_2m_min)}°</span>
+                    {/* Never wraps — the card widens instead (see the section above). */}
+                    <span className="whitespace-nowrap text-slate-800">
+                      <span className="font-medium tabular-nums">{num(day.values.temperature_2m_max)}°</span>
+                      <span className="tabular-nums text-slate-400"> / {num(day.values.temperature_2m_min)}°</span>
                       {typeof day.values.precipitation_sum === 'number' &&
                         day.values.precipitation_sum > 0 && (
                           <span className="ml-1 text-blue-500">

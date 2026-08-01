@@ -14,8 +14,12 @@ export function MobileShell() {
     <div className="pointer-events-none absolute inset-0 z-[1000]">
       <MobileTopBar />
       <MobileLayers />
-      {/* Right-side FAB stack under the Layers FAB (top-24): locate, then info. */}
-      <LocateButton className="pointer-events-auto absolute right-3 top-[9.5rem] z-[1000] h-12 w-12" />
+      {/* Right-side FAB stack under the Layers FAB (top-24): locate, then info. The locate
+          button is placed by a wrapper rather than its own className, because it positions
+          its failure message against itself. */}
+      <div className="pointer-events-auto absolute right-3 top-[9.5rem] z-[1000]">
+        <LocateButton className="h-12 w-12" />
+      </div>
       <AboutButton className="pointer-events-auto absolute right-3 top-[13rem] z-[1000] h-12 w-12" />
       {/* Time-lapse control, centered above the peeking weather sheet (96px). */}
       <div className="absolute bottom-[6.5rem] left-1/2 z-[1000] -translate-x-1/2">

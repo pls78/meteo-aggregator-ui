@@ -68,7 +68,9 @@ function FadingCard({
 
   return (
     <div
-      className={`transition-[opacity,transform] duration-300 ease-out ${
+      // shrink-0: a card sizes itself to its widest day, so it must not be squeezed back
+      // into wrapping when two are shown side by side.
+      className={`shrink-0 transition-[opacity,transform] duration-300 ease-out ${
         visible ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0'
       }`}
     >
@@ -81,7 +83,7 @@ export function ComparisonPanel() {
   const { primary, comparison } = useAppStore()
 
   return (
-    <div className="pointer-events-auto flex max-h-[calc(100vh-2rem)] gap-3 overflow-auto">
+    <div className="pointer-events-auto flex max-h-[calc(100vh-2rem)] max-w-[calc(100vw-2rem)] gap-3 overflow-auto">
       <FadingCard location={primary} slot="primary" accent="#2563eb" />
       <FadingCard location={comparison} slot="comparison" accent="#f59e0b" />
     </div>

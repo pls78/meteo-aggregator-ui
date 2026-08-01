@@ -194,7 +194,8 @@ export function WeatherSheet() {
                     >
                       <span className="text-slate-500">{WEEKDAY(day.date)}</span>
                       <span>{weatherInfo(day.values.weather_code).icon}</span>
-                      <span className="text-slate-800">
+                      {/* Never wraps, matching the desktop card's day row. */}
+                      <span className="whitespace-nowrap text-slate-800">
                         <span className="font-medium tabular-nums">{num(day.values.temperature_2m_max)}°</span>
                         <span className="tabular-nums text-slate-400"> / {num(day.values.temperature_2m_min)}°</span>
                         {typeof day.values.precipitation_sum === 'number' && day.values.precipitation_sum > 0 && (
