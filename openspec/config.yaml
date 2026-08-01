@@ -2,16 +2,19 @@ schema: spec-driven
 
 # Project context shown to AI when creating artifacts.
 context: |
-  Map-driven weather UI. A full-screen, pannable/zoomable Leaflet map where the user
+  Map-driven weather UI. A full-screen, pannable/zoomable MapLibre GL map where the user
   clicks a point (or uses a search box) to select a location and sees aggregated weather
   overlaid. Shift+click selects a second location for side-by-side comparison. Toggleable
   WMS satellite layers (cloud/IR/lightning/etc.) can be overlaid on the map on demand.
+  Below the md breakpoint a separate mobile layout renders instead; keep the two in sync.
 
-  Tech stack: Vite + React + TypeScript + Tailwind CSS + react-leaflet (Leaflet).
+  Tech stack: Vite + React + TypeScript + Tailwind CSS + maplibre-gl (no Leaflet).
   Server state via @tanstack/react-query; client UI state in a small store.
 
   Backend: the Python/FastAPI aggregator at ../meteo-aggregator-api (no PHP). The UI calls it
-  directly over HTTP at VITE_API_BASE_URL. Keyless GET endpoints:
+  same-origin at VITE_API_BASE_URL (/api) — the Vite dev proxy forwards it in development, a
+  Cloudflare Pages Function in production — so CORS is never involved and no backend URL is in
+  the bundle. Keyless GET endpoints:
     - GET /search?name&count&language  -> Place[] (name -> lat/lon)
     - GET /forecast?lat&lon&days       -> daily consensus + confidence + per-model breakdown
     - GET /hourly?lat&lon&hours        -> hourly consensus (hours[0] = current conditions)

@@ -27,6 +27,12 @@ TypeScript + Tailwind v4 + MapLibre GL) talking directly to the Python/FastAPI
   (`bg-white/70` + `backdrop-blur` — `overlay-transparency`). These extend `weather-display` /
   `map-view`. The backend confidence-computation capability has its own spec in the sibling repo
   (`../meteo-aggregator-api/openspec/specs/confidence-detail/`).
+- **Also shipped (`harden-locate-control`):** the "use my location" control can no longer hang.
+  A watchdog bounds the wait (the browser's own `timeout` doesn't cover the permission prompt —
+  gotcha #10), a late-arriving fix is still honoured, the button never disables itself into a
+  dead end, blocked permission is detected and explained instead of retried into a no-op, and
+  the failure message persists until acted on. Same change: the forecast card sizes to its
+  widest day so a row can't wrap.
 - **Also shipped:** the time-lapse control now stays clear of the open detail sheet
   (`animate-control-clears-forecast` — the control keeps its fixed bottom-centre slot and the
   sheet lifts above it when a layer is active); the sheet rounds all corners while lifted; and
@@ -140,6 +146,17 @@ cd ../meteo-aggregator-api && uvicorn api.main:app --reload   # http://localhost
    - Known, unfixed: the sheet's `pointer-events-auto` wrapper is full-width, so it still eats map
      clicks in the transparent strips beside the centered sheet. Constraining it needs care — the
      chart sizes itself from its container width, so don't wrap it in `w-fit`.
+10. **`PositionOptions.timeout` does not bound `getCurrentPosition`.** It excludes the time the
+    permission prompt is on screen, so an unanswered prompt invokes **neither** callback — which
+    is exactly how `LocateButton` used to spin forever with no way out but a reload. Anything
+    calling geolocation needs its own watchdog (`harden-locate-control`). Two consequences worth
+    keeping: a fix that lands *after* the watchdog is still accepted (otherwise a slow-but-real
+    grant looks like a silent failure), and `navigator.permissions` is treated as **advisory** —
+    it's absent on older Safari, so never let it be the thing that decides a request failed.
+11. **Known, unfixed: overlay collision on a narrow desktop window.** Around ~900 px with two
+    locations compared, the top-right cards overlap the top-left search boxes. This predates the
+    variable-width card (fixed `w-72` cards already collided); `harden-locate-control` widened it
+    by ~30 px. A real fix means deciding how the two top overlays share a narrow viewport.
 
 ## Accent colors (used in 3 places — keep consistent)
 
@@ -182,7 +199,8 @@ src/lib/config.ts                 DEFAULT_LOCATION (startup fallback)
 src/components/map/MapView.tsx    MapLibre map: style, click+place-label select, markers, recenter, WMS overlays, time-lapse frame stack + clock
 src/components/map/MapAnimateControl.tsx   floating time-lapse play/pause + frame time + loading spinner (single active layer)
 src/components/search/{SearchBox,SearchPanel}.tsx   per-slot search + "+" add-comparison
-src/components/panels/LocationCard.tsx              current + daily forecast card
+src/components/panels/LocationCard.tsx              current + daily forecast card (w-max, grows so a day row never wraps)
+src/components/locate/LocateButton.tsx              "use my location" (watchdog-bounded; see gotcha #10)
 src/components/compare/ComparisonPanel.tsx          1 or 2 cards, fade in/out
 src/components/layers/LayerControl.tsx              layer toggles, opacity, legends
 src/components/hourly/{HourlyPanel,HourlyChart}.tsx per-day hourly sheet + inline SVG chart (adaptive density + hover/tap crosshair)
@@ -222,7 +240,7 @@ rather than adding their own spec.) Run `openspec list --specs` for the live cou
 → `add-rgb-color-keys` → `add-hourly-view` → `mobile-ui` → `add-default-location`
 → `add-info-page` → `add-locate-button` → `add-layer-animation` → `derive-info-page-layers`
 → `confidence-detail-view` → `interactive-hourly-chart` → `overlay-transparency`
-→ `animate-control-clears-forecast`
+→ `animate-control-clears-forecast` → `harden-locate-control`
 (all under `openspec/changes/archive/`).
 
 > Two small follow-ups to `add-info-page` (copy tightening, and worked examples in the

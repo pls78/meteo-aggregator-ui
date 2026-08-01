@@ -9,8 +9,10 @@ icons — hover/tap a point for its exact value), with both locations overlaid o
 one chart when two are selected; tap a day's confidence tag instead to see the
 per-model temperatures, their blend weights, and how that confidence was
 computed; toggleable EUMETSAT satellite WMS overlays. On load it starts at your location (browser
-geolocation, else a configured default), and an info button opens a "how it works"
-page describing the data sources, the aggregation/weighting algorithm, and the layers.
+geolocation, else a configured default), a locate button re-centres on you on demand — and says
+so plainly if your browser has location blocked, rather than failing silently — and an info
+button opens a "how it works" page describing the data sources, the aggregation/weighting
+algorithm, and the layers.
 
 <p>
   <img src="docs/screenshot-desktop.jpg" width="70%" align="top"

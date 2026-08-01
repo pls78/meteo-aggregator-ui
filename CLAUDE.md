@@ -104,7 +104,10 @@ preview environment as well (`--env preview`) or preview deploys return 503.
   HANDOFF gotcha #3). `MapAnimateControl` is the floating play/pause control (single active layer).
 - **`src/components/`** (desktop overlays) — `search/SearchBox` (accepts a `className` for
   width), `panels/LocationCard` (each day row has two click targets — the day area opens the
-  hourly view, the confidence tag opens the confidence detail),
+  hourly view, the confidence tag opens the confidence detail; the card is **`w-max` between
+  `min-w-72` and `max-w-[22rem]`, not a fixed width** — it grows to fit its widest day so a row
+  never wraps, and the day's values carry `whitespace-nowrap` to force that. `ComparisonPanel`
+  keeps its cards `shrink-0` for the same reason),
   `compare/ComparisonPanel`, `layers/LayerControl` (exports `LayerLegend`/`RgbColorKey` for
   reuse), `confidence/` (`ConfidenceDetail` — the per-model temperatures, blend weights, and a
   plain-language explanation of the confidence level, all derived from the `/forecast`
@@ -126,6 +129,19 @@ preview environment as well (`--env preview`) or preview deploys return 503.
   models/weights in sync if the backend changes. The **satellite-layer list is derived from
   `GET /imagery`** (membership + cadence, via `lib/layerMeta.ts`); only per-layer editorial copy
   is hand-authored in `aboutContent.ts`'s `LAYER_INFO`, keyed by layer id with a fallback.
+- **`src/components/locate/LocateButton.tsx`** — the "use my location" control, shared by both
+  layouts. Defensive about the Geolocation API on purpose: `PositionOptions.timeout` does **not**
+  cover the time the permission prompt is on screen, so an unanswered prompt calls neither
+  callback. A **watchdog** (`WATCHDOG_MS`, set above the 8 s geolocation timeout so a normal
+  failure reports itself first) bounds the wait, and a fix arriving *after* it is still honoured
+  — each request carries an id so a superseded one can't clobber a newer selection. The button
+  is never `disabled` (re-entry is guarded in code) so it can't become a dead end, and it is
+  only `aria-disabled` while resolving — **not** when blocked, since activating it then still
+  explains why. `navigator.permissions` is **advisory only**: absent (older Safari) or rejected
+  means fall back to the ordinary retryable path, never to claiming "blocked". The failure
+  message persists until retried or dismissed. **Its `className` goes on the wrapper, not the
+  button** — the wrapper is `relative` so the message anchors to the control, which is why
+  `MobileShell` places it with a positioning wrapper instead of passing `absolute` in.
 - **`src/hooks/useMediaQuery.ts`** — `useMediaQuery`/`useIsMobile` (`max-width: 767px`).
   `App.tsx` renders `DesktopOverlays` or `MobileShell` over the shared `MapView` based on it.
 - **`src/hooks/useInitialLocation.ts`** — on load, seeds the primary location from the browser
