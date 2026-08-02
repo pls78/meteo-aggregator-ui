@@ -10,15 +10,15 @@ for side-by-side comparison; tapping a day opens an hour-by-hour bottom sheet fo
 (both locations overlaid when two are selected); satellite WMS layers can be toggled onto the
 map. On load it seeds a starting location (browser geolocation, else a configured default), and
 an info button opens a "how it works" page. Below the `md` breakpoint it switches to a
-**mobile layout** — a draggable weather bottom sheet, an on-screen **A/B tap target** in place
+**mobile layout**: a draggable weather bottom sheet, an on-screen **A/B tap target** in place
 of Shift+click, and a satellite-layers sheet. It is a pure frontend (Vite + React + TypeScript
-+ Tailwind v4 + MapLibre GL) that talks directly to the Python/FastAPI **meteo-aggregator-api**
++ Tailwind v4 + MapLibre GL) reading from the Python/FastAPI **meteo-aggregator-api**
 backend in the sibling repo `../meteo-aggregator-api`.
 
 ## Node version
 
 The toolchain (Vite 8 / create-vite) requires **Node ≥ 20.19** (use `v22`, see `.nvmrc`).
-The default shell may be on Node 18 — run `nvm use` first, or commands will fail with a
+The default shell may be on Node 18, so run `nvm use` first or commands fail with a
 `styleText`/ESM error.
 
 ## Commands
@@ -46,7 +46,7 @@ cd ../meteo-aggregator-api && uvicorn api.main:app --reload
 **CORS: never involved, in either mode.** The browser always calls `/api/*` on
 its own origin. In dev, Vite's `server.proxy` forwards it; in production, the
 Cloudflare Pages Function in `functions/api/` does. The backend still has an
-`ALLOWED_ORIGINS` allow-list, but nothing in this app depends on it — the proxy
+`ALLOWED_ORIGINS` allow-list, but nothing in this app depends on it: the proxy
 calls the backend server-side, where CORS does not apply.
 
 ## Deployment
@@ -65,7 +65,7 @@ The API target is selected by Vite mode, so **local and deployed never collide**
 Both modes are same-origin `/api`, so **CORS is never involved** and the bundle
 contains no backend URL. The real URL is the `API_ORIGIN` secret on the
 Cloudflare Pages project (`wrangler pages secret put`). Anything you put in a
-`VITE_*` var is baked into the bundle and public — never a secret.
+`VITE_*` var is baked into the bundle and public, so never a secret.
 
 Redeploy the UI:
 
@@ -82,8 +82,8 @@ preview environment as well (`--env preview`) or preview deploys return 503.
 ## Architecture
 
 - **`src/api/`** — the typed contract. `types.ts` mirrors the backend pydantic models
-  (`../meteo-aggregator-api/meteo_aggregator/models.py`) — **keep them in sync**. `client.ts` is
-  a thin `fetch` wrapper (one function per endpoint).
+  (`../meteo-aggregator-api/meteo_aggregator/models.py`), so **keep them in sync**. `client.ts`
+  is a thin `fetch` wrapper (one function per endpoint).
 - **`src/hooks/queries.ts`** — React Query hooks (`useSearch`, `useForecast`, `useHourly`,
   `useHourlyRange`, `useImagery`). Forecast/hourly query keys include rounded lat/lon so
   locations cache independently and aren't refetched on tiny coordinate changes. `useHourly`
@@ -91,33 +91,36 @@ preview environment as well (`--env preview`) or preview deploys return 503.
   enabled only while a day is open in the hourly view.
 - **`src/store/appStore.tsx`** — client UI state only (selected primary/comparison locations,
   active WMS layers, overlay opacity, map focus, `selectedDay` (the day open in the bottom
-  expansion) and `selectedDayView` (`'hourly'` | `'confidence'` — whether that day shows its
-  hourly chart or its confidence detail), `activeSlot`, which slot a plain map tap fills, `aboutOpen`, the info dialog's
-  visibility, and the time-lapse trio `animatingLayer`/`frameIndex`/`frameLoading` (the layer
-  playing, its current frame, and whether that frame's tiles are still loading — the latter two
-  driven by `MapView`). `activeSlot` is the mobile A/B target; it stays `'primary'` on desktop so
-  plain-click/Shift are unchanged). Server data stays in React Query, never here.
+  expansion), `selectedDayView` (`'hourly'` | `'confidence'`, whether that day shows its hourly
+  chart or its confidence detail), `activeSlot` (which slot a plain map tap fills), `aboutOpen`
+  (the info dialog's visibility), and the time-lapse trio
+  `animatingLayer`/`frameIndex`/`frameLoading` (the layer playing, its current frame, and
+  whether that frame's tiles are still loading; the latter two driven by `MapView`).
+  `activeSlot` is the mobile A/B target and stays `'primary'` on desktop, so plain-click/Shift
+  are unchanged. Server data stays in React Query, never here.
 - **`src/components/map/`** — `MapView` (the full-screen map + base tiles + markers + recenter +
   WMS overlays). Rotation and pitch are locked (kept north-up). A plain tap fills `activeSlot`;
   Shift+click always fills comparison. Active satellite layers are rendered imperatively in
   `MapView`; when one plays a time-lapse it mounts a preloaded raster layer per frame (see
   HANDOFF gotcha #3). `MapAnimateControl` is the floating play/pause control (single active layer).
-- **`src/components/`** (desktop overlays) — `search/SearchBox` (accepts a `className` for
-  width), `panels/LocationCard` (each day row has two click targets — the day area opens the
-  hourly view, the confidence tag opens the confidence detail; the card is **`w-max` between
-  `min-w-72` and `max-w-[22rem]`, not a fixed width** — it grows to fit its widest day so a row
-  never wraps, and the day's values carry `whitespace-nowrap` to force that. `ComparisonPanel`
-  keeps its cards `shrink-0` for the same reason),
-  `compare/ComparisonPanel`, `layers/LayerControl` (exports `LayerLegend`/`RgbColorKey` for
-  reuse), `confidence/` (`ConfidenceDetail` — the per-model temperatures, blend weights, and a
-  plain-language explanation of the confidence level, all derived from the `/forecast`
-  `breakdown` + `confidence`; `ConfidenceTag` — the clickable confidence label, shared with the
-  mobile layout), and `hourly/` — `HourlyPanel` (bottom sheet: hourly chart, or the confidence
-  detail in the same slot) + `HourlyChart` (dependency-free inline SVG; temperature line and
-  precipitation bars in **separate stacked panels** sharing one x-axis — never a dual-axis
-  chart; it fills its container's width and adapts point density to it — a point every 3 h when
-  narrow up to every hour when wide — labels each point with its hour, and shows a crosshair +
-  value on hover/tap).
+- **`src/components/`** (desktop overlays):
+  - `search/SearchBox` accepts a `className` for width.
+  - `panels/LocationCard` gives each day row two click targets: the day area opens the hourly
+    view, the confidence tag opens the confidence detail. The card is **`w-max` between
+    `min-w-72` and `max-w-[22rem]`, not a fixed width**, so it grows to fit its widest day and
+    no row wraps; the day's values carry `whitespace-nowrap` to force that.
+  - `compare/ComparisonPanel` lays out one or two cards and keeps them `shrink-0`, so a card
+    that sized itself to its widest day is never squeezed back into wrapping.
+  - `layers/LayerControl` exports `LayerLegend`/`RgbColorKey` for reuse.
+  - `confidence/` holds `ConfidenceDetail` (per-model temperatures, blend weights, and a
+    plain-language explanation of the level, all derived from the `/forecast` `breakdown` +
+    `confidence`) and `ConfidenceTag` (the clickable label, shared with the mobile layout).
+  - `hourly/` holds `HourlyPanel` (bottom sheet: hourly chart, or the confidence detail in the
+    same slot) and `HourlyChart` (dependency-free inline SVG). The chart puts the temperature
+    line and precipitation bars in **separate stacked panels** sharing one x-axis, never a
+    dual-axis chart. It fills its container's width and adapts point density to it, from a
+    point every 3 h when narrow up to every hour when wide, labels each point with its hour,
+    and shows a crosshair + value on hover/tap.
 - **`src/components/mobile/`** — the layout shown below the `md` breakpoint. `MobileShell`
   composes `MobileTopBar` (search + A/B target), `WeatherSheet` (draggable peek/half/full sheet
   with an A/B tab, embedding `HourlyChart`), and `MobileLayers` (Layers FAB + modal sheet).
@@ -125,7 +128,7 @@ preview environment as well (`--env preview`) or preview deploys return 503.
   button in both layouts; state via `appStore.aboutOpen`). `AboutDialog` is a light modal
   documenting features, data sources, the aggregation/weighting algorithm (with worked
   examples), and the satellite layers; `AboutButton` is the trigger; `aboutContent.ts` holds
-  the static figures **transcribed from the backend `config.py`/`aggregation.py`** — keep the
+  the static figures **transcribed from the backend `config.py`/`aggregation.py`**, so keep the
   models/weights in sync if the backend changes. The **satellite-layer list is derived from
   `GET /imagery`** (membership + cadence, via `lib/layerMeta.ts`); only per-layer editorial copy
   is hand-authored in `aboutContent.ts`'s `LAYER_INFO`, keyed by layer id with a fallback.
@@ -133,15 +136,15 @@ preview environment as well (`--env preview`) or preview deploys return 503.
   layouts. Defensive about the Geolocation API on purpose: `PositionOptions.timeout` does **not**
   cover the time the permission prompt is on screen, so an unanswered prompt calls neither
   callback. A **watchdog** (`WATCHDOG_MS`, set above the 8 s geolocation timeout so a normal
-  failure reports itself first) bounds the wait, and a fix arriving *after* it is still honoured
-  — each request carries an id so a superseded one can't clobber a newer selection. The button
-  is never `disabled` (re-entry is guarded in code) so it can't become a dead end, and it is
-  only `aria-disabled` while resolving — **not** when blocked, since activating it then still
-  explains why. `navigator.permissions` is **advisory only**: absent (older Safari) or rejected
-  means fall back to the ordinary retryable path, never to claiming "blocked". The failure
-  message persists until retried or dismissed. **Its `className` goes on the wrapper, not the
-  button** — the wrapper is `relative` so the message anchors to the control, which is why
-  `MobileShell` places it with a positioning wrapper instead of passing `absolute` in.
+  failure reports itself first) bounds the wait. A fix arriving *after* the watchdog is still
+  honoured; each request carries an id so a superseded one can't clobber a newer selection.
+  The button is never `disabled` (re-entry is guarded in code) so it can't become a dead end,
+  and it is `aria-disabled` only while resolving, **not** when blocked, since activating it
+  then still explains why. `navigator.permissions` is **advisory only**: absent (older Safari)
+  or rejected means fall back to the ordinary retryable path, never to claiming "blocked". The
+  failure message persists until retried or dismissed. **Its `className` goes on the wrapper,
+  not the button**, because the wrapper is `relative` so the message anchors to the control.
+  That is why `MobileShell` places it with a positioning wrapper instead of passing `absolute` in.
 - **`src/hooks/useMediaQuery.ts`** — `useMediaQuery`/`useIsMobile` (`max-width: 767px`).
   `App.tsx` renders `DesktopOverlays` or `MobileShell` over the shared `MapView` based on it.
 - **`src/hooks/useInitialLocation.ts`** — on load, seeds the primary location from the browser
@@ -152,7 +155,7 @@ preview environment as well (`--env preview`) or preview deploys return 503.
 > **Two layouts, one behavior:** presentation of selection / weather / layers is duplicated
 > across the desktop overlays and `src/components/mobile/`. Changing one usually means changing
 > the other. The map, store, and React Query hooks are shared, so keep behavior in those.
-> The `index.html` viewport is intentionally locked (`maximum-scale=1, user-scalable=no`) — the
+> The `index.html` viewport is intentionally locked (`maximum-scale=1, user-scalable=no`) so the
 > map owns zoom; without it iOS zooms into focused inputs and never restores. Don't re-enable it.
 
 ### Backend contract (consumed, not owned here)
@@ -163,7 +166,7 @@ Four keyless GET endpoints; full reference in `../meteo-aggregator-api/api/READM
 |----------|-------|
 | `GET /search?name` | `Place[]` — name → coordinates for the search box |
 | `GET /forecast?lat&lon&days` | daily consensus; `values` keyed by variable, plus `confidence` + per-model `breakdown` |
-| `GET /hourly?lat&lon&hours` | hourly consensus; **`hours[0]` = current conditions** (`/forecast` has only daily max/min). Timestamps are **location-local** (backend uses `timezone=auto`), matching the daily `date`, so the hourly view groups hours under a tapped day via `date.slice(0,10)` — **do not** assume UTC here |
+| `GET /hourly?lat&lon&hours` | hourly consensus; **`hours[0]` = current conditions** (`/forecast` has only daily max/min). Timestamps are **location-local** (backend uses `timezone=auto`), matching the daily `date`, so the hourly view groups hours under a tapped day via `date.slice(0,10)`. **Do not** assume UTC here |
 | `GET /imagery?time&frames` | EUMETSAT WMS layer params (`EPSG:3857`, transparent PNG). Each layer has `time` and a `times` array (`frames` recent frames, newest first; `time === times[0]`) for the time-lapse. Tiles are fetched **directly from EUMETSAT by the browser**, not proxied; `time: null` ⇒ WMS serves the latest image |
 
 `values` is `Record<string, number | string | null>`; `weather_code` is a WMO code, and
@@ -172,12 +175,12 @@ Four keyless GET endpoints; full reference in `../meteo-aggregator-api/api/READM
 ## Conventions
 
 - Metric units only. No auth, no i18n.
-- `tsconfig` uses `verbatimModuleSyntax` — import types with `import type`.
+- `tsconfig` uses `verbatimModuleSyntax`, so import types with `import type`.
 
 ## OpenSpec workflow (spec-driven)
 
 This repo uses OpenSpec, like the backend. Specs and change proposals live in `openspec/`.
-Don't add features ad hoc — go through a change:
+Don't add features ad hoc; go through a change:
 
 - `/opsx:propose "<idea>"` (or `openspec new change <name>`) → author `proposal.md`,
   `specs/<capability>/spec.md`, `design.md`, `tasks.md`.

@@ -5,14 +5,14 @@ A full-screen MapLibre GL map: click (or search, or click a place label) to sele
 a location and see the aggregated multi-model forecast; `Shift`+click adds a second
 location for side-by-side comparison; tap a day in the forecast to open its
 hour-by-hour breakdown in a bottom sheet (temperature, precipitation, weather
-icons — hover/tap a point for its exact value), with both locations overlaid on
+icons; hover/tap a point for its exact value), with both locations overlaid on
 one chart when two are selected; tap a day's confidence tag instead to see the
 per-model temperatures, their blend weights, and how that confidence was
 computed; toggleable EUMETSAT satellite WMS overlays. On load it starts at your location (browser
-geolocation, else a configured default), a locate button re-centres on you on demand — and says
-so plainly if your browser has location blocked, rather than failing silently — and an info
-button opens a "how it works" page describing the data sources, the aggregation/weighting
-algorithm, and the layers.
+geolocation, else a configured default), and a locate button returns you there at any time. If
+your browser has location blocked it says so rather than failing silently. An info button opens
+a "how it works" page covering the data sources, the aggregation/weighting algorithm, and the
+layers.
 
 <p>
   <img src="docs/screenshot-desktop.jpg" width="70%" align="top"
@@ -21,21 +21,21 @@ algorithm, and the layers.
        alt="Mobile layout: the same map with a search bar on top and the draggable weather sheet below, showing current conditions and the seven-day forecast.">
 </p>
 
-Pure frontend — Vite + React 19 + TypeScript + Tailwind v4 + MapLibre GL — talking
-directly to the FastAPI backend over HTTP. See [`CLAUDE.md`](CLAUDE.md) for
-architecture and the backend contract.
+Pure frontend (Vite + React 19 + TypeScript + Tailwind v4 + MapLibre GL), reading
+from the FastAPI backend over HTTP. See [`CLAUDE.md`](CLAUDE.md) for architecture
+and the backend contract.
 
 **Live:** <https://meteo-aggregator.pages.dev>
 
-> A demo on free-tier infrastructure, capped to a single backend instance — it may
+> A demo on free-tier infrastructure, capped to a single backend instance. It may
 > be slow to wake, and it will not hold up under load. It also draws on Open-Meteo's
 > free non-commercial tier. For anything real, deploy your own: the backend is one
 > `gcloud run deploy` ([meteo-aggregator-api](https://github.com/pls78/meteo-aggregator-api)),
-> and this UI points at it via a single secret — see [Deploy](#deploy).
+> and this UI points at it via a single secret (see [Deploy](#deploy)).
 
 ## Node version
 
-The toolchain (Vite 8) requires **Node ≥ 20.19** — use **Node 22** (`.nvmrc` pins
+The toolchain (Vite 8) requires **Node ≥ 20.19**, so use **Node 22** (`.nvmrc` pins
 `22.22.1`). The shell often defaults to Node 18, which breaks the build, so run
 `nvm use` first.
 
@@ -59,7 +59,7 @@ Other scripts: `npm run build` (typecheck + production build), `npm run lint`
 
 ## API target: local vs. deployed
 
-Which backend the UI calls is selected by Vite's mode-based env files — the two
+Which backend the UI calls is selected by Vite's mode-based env files, so the two
 never collide:
 
 | Command | Mode | API target | Mechanism |
@@ -84,8 +84,8 @@ your backend. See [`.env.example`](.env.example).
 
 ## Deploy
 
-The build is fully static; it's hosted on **Cloudflare Pages** (direct upload —
-no Git integration required):
+The build is fully static; it's hosted on **Cloudflare Pages** (direct upload, no
+Git integration required):
 
 ```bash
 nvm use
@@ -102,17 +102,16 @@ npx wrangler pages secret put API_ORIGIN --project-name=meteo-aggregator --env p
 ```
 
 Without it, `/api/*` returns 503. Per-deploy `<hash>.meteo-aggregator.pages.dev`
-aliases work fully — every call is same-origin, so no allow-list is involved.
+aliases work fully, because every call is same-origin and no allow-list is involved.
 
 ## License
 
-MIT — see [`LICENSE`](LICENSE).
+MIT, see [`LICENSE`](LICENSE).
 
 That covers this code only. Forecasts and place search come from
 [Open-Meteo](https://open-meteo.com) (data under CC-BY-4.0, free for
-non-commercial use) via the backend, and the map tiles and satellite layers
-carry their own terms — [EUMETSAT](https://view.eumetsat.int) for the imagery,
-and [CARTO](https://carto.com/basemaps/) Voyager, built on OpenStreetMap data,
-for the basemap. The in-app "how it works" dialog credits the weather and
-imagery sources; basemap attribution is rendered by MapLibre from the CARTO
-style.
+non-commercial use) via the backend. The map tiles and satellite layers carry
+their own terms: [EUMETSAT](https://view.eumetsat.int) for the imagery, and
+[CARTO](https://carto.com/basemaps/) Voyager, built on OpenStreetMap data, for
+the basemap. The in-app "how it works" dialog credits the weather and imagery
+sources; basemap attribution is rendered by MapLibre from the CARTO style.
