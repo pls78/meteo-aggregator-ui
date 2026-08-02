@@ -8,7 +8,7 @@ export interface Feature {
 }
 
 export const FEATURES: Feature[] = [
-  { title: 'Point anywhere', body: 'Click the map or search a town. On first load it starts at your location, or a configured default.' },
+  { title: 'Point anywhere', body: 'Click the map or search a town. On first load it starts at your location, or a configured default, and the locate button returns you there at any time. If your browser has blocked location access, the app says so; allow it for this site in your browser’s settings.' },
   { title: 'Compare two places', body: 'Shift-click (or the A / B target on mobile) to hold a second location side by side.' },
   { title: 'Hour by hour', body: 'Tap a day for its hour-by-hour temperature line and precipitation bars; hover (or tap) a point for its exact value.' },
   { title: 'Consensus + confidence', body: 'Each day shows one blended value and a confidence tag; tap the tag to see every model’s temperature, its blend weight, and how the confidence was computed.' },

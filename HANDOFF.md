@@ -242,6 +242,7 @@ rather than adding their own spec.) Run `openspec list --specs` for the live cou
 → `add-info-page` → `add-locate-button` → `add-layer-animation` → `derive-info-page-layers`
 → `confidence-detail-view` → `interactive-hourly-chart` → `overlay-transparency`
 → `animate-control-clears-forecast` → `harden-locate-control`
+→ `document-locate-in-info-page`
 (all under `openspec/changes/archive/`).
 
 > Two small follow-ups to `add-info-page` (copy tightening, and worked examples in the

@@ -1,25 +1,4 @@
-# info-page Specification
-
-## Purpose
-TBD - created by archiving change add-info-page. Update Purpose after archive.
-## Requirements
-### Requirement: In-app info page
-
-The system SHALL provide an in-app informational page, presented as a modal dialog over the
-map, that a user can open from a visible info control and dismiss. The page SHALL be available
-in both the desktop and mobile layouts.
-
-#### Scenario: Open the info page
-
-- **WHEN** the user activates the info control in either layout
-- **THEN** a modal dialog opens over the map showing the informational content, and the map
-  behind it does not scroll or pan while the dialog is open
-
-#### Scenario: Dismiss the info page
-
-- **WHEN** the info dialog is open and the user clicks the close control, presses Escape, or
-  clicks the backdrop outside the dialog
-- **THEN** the dialog closes and the map returns to normal interaction
+## MODIFIED Requirements
 
 ### Requirement: Documented content
 
@@ -75,15 +54,3 @@ entry SHALL still be listed using a fallback name and description.
 - **WHEN** the backend catalog changes (a layer is added or removed)
 - **THEN** the info page's list reflects that change without a UI edit, and a layer with no
   hand-authored entry is still shown with a fallback name and description
-
-### Requirement: Dialog state in the shared store
-
-The system SHALL hold the info dialog's open/closed state in the client UI store so that a
-single dialog instance can be opened from either layout's control.
-
-#### Scenario: One dialog served from either layout
-
-- **WHEN** the info control is activated from the desktop or the mobile layout
-- **THEN** the same shared open state drives a single dialog instance, and closing it resets
-  that shared state
-
