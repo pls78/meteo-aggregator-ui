@@ -7,7 +7,7 @@ import { useSearch } from '../../hooks/queries'
 import { useAppStore } from '../../store/appStore'
 import type { Slot, SelectedLocation } from '../../store/appStore'
 import type { Place } from '../../api/types'
-import { XIcon } from '../icons'
+import { XIcon, ClearIcon } from '../icons'
 
 function useDebounced<T>(value: T, delay = 300): T {
   const [debounced, setDebounced] = useState(value)
@@ -62,8 +62,17 @@ export function SearchBox({ slot, accent, onRemove, className = 'w-80 max-w-[80v
 
   const showResults = open && focused && debounced.trim().length >= 2
 
+  // Focus is tracked on the container (not the input) so tabbing to the clear
+  // button doesn't count as leaving the field; blur to outside still restores
+  // the selected location's label via the effect above.
   return (
-    <div className={`relative ${className}`}>
+    <div
+      className={`relative ${className}`}
+      onFocus={() => setFocused(true)}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocused(false)
+      }}
+    >
       <div className="panel flex items-center gap-2 rounded-xl px-3 py-2 transition-shadow focus-within:ring-2 focus-within:ring-accent">
         <span
           className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
@@ -78,13 +87,23 @@ export function SearchBox({ slot, accent, onRemove, className = 'w-80 max-w-[80v
             setQuery(e.target.value)
             setOpen(true)
           }}
-          onFocus={() => {
-            setFocused(true)
-            setOpen(true)
-          }}
-          onBlur={() => setFocused(false)}
+          onFocus={() => setOpen(true)}
           className="min-w-0 flex-1 bg-transparent text-base text-ink-900 outline-none placeholder:text-ink-400 md:text-sm"
         />
+        {focused && query.length > 0 && (
+          <button
+            type="button"
+            aria-label="Clear search text"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => {
+              setQuery('')
+              setOpen(true)
+            }}
+            className="grid h-5 w-5 shrink-0 cursor-pointer place-items-center rounded-full text-ink-300 transition-colors hover:text-ink-400 focus-visible:outline-2 focus-visible:outline-accent"
+          >
+            <ClearIcon />
+          </button>
+        )}
         {onRemove && (
           <button
             type="button"
