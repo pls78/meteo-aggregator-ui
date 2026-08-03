@@ -11,7 +11,7 @@ export function AboutButton({ className = '' }: { className?: string }) {
       aria-label="About this app"
       title="About / how it works"
       onClick={() => setAboutOpen(true)}
-      className={`grid place-items-center rounded-full bg-white/70 text-slate-600 shadow-xl ring-1 ring-black/5 backdrop-blur hover:text-slate-900 ${className}`}
+      className={`panel grid place-items-center rounded-full text-ink-600 transition-colors hover:text-ink-900 focus-visible:outline-2 focus-visible:outline-accent ${className}`}
     >
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
         <circle cx="12" cy="12" r="9" />

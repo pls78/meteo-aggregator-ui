@@ -1,9 +1,9 @@
 // A self-contained (no charting dep) SVG chart for one or two locations' hours of
 // a single day. Two stacked panels share one x-axis (hour of day): a temperature
 // line per location on top, precipitation bars beneath. One axis per panel — temp
-// and precip never share a scale. Colors are the fixed location accents (blue
-// primary / amber comparison); identity is carried by the legend (rendered by the
-// panel), so the amber line's lower contrast on white is backed by a visible label.
+// and precip never share a scale. Colors are the fixed location accents (consensus
+// blue primary / reserved red comparison, see lib/accents.ts); identity is carried
+// by the legend (rendered by the panel) beside the colored marks.
 //
 // The chart fills its container's width and adapts how many temperature points it
 // plots to the space available: a point every 3 h when narrow, every 2 h at medium
@@ -11,7 +11,7 @@
 
 import { useLayoutEffect, useRef, useState } from 'react'
 import type { HourConsensus } from '../../api/types'
-import { weatherInfo } from '../../lib/weatherCode'
+import { WeatherGlyph } from '../weather/WeatherIcon'
 
 export interface ChartSeries {
   name: string
@@ -27,9 +27,9 @@ const GAP = 12
 const PRECIP_H = 48
 const AXIS_H = 20
 
-const AXIS_INK = '#64748b' // slate-500
-const GRID = '#e2e8f0' // slate-200
-const VALUE_INK = '#475569' // slate-600
+const AXIS_INK = 'var(--color-ink-600)'
+const GRID = 'var(--color-hairline)'
+const VALUE_INK = 'var(--color-ink-900)'
 
 const num = (v: number | string | null | undefined): number | null =>
   typeof v === 'number' ? v : null
@@ -112,7 +112,9 @@ function Chart({
     s.hours.map((h) => num(h.values.precipitation)).filter((v): v is number => v !== null),
   )
   const pMax = precips.length ? Math.max(...precips) : 0
-  const yPrecip = (v: number) => precipBot - (pMax > 0 ? (v / pMax) * PRECIP_H : 0)
+  // Scale floor of 1 mm: trace drizzle renders as a sliver, not a full-height bar.
+  const pDomain = Math.max(pMax, 1)
+  const yPrecip = (v: number) => precipBot - (pMax > 0 ? (v / pDomain) * PRECIP_H : 0)
 
   const tempTicks = [tLo, (tLo + tHi) / 2, tHi]
   const barW = clean.length > 1 ? pxPerHour * 0.26 : pxPerHour * 0.5
@@ -228,7 +230,14 @@ function Chart({
         const lastT = num(last?.values.temperature_2m)
         return (
           <g key={`t${si}`}>
-            <polyline points={pts.join(' ')} fill="none" stroke={s.accent} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+            {si === 0 && pts.length > 1 && (
+              <polygon
+                points={`${pts[0].split(',')[0]},${tempBot} ${pts.join(' ')} ${pts[pts.length - 1].split(',')[0]},${tempBot}`}
+                fill={s.accent}
+                opacity={0.06}
+              />
+            )}
+            <polyline points={pts.join(' ')} fill="none" stroke={s.accent} strokeWidth={1.5} strokeLinejoin="round" strokeLinecap="round" />
             {picked.map((h) => {
               const t = num(h.values.temperature_2m)
               return t === null ? null : (
@@ -244,13 +253,17 @@ function Chart({
         )
       })}
 
-      {/* Weather icons (primary series) */}
+      {/* Weather glyphs (primary series), embedded at ~14px */}
       {clean[0]?.hours
         .filter((h) => (hourOf(h) - hMin) % iconStep === 0)
         .map((h) => (
-          <text key={`ic${hourOf(h)}`} x={x(hourOf(h))} y={ICON_H - 6} textAnchor="middle" fontSize={13}>
-            {weatherInfo(h.values.weather_code).icon}
-          </text>
+          <g
+            key={`ic${hourOf(h)}`}
+            transform={`translate(${x(hourOf(h)) - 7.2} 1) scale(0.6)`}
+            style={{ color: 'var(--color-ink-600)' }}
+          >
+            <WeatherGlyph code={h.values.weather_code} />
+          </g>
         ))}
 
       {/* Hour axis — one label under each plotted point */}
@@ -288,7 +301,7 @@ function Chart({
             const nearRight = xa > width - PAD_R - 30
             return (
               <g key={`hl${si}`}>
-                <circle cx={xa} cy={yTemp(t)} r={3.5} fill={s.accent} stroke="#fff" strokeWidth={1.5} />
+                <circle cx={xa} cy={yTemp(t)} r={3.5} fill={s.accent} stroke="var(--color-surface-solid)" strokeWidth={1.5} />
                 <text
                   x={nearRight ? xa - 7 : xa + 7}
                   y={yTemp(t) - 5}

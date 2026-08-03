@@ -11,6 +11,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useAppStore } from '../../store/appStore'
+import { XIcon } from '../icons'
 
 const GEO_OPTIONS: PositionOptions = { timeout: 8000, maximumAge: 60000 }
 
@@ -124,12 +125,12 @@ export function LocateButton({ className = '' }: { className?: string }) {
         // unactionable would tell assistive tech not to try. Only the resolving state is
         // genuinely inert, and re-entry is guarded in locate().
         aria-disabled={status === 'loading'}
-        className={`grid h-full w-full place-items-center rounded-full bg-white/70 shadow-xl ring-1 ring-black/5 backdrop-blur ${
-          blocked ? 'text-slate-300' : 'text-slate-600 hover:text-slate-900'
+        className={`panel grid h-full w-full place-items-center rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-accent ${
+          blocked ? 'text-ink-300' : 'text-ink-600 hover:text-ink-900'
         }`}
       >
         {status === 'loading' ? (
-          <svg className="h-5 w-5 animate-spin text-slate-500" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <svg className="h-5 w-5 animate-spin text-ink-400" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" opacity="0.25" />
             <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
           </svg>
@@ -146,16 +147,16 @@ export function LocateButton({ className = '' }: { className?: string }) {
       {message && (
         <div
           role="status"
-          className="absolute right-full top-1/2 mr-2 flex w-max max-w-[16rem] -translate-y-1/2 items-start gap-2 rounded-md bg-slate-900 px-2 py-1 text-left text-xs font-medium text-white shadow-lg"
+          className="absolute right-full top-1/2 mr-2 flex w-max max-w-[16rem] -translate-y-1/2 items-start gap-2 rounded-lg bg-ink-900 px-2.5 py-1.5 text-left text-xs font-medium text-white shadow-control"
         >
           <span>{message}</span>
           <button
             type="button"
             aria-label="Dismiss"
             onClick={() => setMessage(null)}
-            className="shrink-0 cursor-pointer text-slate-400 hover:text-white"
+            className="shrink-0 cursor-pointer text-white/60 transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-white"
           >
-            ✕
+            <XIcon className="h-3.5 w-3.5" />
           </button>
         </div>
       )}

@@ -5,9 +5,8 @@
 
 import { useAppStore } from '../../store/appStore'
 import { SearchBox } from './SearchBox'
-
-const PRIMARY_ACCENT = 'rgb(37, 99, 235)'
-const COMPARISON_ACCENT = 'rgb(245, 158, 11)'
+import { PlusIcon } from '../icons'
+import { LOC_A, LOC_B } from '../../lib/accents'
 
 export function SearchPanel() {
   const { primary, comparison, selectLocation, clearLocation } = useAppStore()
@@ -20,7 +19,7 @@ export function SearchPanel() {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-2">
-        <SearchBox slot="primary" accent={PRIMARY_ACCENT} />
+        <SearchBox slot="primary" accent={LOC_A} />
         {!comparison && (
           <button
             type="button"
@@ -28,9 +27,9 @@ export function SearchPanel() {
             title={primary ? 'Add comparison location' : 'Select a location first'}
             onClick={addComparison}
             disabled={!primary}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-300 bg-white/70 text-xl leading-none text-slate-600 shadow-lg backdrop-blur hover:bg-white hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40"
+            className="panel flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-ink-600 transition-colors hover:text-ink-900 focus-visible:outline-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-40"
           >
-            +
+            <PlusIcon />
           </button>
         )}
       </div>
@@ -38,7 +37,7 @@ export function SearchPanel() {
       {comparison && (
         <SearchBox
           slot="comparison"
-          accent={COMPARISON_ACCENT}
+          accent={LOC_B}
           onRemove={() => clearLocation('comparison')}
         />
       )}

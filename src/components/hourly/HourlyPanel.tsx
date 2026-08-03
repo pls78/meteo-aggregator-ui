@@ -12,9 +12,9 @@ import type { SelectedLocation } from '../../store/appStore'
 import type { AggregatedHourlyForecast, DayConsensus } from '../../api/types'
 import { HourlyChart, type ChartSeries } from './HourlyChart'
 import { ConfidenceDetail } from '../confidence/ConfidenceDetail'
+import { XIcon } from '../icons'
+import { LOC_A, LOC_B } from '../../lib/accents'
 
-const PRIMARY_ACCENT = '#2563eb'
-const COMPARISON_ACCENT = '#f59e0b'
 const FADE_MS = 300
 
 const labelOf = (l: SelectedLocation) =>
@@ -63,8 +63,8 @@ export function HourlyPanel({ floating = false }: { floating?: boolean }) {
     (data?.hours ?? []).filter((h) => String(h.date).slice(0, 10) === day)
 
   const series: ChartSeries[] = []
-  if (primary) series.push({ name: labelOf(primary), accent: PRIMARY_ACCENT, hours: hoursFor(pWeek.data) })
-  if (comparison) series.push({ name: labelOf(comparison), accent: COMPARISON_ACCENT, hours: hoursFor(cWeek.data) })
+  if (primary) series.push({ name: labelOf(primary), accent: LOC_A, hours: hoursFor(pWeek.data) })
+  if (comparison) series.push({ name: labelOf(comparison), accent: LOC_B, hours: hoursFor(cWeek.data) })
 
   const present = [primary && pWeek, comparison && cWeek].filter(Boolean) as ReturnType<typeof useHourlyRange>[]
   const isLoading = present.some((q) => q.isLoading)
@@ -74,8 +74,8 @@ export function HourlyPanel({ floating = false }: { floating?: boolean }) {
   // Confidence detail is per-location (unlike the shared-day hourly chart), so
   // show one panel per present location, side by side when comparing.
   const confidencePanels: ConfidencePanel[] = []
-  if (primary) confidencePanels.push({ name: labelOf(primary), accent: PRIMARY_ACCENT, q: pForecast })
-  if (comparison) confidencePanels.push({ name: labelOf(comparison), accent: COMPARISON_ACCENT, q: cForecast })
+  if (primary) confidencePanels.push({ name: labelOf(primary), accent: LOC_A, q: pForecast })
+  if (comparison) confidencePanels.push({ name: labelOf(comparison), accent: LOC_B, q: cForecast })
 
   return (
     <div
@@ -83,11 +83,11 @@ export function HourlyPanel({ floating = false }: { floating?: boolean }) {
         visible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
       } ${showConfidence ? 'w-fit max-w-full' : 'max-w-5xl'}`}
     >
-      <section className={`bg-white/70 p-4 shadow-2xl ring-1 ring-black/5 backdrop-blur ${floating ? 'rounded-2xl' : 'rounded-t-2xl'}`}>
+      <section className={`panel p-4 ${floating ? 'rounded-2xl' : 'rounded-t-2xl'}`}>
         <header className="mb-2 flex items-center justify-between gap-3">
           <div className="flex items-baseline gap-2">
-            <h2 className="text-sm font-semibold text-slate-900">{prettyDay(day)}</h2>
-            <span className="text-xs text-slate-400">{showConfidence ? 'confidence' : 'hourly'}</span>
+            <h2 className="text-sm font-semibold text-ink-900">{prettyDay(day)}</h2>
+            <span className="text-xs text-ink-400">{showConfidence ? 'confidence' : 'hourly'}</span>
           </div>
 
           <div className="flex items-center gap-4">
@@ -95,7 +95,7 @@ export function HourlyPanel({ floating = false }: { floating?: boolean }) {
             {!showConfidence && series.length > 1 && (
               <ul className="flex items-center gap-3">
                 {series.map((s) => (
-                  <li key={s.name} className="flex items-center gap-1.5 text-xs text-slate-600">
+                  <li key={s.name} className="flex items-center gap-1.5 text-xs text-ink-600">
                     <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: s.accent }} />
                     <span className="max-w-[8rem] truncate">{s.name}</span>
                   </li>
@@ -106,9 +106,9 @@ export function HourlyPanel({ floating = false }: { floating?: boolean }) {
               type="button"
               aria-label="Close hourly view"
               onClick={clearDay}
-              className="cursor-pointer text-slate-400 hover:text-slate-700"
+              className="-m-1 grid h-7 w-7 cursor-pointer place-items-center rounded-lg text-ink-400 transition-colors hover:bg-ink-900/5 hover:text-ink-600 focus-visible:outline-2 focus-visible:outline-accent"
             >
-              ✕
+              <XIcon />
             </button>
           </div>
         </header>
@@ -116,13 +116,16 @@ export function HourlyPanel({ floating = false }: { floating?: boolean }) {
         {showConfidence ? (
           <ConfidenceView day={day} panels={confidencePanels} />
         ) : isError ? (
-          <p className="py-6 text-center text-sm text-rose-600">
+          <p className="py-6 text-center text-sm text-danger">
             Couldn’t load hourly data. Is the backend running?
           </p>
         ) : isLoading ? (
-          <p className="py-6 text-center text-sm text-slate-500">Loading hourly forecast…</p>
+          <div className="space-y-2 py-4" aria-hidden>
+            <span className="skeleton block h-28 w-full" />
+            <span className="skeleton block h-10 w-full" />
+          </div>
         ) : !hasHours ? (
-          <p className="py-6 text-center text-sm text-slate-500">No hourly data for this day.</p>
+          <p className="py-6 text-center text-sm text-ink-600">No hourly data for this day.</p>
         ) : (
           <div className="overflow-x-auto">
             <HourlyChart series={series} />
@@ -149,17 +152,17 @@ function ConfidenceView({ day, panels }: { day: string; panels: ConfidencePanel[
         return (
           <div key={name}>
             {panels.length > 1 && (
-              <div className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-slate-600">
+              <div className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-ink-600">
                 <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: accent }} />
                 <span className="max-w-[10rem] truncate">{name}</span>
               </div>
             )}
             {q.isError ? (
-              <p className="py-4 text-sm text-rose-600">Couldn’t load forecast.</p>
+              <p className="py-4 text-sm text-danger">Couldn’t load forecast.</p>
             ) : dayData ? (
               <ConfidenceDetail day={dayData} />
             ) : (
-              <p className="py-4 text-sm text-slate-500">Loading…</p>
+              <span className="skeleton block h-24 w-56" aria-hidden />
             )}
           </div>
         )

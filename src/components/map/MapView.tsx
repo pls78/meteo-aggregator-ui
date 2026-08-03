@@ -1,4 +1,4 @@
-// The full-screen map surface (MapLibre GL): CARTO Voyager vector basemap,
+// The full-screen map surface (MapLibre GL): CARTO Positron vector basemap,
 // click/Shift+click selection, primary/comparison markers, programmatic recenter,
 // and satellite WMS overlays as raster sources.
 
@@ -8,15 +8,16 @@ import { useAppStore } from '../../store/appStore'
 import type { SelectedLocation } from '../../store/appStore'
 import { useImagery, IMAGERY_FRAMES } from '../../hooks/queries'
 import type { WmsLayerParams } from '../../api/types'
+import { LOC_A, LOC_B } from '../../lib/accents'
 
 // Time-lapse cadence: how long each animation frame is shown. 12 frames at
 // ~550 ms ≈ a 6.5 s loop.
 const FRAME_MS = 550
 
-const STYLE_URL = 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json'
+// Positron: near-grayscale ground so weather overlays, markers, and panels read
+// as the foreground (the basemap recedes under data).
+const STYLE_URL = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
 const ITALY_CENTER: [number, number] = [12.5, 42.5] // [lng, lat]
-const PRIMARY_COLOR = '#2563eb'
-const COMPARISON_COLOR = '#f59e0b'
 
 // WMS GetMap tile template for a MapLibre raster source. v1.1.1 + srs + the
 // {bbox-epsg-3857} token avoids WMS 1.3.0 axis-order pitfalls. time is omitted
@@ -145,7 +146,7 @@ export function MapView() {
   // Markers (DOM overlays — no need to wait for style load).
   useEffect(() => {
     if (mapRef.current)
-      primaryMarker.current = syncMarker(mapRef.current, primaryMarker.current, primary, PRIMARY_COLOR)
+      primaryMarker.current = syncMarker(mapRef.current, primaryMarker.current, primary, LOC_A)
   }, [primary])
 
   useEffect(() => {
@@ -154,7 +155,7 @@ export function MapView() {
         mapRef.current,
         comparisonMarker.current,
         comparison,
-        COMPARISON_COLOR,
+        LOC_B,
       )
   }, [comparison])
 

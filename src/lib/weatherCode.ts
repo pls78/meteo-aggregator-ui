@@ -1,43 +1,46 @@
-// WMO weather interpretation codes -> emoji icon + label.
-// Reference: Open-Meteo WMO weather_code mapping.
+// WMO weather interpretation codes -> drawn glyph kind + label.
+// Reference: Open-Meteo WMO weather_code mapping. Rendering lives in
+// components/weather/ (WeatherIcon / WeatherGlyph over the glyph set).
+
+import type { GlyphKind } from '../components/weather/glyphs'
 
 interface WeatherInfo {
-  icon: string
+  kind: GlyphKind
   label: string
 }
 
 const CODES: Record<number, WeatherInfo> = {
-  0: { icon: '☀️', label: 'Clear sky' },
-  1: { icon: '🌤️', label: 'Mainly clear' },
-  2: { icon: '⛅', label: 'Partly cloudy' },
-  3: { icon: '☁️', label: 'Overcast' },
-  45: { icon: '🌫️', label: 'Fog' },
-  48: { icon: '🌫️', label: 'Depositing rime fog' },
-  51: { icon: '🌦️', label: 'Light drizzle' },
-  53: { icon: '🌦️', label: 'Moderate drizzle' },
-  55: { icon: '🌧️', label: 'Dense drizzle' },
-  56: { icon: '🌧️', label: 'Light freezing drizzle' },
-  57: { icon: '🌧️', label: 'Dense freezing drizzle' },
-  61: { icon: '🌦️', label: 'Slight rain' },
-  63: { icon: '🌧️', label: 'Moderate rain' },
-  65: { icon: '🌧️', label: 'Heavy rain' },
-  66: { icon: '🌧️', label: 'Light freezing rain' },
-  67: { icon: '🌧️', label: 'Heavy freezing rain' },
-  71: { icon: '🌨️', label: 'Slight snow' },
-  73: { icon: '🌨️', label: 'Moderate snow' },
-  75: { icon: '❄️', label: 'Heavy snow' },
-  77: { icon: '🌨️', label: 'Snow grains' },
-  80: { icon: '🌦️', label: 'Slight rain showers' },
-  81: { icon: '🌧️', label: 'Moderate rain showers' },
-  82: { icon: '⛈️', label: 'Violent rain showers' },
-  85: { icon: '🌨️', label: 'Slight snow showers' },
-  86: { icon: '❄️', label: 'Heavy snow showers' },
-  95: { icon: '⛈️', label: 'Thunderstorm' },
-  96: { icon: '⛈️', label: 'Thunderstorm with slight hail' },
-  99: { icon: '⛈️', label: 'Thunderstorm with heavy hail' },
+  0: { kind: 'sun', label: 'Clear sky' },
+  1: { kind: 'sun-cloud', label: 'Mainly clear' },
+  2: { kind: 'cloud-sun', label: 'Partly cloudy' },
+  3: { kind: 'cloud', label: 'Overcast' },
+  45: { kind: 'fog', label: 'Fog' },
+  48: { kind: 'fog', label: 'Depositing rime fog' },
+  51: { kind: 'drizzle', label: 'Light drizzle' },
+  53: { kind: 'drizzle', label: 'Moderate drizzle' },
+  55: { kind: 'drizzle', label: 'Dense drizzle' },
+  56: { kind: 'sleet', label: 'Light freezing drizzle' },
+  57: { kind: 'sleet', label: 'Dense freezing drizzle' },
+  61: { kind: 'rain-sun', label: 'Slight rain' },
+  63: { kind: 'rain', label: 'Moderate rain' },
+  65: { kind: 'rain', label: 'Heavy rain' },
+  66: { kind: 'sleet', label: 'Light freezing rain' },
+  67: { kind: 'sleet', label: 'Heavy freezing rain' },
+  71: { kind: 'snow', label: 'Slight snow' },
+  73: { kind: 'snow', label: 'Moderate snow' },
+  75: { kind: 'snowflake', label: 'Heavy snow' },
+  77: { kind: 'snow', label: 'Snow grains' },
+  80: { kind: 'rain-sun', label: 'Slight rain showers' },
+  81: { kind: 'rain', label: 'Moderate rain showers' },
+  82: { kind: 'rain', label: 'Violent rain showers' },
+  85: { kind: 'snow', label: 'Slight snow showers' },
+  86: { kind: 'snowflake', label: 'Heavy snow showers' },
+  95: { kind: 'thunder', label: 'Thunderstorm' },
+  96: { kind: 'thunder', label: 'Thunderstorm with slight hail' },
+  99: { kind: 'thunder', label: 'Thunderstorm with heavy hail' },
 }
 
-const UNKNOWN: WeatherInfo = { icon: '❓', label: 'Unknown' }
+const UNKNOWN: WeatherInfo = { kind: 'unknown', label: 'Unknown' }
 
 export function weatherInfo(code: number | string | null | undefined): WeatherInfo {
   if (code === null || code === undefined) return UNKNOWN

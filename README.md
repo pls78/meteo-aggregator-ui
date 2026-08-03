@@ -16,7 +16,7 @@ layers.
 
 <p>
   <img src="docs/screenshot-desktop.jpg" width="70%" align="top"
-       alt="Desktop layout: a full-screen map of northern Italy under a Geo Colour satellite overlay, with the place search top-left, the satellite layer list bottom-left, and the Milan forecast card top-right showing current conditions and seven days with per-day confidence tags.">
+       alt="Desktop layout: a full-screen map of northern Italy under a Geo Colour satellite overlay, with the place search top-left, the satellite layer list bottom-left, and the Milan forecast card top-right showing current conditions and seven days, each with a model-spread strip and confidence tag.">
   <img src="docs/screenshot-mobile.png" width="26%" align="top"
        alt="Mobile layout: the same map with a search bar on top and the draggable weather sheet below, showing current conditions and the seven-day forecast.">
 </p>
@@ -112,6 +112,6 @@ That covers this code only. Forecasts and place search come from
 [Open-Meteo](https://open-meteo.com) (data under CC-BY-4.0, free for
 non-commercial use) via the backend. The map tiles and satellite layers carry
 their own terms: [EUMETSAT](https://view.eumetsat.int) for the imagery, and
-[CARTO](https://carto.com/basemaps/) Voyager, built on OpenStreetMap data, for
+[CARTO](https://carto.com/basemaps/) Positron, built on OpenStreetMap data, for
 the basemap. The in-app "how it works" dialog credits the weather and imagery
 sources; basemap attribution is rendered by MapLibre from the CARTO style.

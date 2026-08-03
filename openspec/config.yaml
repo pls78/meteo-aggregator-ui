@@ -20,4 +20,10 @@ context: |
     - GET /hourly?lat&lon&hours        -> hourly consensus (hours[0] = current conditions)
     - GET /imagery?time                -> WMS layer params (EPSG:3857, tiles fetched directly
                                           from EUMETSAT, not proxied)
-  weather_code values are WMO codes (map to icons). Units are metric only. No auth, no i18n.
+  weather_code values are WMO codes, rendered as drawn monoline glyphs (src/components/weather/;
+  no emoji). Units are metric only. No auth, no i18n.
+
+  Visual system: "The Meteogram" — consensus drawn over per-model spread. Design tokens live in
+  src/index.css (@theme); components must use tokens (no raw palette classes/hex). DESIGN.md is
+  the design authority, PRODUCT.md the product truth, and openspec/specs/visual-design/ holds the
+  visual requirements (shared panel material, drawn spread, drawn glyphs, AA floor).

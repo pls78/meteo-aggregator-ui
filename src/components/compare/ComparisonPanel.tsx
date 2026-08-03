@@ -8,6 +8,7 @@ import { useForecast, useHourly } from '../../hooks/queries'
 import { useAppStore } from '../../store/appStore'
 import type { SelectedLocation, Slot } from '../../store/appStore'
 import { LocationCard } from '../panels/LocationCard'
+import { LOC_A, LOC_B } from '../../lib/accents'
 
 const FADE_MS = 300
 
@@ -84,8 +85,8 @@ export function ComparisonPanel() {
 
   return (
     <div className="pointer-events-auto flex max-h-[calc(100vh-2rem)] max-w-[calc(100vw-2rem)] gap-3 overflow-auto">
-      <FadingCard location={primary} slot="primary" accent="#2563eb" />
-      <FadingCard location={comparison} slot="comparison" accent="#f59e0b" />
+      <FadingCard location={primary} slot="primary" accent={LOC_A} />
+      <FadingCard location={comparison} slot="comparison" accent={LOC_B} />
     </div>
   )
 }

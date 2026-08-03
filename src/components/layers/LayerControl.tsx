@@ -6,6 +6,7 @@ import { useImagery } from '../../hooks/queries'
 import { useAppStore } from '../../store/appStore'
 import type { WmsLayerParams } from '../../api/types'
 import { RGB_LEGENDS } from '../../lib/layerLegends'
+import { ChevronRightIcon } from '../icons'
 
 // Build a GetLegendGraphic URL for a layer from its WMS endpoint + name. Legends
 // are static color scales (independent of time).
@@ -29,7 +30,7 @@ export function LayerLegend({ params }: { params: WmsLayerParams }) {
     <img
       src={legendUrl(params)}
       alt={`${params.title} legend`}
-      className={`ml-6 h-auto max-w-full rounded bg-white ${ready ? 'mt-1' : 'hidden'}`}
+      className={`ml-6 h-auto max-w-full rounded bg-surface-solid ${ready ? 'mt-1' : 'hidden'}`}
       onLoad={(e) => setReady(e.currentTarget.naturalWidth >= 64)}
       onError={() => setReady(false)}
     />
@@ -42,12 +43,12 @@ export function RgbColorKey({ layerId }: { layerId: string }) {
   const info = RGB_LEGENDS[layerId]
   if (!info) return null
   return (
-    <div className="ml-6 mt-1 space-y-0.5 text-xs text-slate-600">
-      {info.note && <p className="italic text-slate-500">{info.note}</p>}
+    <div className="ml-6 mt-1 space-y-0.5 text-xs text-ink-600">
+      {info.note && <p className="italic text-ink-400">{info.note}</p>}
       {info.swatches?.map((s) => (
         <div key={s.label} className="flex items-center gap-1.5">
           <span
-            className="inline-block h-3 w-3 shrink-0 rounded-sm ring-1 ring-black/10"
+            className="inline-block h-3 w-3 shrink-0 rounded-sm ring-1 ring-ink-900/15"
             style={{ backgroundColor: s.color }}
           />
           <span>{s.label}</span>
@@ -63,19 +64,19 @@ export function LayerControl() {
   const [collapsed, setCollapsed] = useState(true)
 
   return (
-    <div className="w-64 rounded-xl bg-white/70 p-3 text-sm shadow-xl ring-1 ring-black/5 backdrop-blur">
+    <div className="panel w-64 rounded-xl p-3 text-sm">
       <button
         type="button"
         onClick={() => setCollapsed((c) => !c)}
-        className="flex w-full cursor-pointer items-center justify-between font-semibold text-slate-900"
+        className="flex w-full cursor-pointer items-center justify-between rounded-lg font-semibold text-ink-900 focus-visible:outline-2 focus-visible:outline-accent"
       >
         <span>Satellite layers</span>
         <span
-          className={`text-slate-400 transition-transform duration-300 ${
+          className={`text-ink-400 transition-transform duration-300 ${
             collapsed ? '' : 'rotate-90'
           }`}
         >
-          ▸
+          <ChevronRightIcon />
         </span>
       </button>
 
@@ -91,8 +92,8 @@ export function LayerControl() {
           }`}
         >
           <div className="mt-3">
-            {isLoading && <p className="text-slate-500">Loading layers…</p>}
-            {isError && <p className="text-rose-600">Couldn’t load layers.</p>}
+            {isLoading && <p className="text-ink-600">Loading layers…</p>}
+            {isError && <p className="text-danger">Couldn’t load layers.</p>}
 
             <ul className="space-y-1.5">
               {imagery?.layers.map((layer) => {
@@ -102,7 +103,7 @@ export function LayerControl() {
                 return (
                   <li key={layer.layer}>
                     <label
-                      className={`flex items-start gap-2 text-slate-700 ${
+                      className={`flex items-start gap-2 text-ink-600 ${
                         locked ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
                       }`}
                     >
@@ -111,7 +112,7 @@ export function LayerControl() {
                         checked={on}
                         disabled={locked}
                         onChange={() => toggleLayer(layer.layer)}
-                        className="mt-0.5"
+                        className="mt-0.5 accent-accent"
                       />
                       <span>{layer.title}</span>
                     </label>
@@ -126,8 +127,8 @@ export function LayerControl() {
               })}
             </ul>
 
-            <div className="mt-3 border-t border-slate-200 pt-3">
-              <label className="block text-xs text-slate-500">
+            <div className="mt-3 border-t border-ink-900/10 pt-3">
+              <label className="block text-xs text-ink-600">
                 Opacity: {Math.round(opacity * 100)}%
                 <input
                   type="range"
@@ -136,7 +137,7 @@ export function LayerControl() {
                   step={0.05}
                   value={opacity}
                   onChange={(e) => setOpacity(Number(e.target.value))}
-                  className="mt-1 w-full cursor-pointer"
+                  className="mt-1 w-full cursor-pointer accent-accent"
                 />
               </label>
             </div>

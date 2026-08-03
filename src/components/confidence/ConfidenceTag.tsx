@@ -4,9 +4,9 @@
 // stay in sync.
 
 const STYLE: Record<string, string> = {
-  high: 'bg-emerald-100 text-emerald-700',
-  medium: 'bg-amber-100 text-amber-700',
-  low: 'bg-rose-100 text-rose-700',
+  high: 'text-conf-high',
+  medium: 'text-conf-medium',
+  low: 'text-conf-low',
 }
 
 // Short display label so the tag (with its info cue) doesn't wrap the row.
@@ -40,9 +40,9 @@ export function ConfidenceTag({
       aria-pressed={active}
       aria-label={`Why ${level} confidence?`}
       title="Why this confidence?"
-      className={`flex shrink-0 cursor-pointer items-center gap-0.5 whitespace-nowrap rounded px-1.5 py-0.5 text-[10px] font-medium hover:ring-1 hover:ring-slate-300 ${
+      className={`flex shrink-0 cursor-pointer items-center gap-0.5 whitespace-nowrap rounded-full px-1.5 py-0.5 text-[10px] font-medium transition-shadow focus-visible:outline-2 focus-visible:outline-accent hover:ring-1 hover:ring-current/40 ${
         STYLE[level] ?? ''
-      } ${active ? 'ring-2 ring-slate-400' : ''}`}
+      } ${active ? 'ring-2 ring-current/60' : ''}`}
     >
       <InfoIcon />
       {SHORT[level] ?? level}

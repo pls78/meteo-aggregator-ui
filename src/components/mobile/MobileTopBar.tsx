@@ -5,9 +5,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAppStore } from '../../store/appStore'
 import { SearchBox } from '../search/SearchBox'
-
-const PRIMARY = '#2563eb'
-const COMPARISON = '#f59e0b'
+import { XIcon } from '../icons'
+import { LOC_A, LOC_B } from '../../lib/accents'
 
 export function MobileTopBar() {
   const { primary, comparison, activeSlot, setActiveSlot, selectLocation, clearLocation } =
@@ -30,7 +29,7 @@ export function MobileTopBar() {
     flashHint()
   }
 
-  const accent = activeSlot === 'comparison' ? COMPARISON : PRIMARY
+  const accent = activeSlot === 'comparison' ? LOC_B : LOC_A
 
   return (
     <div className="pointer-events-none absolute inset-x-0 top-0 z-[1000] flex flex-col gap-2 p-3">
@@ -44,21 +43,21 @@ export function MobileTopBar() {
             type="button"
             onClick={addCompare}
             disabled={!primary}
-            className="flex items-center gap-2 rounded-full border border-dashed border-slate-300 bg-white/70 px-3 py-1.5 text-sm font-semibold text-slate-600 shadow-lg backdrop-blur disabled:opacity-40"
+            className="panel flex items-center gap-2 rounded-full px-3.5 py-1.5 text-sm font-semibold text-ink-600 focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-40"
           >
-            <span className="h-2.5 w-2.5 rounded-full" style={{ background: COMPARISON }} />
+            <span className="h-2.5 w-2.5 rounded-full" style={{ background: LOC_B }} />
             + Compare a place
           </button>
         ) : (
-          <div className="flex rounded-xl bg-white/70 p-1 shadow-lg ring-1 ring-black/5 backdrop-blur">
+          <div className="panel flex rounded-xl p-1">
             <button
               type="button"
               onClick={() => setActiveSlot('primary')}
-              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-bold ${
-                activeSlot === 'primary' ? 'bg-blue-100 text-blue-700' : 'text-slate-500'
+              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-accent ${
+                activeSlot === 'primary' ? 'bg-loc-a/10 text-loc-a' : 'text-ink-600'
               }`}
             >
-              <span className="h-2.5 w-2.5 rounded-full" style={{ background: PRIMARY }} />A
+              <span className="h-2.5 w-2.5 rounded-full" style={{ background: LOC_A }} />A
             </button>
             <button
               type="button"
@@ -66,11 +65,11 @@ export function MobileTopBar() {
                 setActiveSlot('comparison')
                 flashHint()
               }}
-              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-bold ${
-                activeSlot === 'comparison' ? 'bg-amber-100 text-amber-700' : 'text-slate-500'
+              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-accent ${
+                activeSlot === 'comparison' ? 'bg-loc-b/10 text-loc-b' : 'text-ink-600'
               }`}
             >
-              <span className="h-2.5 w-2.5 rounded-full" style={{ background: COMPARISON }} />B
+              <span className="h-2.5 w-2.5 rounded-full" style={{ background: LOC_B }} />B
               <span
                 role="button"
                 tabIndex={0}
@@ -79,16 +78,16 @@ export function MobileTopBar() {
                   e.stopPropagation()
                   clearLocation('comparison')
                 }}
-                className="ml-1 text-slate-400 hover:text-slate-700"
+                className="ml-1 grid h-5 w-5 place-items-center rounded text-ink-400 transition-colors hover:text-ink-600 focus-visible:outline-2 focus-visible:outline-accent"
               >
-                ✕
+                <XIcon className="h-3.5 w-3.5" />
               </span>
             </button>
           </div>
         )}
 
         <span
-          className={`rounded-full bg-slate-900 px-2.5 py-1 text-xs font-semibold text-white shadow-lg transition-opacity ${
+          className={`rounded-full bg-ink-900 px-2.5 py-1 text-xs font-semibold text-white shadow-control transition-opacity ${
             hint ? 'opacity-100' : 'opacity-0'
           }`}
         >

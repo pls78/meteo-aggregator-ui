@@ -7,6 +7,7 @@ import { useSearch } from '../../hooks/queries'
 import { useAppStore } from '../../store/appStore'
 import type { Slot, SelectedLocation } from '../../store/appStore'
 import type { Place } from '../../api/types'
+import { XIcon } from '../icons'
 
 function useDebounced<T>(value: T, delay = 300): T {
   const [debounced, setDebounced] = useState(value)
@@ -63,9 +64,9 @@ export function SearchBox({ slot, accent, onRemove, className = 'w-80 max-w-[80v
 
   return (
     <div className={`relative ${className}`}>
-      <div className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white/70 px-3 py-2 shadow-lg backdrop-blur focus-within:border-blue-500">
+      <div className="panel flex items-center gap-2 rounded-xl px-3 py-2 transition-shadow focus-within:ring-2 focus-within:ring-accent">
         <span
-          className="inline-block h-3 w-3 shrink-0 rounded-full"
+          className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
           style={{ background: accent }}
           aria-hidden
         />
@@ -82,7 +83,7 @@ export function SearchBox({ slot, accent, onRemove, className = 'w-80 max-w-[80v
             setOpen(true)
           }}
           onBlur={() => setFocused(false)}
-          className="min-w-0 flex-1 bg-transparent text-base text-slate-900 outline-none md:text-sm"
+          className="min-w-0 flex-1 bg-transparent text-base text-ink-900 outline-none placeholder:text-ink-400 md:text-sm"
         />
         {onRemove && (
           <button
@@ -90,17 +91,17 @@ export function SearchBox({ slot, accent, onRemove, className = 'w-80 max-w-[80v
             aria-label="Remove comparison"
             onMouseDown={(e) => e.preventDefault()}
             onClick={onRemove}
-            className="shrink-0 cursor-pointer text-slate-400 hover:text-slate-700"
+            className="-m-1 grid h-7 w-7 shrink-0 cursor-pointer place-items-center rounded-lg text-ink-400 transition-colors hover:bg-ink-900/5 hover:text-ink-600 focus-visible:outline-2 focus-visible:outline-accent"
           >
-            ✕
+            <XIcon />
           </button>
         )}
       </div>
       {showResults && (
-        <ul className="absolute z-10 mt-1 max-h-72 w-full overflow-auto rounded-lg border border-slate-200 bg-white shadow-xl">
-          {isFetching && <li className="px-3 py-2 text-sm text-slate-500">Searching…</li>}
+        <ul className="absolute z-10 mt-1.5 max-h-72 w-full overflow-auto rounded-xl bg-surface-solid py-1 shadow-panel ring-1 ring-ink-900/10">
+          {isFetching && <li className="px-3 py-2 text-sm text-ink-600">Searching…</li>}
           {!isFetching && results && results.length === 0 && (
-            <li className="px-3 py-2 text-sm text-slate-500">No results</li>
+            <li className="px-3 py-2 text-sm text-ink-600">No results</li>
           )}
           {results?.map((p) => (
             <li key={`${p.id ?? `${p.latitude},${p.longitude}`}`}>
@@ -108,7 +109,7 @@ export function SearchBox({ slot, accent, onRemove, className = 'w-80 max-w-[80v
                 type="button"
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => choose(p)}
-                className="block w-full cursor-pointer px-3 py-2 text-left text-sm text-slate-800 hover:bg-blue-50"
+                className="block w-full cursor-pointer px-3 py-2 text-left text-sm text-ink-900 transition-colors hover:bg-accent/8 focus-visible:bg-accent/8 focus-visible:outline-none"
               >
                 {placeLabel(p)}
               </button>

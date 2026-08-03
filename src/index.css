@@ -1,11 +1,52 @@
 @import 'tailwindcss';
 @import 'maplibre-gl/dist/maplibre-gl.css';
 
+/* Design tokens — the single visual vocabulary for both layouts: the Meteogram
+   world (paper data ground, ink hairlines, consensus blue / reserved red; see
+   DESIGN.md and openspec/changes/redesign-ui-meteogram/design.md). Components
+   must consume these tokens; no raw palette utilities or literal hex in
+   component code. */
+@theme {
+  /* Ink ramp (cool neutral text/foreground) */
+  --color-ink-900: #16181d;
+  --color-ink-600: #4d5a70;
+  --color-ink-400: #66768b;
+  --color-ink-300: #b8c1ce;
+
+  /* Panel material */
+  --color-surface: rgb(252 252 250 / 0.95);
+  --color-surface-solid: #fcfcfa;
+  --color-well: #f4f6f8; /* inset/secondary surface (table headers, wells) */
+
+  /* Accent: primary actions, selection, focus. Also location A. */
+  --color-accent: #2456a6;
+  --color-loc-a: #2456a6;
+  --color-loc-b: #d1495b;
+
+  /* Semantics */
+  --color-conf-high: #147946; /* darkened one step to clear 4.5:1 on the surface */
+  --color-conf-medium: #8a5c00; /* darkened for AA at 10px on bare surface */
+  --color-conf-low: #a83232; /* deeper than loc-b red so B-marks and low-tags never read as one */
+  --color-precip: #2f86c9;
+  --color-hairline: #e9ecf1; /* gridlines/rules on the paper ground */
+  --color-sun: #c7920a; /* solar marks in weather glyphs (mark color, not text) */
+  --color-danger: #c23a3a;
+
+  /* Elevation: panels float over the map; controls sit lighter. */
+  --shadow-panel: 0 1px 2px rgb(22 24 29 / 0.05), 0 12px 32px -16px rgb(22 24 29 / 0.22);
+  --shadow-control: 0 1px 2px rgb(22 24 29 / 0.07), 0 6px 16px -10px rgb(22 24 29 / 0.25);
+}
+
 html,
 body,
 #root {
   height: 100%;
   margin: 0;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  color: var(--color-ink-900);
 }
 
 /* Full-screen app: the page itself must never scroll. #root clips its overlays,
@@ -27,5 +68,30 @@ body {
 .map-container {
   height: 100%;
   width: 100%;
-  background: #e7eef2; /* matches Voyager's light water tone while the style loads */
+  background: #eef0f2; /* matches Positron's quiet ground tone while the style loads */
+}
+
+/* Shared panel material for every floating element over the map. */
+@utility panel {
+  background-color: var(--color-surface);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: var(--shadow-panel), 0 0 0 1px rgb(22 24 29 / 0.1);
+}
+
+/* Skeleton block for loading states in weather panels. */
+@utility skeleton {
+  border-radius: 0.375rem;
+  background-color: rgb(22 24 29 / 0.08);
+  animation: skeleton-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
 }

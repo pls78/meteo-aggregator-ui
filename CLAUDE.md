@@ -98,7 +98,8 @@ preview environment as well (`--env preview`) or preview deploys return 503.
   whether that frame's tiles are still loading; the latter two driven by `MapView`).
   `activeSlot` is the mobile A/B target and stays `'primary'` on desktop, so plain-click/Shift
   are unchanged. Server data stays in React Query, never here.
-- **`src/components/map/`** — `MapView` (the full-screen map + base tiles + markers + recenter +
+- **`src/components/map/`** — `MapView` (the full-screen map + base tiles (CARTO **Positron**
+  vector style — quiet ground so data leads) + markers + recenter +
   WMS overlays). Rotation and pitch are locked (kept north-up). A plain tap fills `activeSlot`;
   Shift+click always fills comparison. Active satellite layers are rendered imperatively in
   `MapView`; when one plays a time-lapse it mounts a preloaded raster layer per frame (see
@@ -150,7 +151,20 @@ preview environment as well (`--env preview`) or preview deploys return 503.
 - **`src/hooks/useInitialLocation.ts`** — on load, seeds the primary location from the browser
   geolocation, falling back silently to `DEFAULT_LOCATION` in **`src/lib/config.ts`** when it's
   denied/unavailable. Runs once per mount; never overrides an existing selection; no persistence.
-- **`src/lib/weatherCode.ts`** — WMO `weather_code` → icon/label.
+- **`src/lib/weatherCode.ts`** — WMO `weather_code` → drawn glyph kind + label. Rendering
+  lives in **`src/components/weather/`**: `glyphs.tsx` (13 monoline 24×24 glyphs; structure in
+  `currentColor`, drops/flakes in the `precip` token, solar marks in the `sun` token) and
+  `WeatherIcon` (HTML host) / `WeatherGlyph` (bare fragment for embedding inside the hourly
+  chart's SVG). No emoji anywhere — the `visual-design` spec forbids them.
+- **Design system** — the visual world is **"The Meteogram"** (consensus drawn over per-model
+  spread). Tokens live in `src/index.css` (`@theme`: ink ramp, paper `surface`, `accent`/`loc-a`
+  consensus blue, `loc-b` reserved red, `conf-*`, `precip`, `sun`, `hairline`, shadows, and the
+  `panel`/`skeleton` utilities); **components must consume tokens — no raw palette utilities or
+  hex in component code**. `src/lib/accents.ts` is the one source for the A/B pair.
+  `src/components/panels/SpreadStrip.tsx` draws each day row's model spread on a **shared week
+  scale** (`spreadExtent`). Authorities: `DESIGN.md` (+ `.impeccable/design.json`) for the
+  system, `PRODUCT.md` for product truth, `openspec/specs/visual-design/` for requirements —
+  keep all three in sync when the look changes.
 
 > **Two layouts, one behavior:** presentation of selection / weather / layers is duplicated
 > across the desktop overlays and `src/components/mobile/`. Changing one usually means changing
