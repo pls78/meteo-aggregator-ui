@@ -4,47 +4,341 @@
   "title": "Design System: Meteo Aggregator",
   "extensions": {
     "colorMeta": {
-      "ink-900": { "role": "neutral", "displayName": "Ink 900", "canonical": "#16181d", "tonalRamp": ["oklch(14% 0.015 260)", "oklch(22% 0.02 260)", "oklch(32% 0.03 258)", "oklch(44% 0.035 257)", "oklch(56% 0.03 256)", "oklch(70% 0.025 255)", "oklch(84% 0.015 255)", "oklch(95% 0.008 255)"] },
-      "ink-600": { "role": "neutral", "displayName": "Ink 600", "canonical": "#4d5a70", "tonalRamp": ["oklch(15% 0.025 260)", "oklch(24% 0.03 260)", "oklch(34% 0.035 258)", "oklch(45% 0.035 257)", "oklch(56% 0.03 256)", "oklch(70% 0.025 255)", "oklch(84% 0.015 255)", "oklch(95% 0.008 255)"] },
-      "ink-400": { "role": "neutral", "displayName": "Ink 400", "canonical": "#66768b", "tonalRamp": ["oklch(15% 0.025 260)", "oklch(24% 0.03 260)", "oklch(34% 0.035 258)", "oklch(45% 0.035 257)", "oklch(56% 0.03 256)", "oklch(70% 0.025 255)", "oklch(84% 0.015 255)", "oklch(95% 0.008 255)"] },
-      "ink-300": { "role": "neutral", "displayName": "Ink 300", "canonical": "#b8c1ce", "tonalRamp": ["oklch(15% 0.025 260)", "oklch(24% 0.03 260)", "oklch(34% 0.035 258)", "oklch(45% 0.035 257)", "oklch(56% 0.03 256)", "oklch(70% 0.025 255)", "oklch(84% 0.015 255)", "oklch(95% 0.008 255)"] },
-      "surface": { "role": "neutral", "displayName": "Paper Surface", "canonical": "rgb(252 252 250 / 0.95)", "tonalRamp": ["oklch(20% 0.008 106)", "oklch(35% 0.008 106)", "oklch(50% 0.006 106)", "oklch(65% 0.006 106)", "oklch(78% 0.005 106)", "oklch(88% 0.004 106)", "oklch(95% 0.003 106)", "oklch(99% 0.002 106)"] },
-      "surface-solid": { "role": "neutral", "displayName": "Solid Paper", "canonical": "#fcfcfa", "tonalRamp": ["oklch(20% 0.008 106)", "oklch(35% 0.008 106)", "oklch(50% 0.006 106)", "oklch(65% 0.006 106)", "oklch(78% 0.005 106)", "oklch(88% 0.004 106)", "oklch(95% 0.003 106)", "oklch(99.2% 0.002 106)"] },
-      "well": { "role": "neutral", "displayName": "Well", "canonical": "#f4f6f8", "tonalRamp": ["oklch(20% 0.01 240)", "oklch(35% 0.01 240)", "oklch(50% 0.008 240)", "oklch(65% 0.008 240)", "oklch(78% 0.006 240)", "oklch(88% 0.005 240)", "oklch(94% 0.004 240)", "oklch(97.5% 0.003 240)"] },
-      "hairline": { "role": "neutral", "displayName": "Hairline", "canonical": "#e9ecf1", "tonalRamp": ["oklch(20% 0.01 250)", "oklch(35% 0.01 250)", "oklch(50% 0.008 250)", "oklch(65% 0.008 250)", "oklch(78% 0.006 250)", "oklch(88% 0.005 250)", "oklch(94% 0.004 250)", "oklch(97.5% 0.002 250)"] },
-      "accent": { "role": "primary", "displayName": "Consensus Blue", "canonical": "#2456a6", "tonalRamp": ["oklch(20% 0.07 262)", "oklch(30% 0.09 262)", "oklch(40% 0.11 262)", "oklch(48% 0.12 262)", "oklch(60% 0.11 262)", "oklch(73% 0.09 262)", "oklch(85% 0.05 262)", "oklch(95% 0.02 262)"] },
-      "loc-a": { "role": "secondary", "displayName": "Location A Blue", "canonical": "#2456a6", "tonalRamp": ["oklch(20% 0.07 262)", "oklch(30% 0.09 262)", "oklch(40% 0.11 262)", "oklch(48% 0.12 262)", "oklch(60% 0.11 262)", "oklch(73% 0.09 262)", "oklch(85% 0.05 262)", "oklch(95% 0.02 262)"] },
-      "loc-b": { "role": "secondary", "displayName": "Reserved Red", "canonical": "#d1495b", "tonalRamp": ["oklch(22% 0.08 18)", "oklch(32% 0.11 18)", "oklch(42% 0.14 18)", "oklch(52% 0.16 18)", "oklch(62% 0.17 18)", "oklch(74% 0.12 18)", "oklch(86% 0.07 18)", "oklch(95% 0.03 18)"] },
-      "conf-high": { "role": "tertiary", "displayName": "Confidence Green", "canonical": "#147946", "tonalRamp": ["oklch(20% 0.06 155)", "oklch(30% 0.08 155)", "oklch(40% 0.1 155)", "oklch(50% 0.11 155)", "oklch(62% 0.12 155)", "oklch(74% 0.1 155)", "oklch(86% 0.07 155)", "oklch(95% 0.03 155)"] },
-      "conf-medium": { "role": "tertiary", "displayName": "Confidence Amber", "canonical": "#8a5c00", "tonalRamp": ["oklch(22% 0.05 80)", "oklch(32% 0.07 80)", "oklch(42% 0.09 80)", "oklch(50% 0.1 80)", "oklch(64% 0.12 80)", "oklch(76% 0.11 80)", "oklch(87% 0.08 80)", "oklch(95% 0.04 80)"] },
-      "conf-low": { "role": "tertiary", "displayName": "Confidence Red", "canonical": "#a83232", "tonalRamp": ["oklch(22% 0.08 25)", "oklch(32% 0.11 25)", "oklch(42% 0.14 25)", "oklch(50% 0.15 25)", "oklch(62% 0.15 25)", "oklch(74% 0.11 25)", "oklch(86% 0.06 25)", "oklch(95% 0.025 25)"] },
-      "precip": { "role": "tertiary", "displayName": "Precipitation Blue", "canonical": "#2f86c9", "tonalRamp": ["oklch(22% 0.07 245)", "oklch(32% 0.09 245)", "oklch(42% 0.11 245)", "oklch(52% 0.12 245)", "oklch(62% 0.12 245)", "oklch(74% 0.1 245)", "oklch(86% 0.06 245)", "oklch(95% 0.025 245)"] },
-      "sun": { "role": "tertiary", "displayName": "Sun Gold", "canonical": "#c7920a", "tonalRamp": ["oklch(24% 0.06 82)", "oklch(34% 0.08 82)", "oklch(46% 0.1 82)", "oklch(58% 0.12 82)", "oklch(68% 0.13 82)", "oklch(78% 0.11 82)", "oklch(88% 0.08 82)", "oklch(95% 0.04 82)"] },
-      "danger": { "role": "tertiary", "displayName": "Error Red", "canonical": "#c23a3a", "tonalRamp": ["oklch(22% 0.09 25)", "oklch(32% 0.12 25)", "oklch(42% 0.15 25)", "oklch(52% 0.17 25)", "oklch(62% 0.16 25)", "oklch(74% 0.11 25)", "oklch(86% 0.06 25)", "oklch(95% 0.025 25)"] }
+      "ink-900": {
+        "role": "neutral",
+        "displayName": "Ink 900",
+        "canonical": "#16181d",
+        "tonalRamp": [
+          "oklch(14% 0.015 260)",
+          "oklch(22% 0.02 260)",
+          "oklch(32% 0.03 258)",
+          "oklch(44% 0.035 257)",
+          "oklch(56% 0.03 256)",
+          "oklch(70% 0.025 255)",
+          "oklch(84% 0.015 255)",
+          "oklch(95% 0.008 255)"
+        ]
+      },
+      "ink-600": {
+        "role": "neutral",
+        "displayName": "Ink 600",
+        "canonical": "#4d5a70",
+        "tonalRamp": [
+          "oklch(15% 0.025 260)",
+          "oklch(24% 0.03 260)",
+          "oklch(34% 0.035 258)",
+          "oklch(45% 0.035 257)",
+          "oklch(56% 0.03 256)",
+          "oklch(70% 0.025 255)",
+          "oklch(84% 0.015 255)",
+          "oklch(95% 0.008 255)"
+        ]
+      },
+      "ink-400": {
+        "role": "neutral",
+        "displayName": "Ink 400",
+        "canonical": "#66768b",
+        "tonalRamp": [
+          "oklch(15% 0.025 260)",
+          "oklch(24% 0.03 260)",
+          "oklch(34% 0.035 258)",
+          "oklch(45% 0.035 257)",
+          "oklch(56% 0.03 256)",
+          "oklch(70% 0.025 255)",
+          "oklch(84% 0.015 255)",
+          "oklch(95% 0.008 255)"
+        ]
+      },
+      "ink-300": {
+        "role": "neutral",
+        "displayName": "Ink 300",
+        "canonical": "#b8c1ce",
+        "tonalRamp": [
+          "oklch(15% 0.025 260)",
+          "oklch(24% 0.03 260)",
+          "oklch(34% 0.035 258)",
+          "oklch(45% 0.035 257)",
+          "oklch(56% 0.03 256)",
+          "oklch(70% 0.025 255)",
+          "oklch(84% 0.015 255)",
+          "oklch(95% 0.008 255)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Paper Surface",
+        "canonical": "rgb(252 252 250 / 0.95)",
+        "tonalRamp": [
+          "oklch(20% 0.008 106)",
+          "oklch(35% 0.008 106)",
+          "oklch(50% 0.006 106)",
+          "oklch(65% 0.006 106)",
+          "oklch(78% 0.005 106)",
+          "oklch(88% 0.004 106)",
+          "oklch(95% 0.003 106)",
+          "oklch(99% 0.002 106)"
+        ]
+      },
+      "surface-solid": {
+        "role": "neutral",
+        "displayName": "Solid Paper",
+        "canonical": "#fcfcfa",
+        "tonalRamp": [
+          "oklch(20% 0.008 106)",
+          "oklch(35% 0.008 106)",
+          "oklch(50% 0.006 106)",
+          "oklch(65% 0.006 106)",
+          "oklch(78% 0.005 106)",
+          "oklch(88% 0.004 106)",
+          "oklch(95% 0.003 106)",
+          "oklch(99.2% 0.002 106)"
+        ]
+      },
+      "well": {
+        "role": "neutral",
+        "displayName": "Well",
+        "canonical": "#f4f6f8",
+        "tonalRamp": [
+          "oklch(20% 0.01 240)",
+          "oklch(35% 0.01 240)",
+          "oklch(50% 0.008 240)",
+          "oklch(65% 0.008 240)",
+          "oklch(78% 0.006 240)",
+          "oklch(88% 0.005 240)",
+          "oklch(94% 0.004 240)",
+          "oklch(97.5% 0.003 240)"
+        ]
+      },
+      "hairline": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "#e9ecf1",
+        "tonalRamp": [
+          "oklch(20% 0.01 250)",
+          "oklch(35% 0.01 250)",
+          "oklch(50% 0.008 250)",
+          "oklch(65% 0.008 250)",
+          "oklch(78% 0.006 250)",
+          "oklch(88% 0.005 250)",
+          "oklch(94% 0.004 250)",
+          "oklch(97.5% 0.002 250)"
+        ]
+      },
+      "accent": {
+        "role": "primary",
+        "displayName": "Consensus Blue",
+        "canonical": "#2456a6",
+        "tonalRamp": [
+          "oklch(20% 0.07 262)",
+          "oklch(30% 0.09 262)",
+          "oklch(40% 0.11 262)",
+          "oklch(48% 0.12 262)",
+          "oklch(60% 0.11 262)",
+          "oklch(73% 0.09 262)",
+          "oklch(85% 0.05 262)",
+          "oklch(95% 0.02 262)"
+        ]
+      },
+      "loc-a": {
+        "role": "secondary",
+        "displayName": "Location A Blue",
+        "canonical": "#2456a6",
+        "tonalRamp": [
+          "oklch(20% 0.07 262)",
+          "oklch(30% 0.09 262)",
+          "oklch(40% 0.11 262)",
+          "oklch(48% 0.12 262)",
+          "oklch(60% 0.11 262)",
+          "oklch(73% 0.09 262)",
+          "oklch(85% 0.05 262)",
+          "oklch(95% 0.02 262)"
+        ]
+      },
+      "loc-b": {
+        "role": "secondary",
+        "displayName": "Reserved Red",
+        "canonical": "#d1495b",
+        "tonalRamp": [
+          "oklch(22% 0.08 18)",
+          "oklch(32% 0.11 18)",
+          "oklch(42% 0.14 18)",
+          "oklch(52% 0.16 18)",
+          "oklch(62% 0.17 18)",
+          "oklch(74% 0.12 18)",
+          "oklch(86% 0.07 18)",
+          "oklch(95% 0.03 18)"
+        ]
+      },
+      "conf-high": {
+        "role": "tertiary",
+        "displayName": "Confidence Green",
+        "canonical": "#147946",
+        "tonalRamp": [
+          "oklch(20% 0.06 155)",
+          "oklch(30% 0.08 155)",
+          "oklch(40% 0.1 155)",
+          "oklch(50% 0.11 155)",
+          "oklch(62% 0.12 155)",
+          "oklch(74% 0.1 155)",
+          "oklch(86% 0.07 155)",
+          "oklch(95% 0.03 155)"
+        ]
+      },
+      "conf-medium": {
+        "role": "tertiary",
+        "displayName": "Confidence Amber",
+        "canonical": "#8a5c00",
+        "tonalRamp": [
+          "oklch(22% 0.05 80)",
+          "oklch(32% 0.07 80)",
+          "oklch(42% 0.09 80)",
+          "oklch(50% 0.1 80)",
+          "oklch(64% 0.12 80)",
+          "oklch(76% 0.11 80)",
+          "oklch(87% 0.08 80)",
+          "oklch(95% 0.04 80)"
+        ]
+      },
+      "conf-low": {
+        "role": "tertiary",
+        "displayName": "Confidence Red",
+        "canonical": "#a83232",
+        "tonalRamp": [
+          "oklch(22% 0.08 25)",
+          "oklch(32% 0.11 25)",
+          "oklch(42% 0.14 25)",
+          "oklch(50% 0.15 25)",
+          "oklch(62% 0.15 25)",
+          "oklch(74% 0.11 25)",
+          "oklch(86% 0.06 25)",
+          "oklch(95% 0.025 25)"
+        ]
+      },
+      "precip": {
+        "role": "tertiary",
+        "displayName": "Precipitation Blue",
+        "canonical": "#2f86c9",
+        "tonalRamp": [
+          "oklch(22% 0.07 245)",
+          "oklch(32% 0.09 245)",
+          "oklch(42% 0.11 245)",
+          "oklch(52% 0.12 245)",
+          "oklch(62% 0.12 245)",
+          "oklch(74% 0.1 245)",
+          "oklch(86% 0.06 245)",
+          "oklch(95% 0.025 245)"
+        ]
+      },
+      "sun": {
+        "role": "tertiary",
+        "displayName": "Sun Gold",
+        "canonical": "#c7920a",
+        "tonalRamp": [
+          "oklch(24% 0.06 82)",
+          "oklch(34% 0.08 82)",
+          "oklch(46% 0.1 82)",
+          "oklch(58% 0.12 82)",
+          "oklch(68% 0.13 82)",
+          "oklch(78% 0.11 82)",
+          "oklch(88% 0.08 82)",
+          "oklch(95% 0.04 82)"
+        ]
+      },
+      "danger": {
+        "role": "tertiary",
+        "displayName": "Error Red",
+        "canonical": "#c23a3a",
+        "tonalRamp": [
+          "oklch(22% 0.09 25)",
+          "oklch(32% 0.12 25)",
+          "oklch(42% 0.15 25)",
+          "oklch(52% 0.17 25)",
+          "oklch(62% 0.16 25)",
+          "oklch(74% 0.11 25)",
+          "oklch(86% 0.06 25)",
+          "oklch(95% 0.025 25)"
+        ]
+      }
     },
     "typographyMeta": {
-      "display": { "displayName": "Display", "purpose": "The current temperature on the location card; 24px step in the mobile peek header. Always tabular-nums." },
-      "headline": { "displayName": "Headline", "purpose": "About-dialog hero only; never appears over the map." },
-      "title": { "displayName": "Title", "purpose": "Panel and section headers (location name, 'Satellite layers', day headings)." },
-      "body": { "displayName": "Body", "purpose": "Day-row values, search results, layer names, explanatory copy (60ch cap in the dialog, 17rem in the confidence detail)." },
-      "caption": { "displayName": "Caption", "purpose": "Secondary lines, legends, view labels, opacity readouts." },
-      "label": { "displayName": "Label / Annotation", "purpose": "10px tracked-caps annotations in ink-400: weekday initials, table column headers, micro-badges. Confidence tags use the same size in their tinted color, lowercase, no fill." }
+      "display": {
+        "displayName": "Display",
+        "purpose": "The current temperature on the location card; 24px step in the mobile peek header. Always tabular-nums."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "About-dialog hero only; never appears over the map."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Panel and section headers (location name, 'Satellite layers', day headings)."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Day-row values, search results, layer names, explanatory copy (60ch cap in the dialog, 17rem in the confidence detail)."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Secondary lines, legends, view labels, opacity readouts."
+      },
+      "label": {
+        "displayName": "Label / Annotation",
+        "purpose": "10px tracked-caps annotations in ink-400: weekday initials, table column headers, micro-badges. Confidence tags use the same size in their tinted color, lowercase, no fill."
+      }
     },
     "shadows": [
-      { "name": "shadow-panel", "value": "0 1px 2px rgb(22 24 29 / 0.05), 0 12px 32px -16px rgb(22 24 29 / 0.22)", "purpose": "Every floating panel — flat-leaning, paper-on-table; always paired with the hairline ring 0 0 0 1px rgb(22 24 29 / 0.1) and blur(8px) inside the `panel` utility." },
-      { "name": "shadow-control", "value": "0 1px 2px rgb(22 24 29 / 0.07), 0 6px 16px -10px rgb(22 24 29 / 0.25)", "purpose": "Small floating bits: the play button, dark toasts/hints." }
+      {
+        "name": "shadow-panel",
+        "value": "0 1px 2px rgb(22 24 29 / 0.05), 0 12px 32px -16px rgb(22 24 29 / 0.22)",
+        "purpose": "Every floating panel — flat-leaning, paper-on-table; always paired with the hairline ring 0 0 0 1px rgb(22 24 29 / 0.1) and blur(8px) inside the `panel` utility."
+      },
+      {
+        "name": "shadow-control",
+        "value": "0 1px 2px rgb(22 24 29 / 0.07), 0 6px 16px -10px rgb(22 24 29 / 0.25)",
+        "purpose": "Small floating bits: the play button, dark toasts/hints."
+      }
     ],
     "motion": [
-      { "name": "enter-exit", "value": "opacity + translateY(0.5-1rem), 300ms ease-out", "purpose": "Cards and the hourly sheet fade/slide in once data settles; fade out on clear/swap." },
-      { "name": "collapse", "value": "grid-template-rows 0fr↔1fr + opacity, 300ms ease-out", "purpose": "Layers panel expand/collapse without unmounting content." },
-      { "name": "sheet-snap", "value": "height 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)", "purpose": "Weather sheet settling to peek/half/full after a drag — the deliberate layout-height exception." },
-      { "name": "skeleton-pulse", "value": "opacity 1↔0.55, 1.6s ease-in-out infinite", "purpose": "Loading skeleton blocks." },
-      { "name": "overlay-fade", "value": "raster-opacity 180ms (static) / 380ms out, 0ms in (time-lapse)", "purpose": "WMS overlay opacity; time-lapse frames snap in on top and fade the outgoing frame beneath, 550ms per frame." },
-      { "name": "state-color", "value": "transition-colors (150ms default)", "purpose": "Hover/active ink and fill shifts on every control; confidence tags transition box-shadow for their ring states." }
+      {
+        "name": "enter-exit",
+        "value": "opacity + translateY(0.5-1rem), 300ms ease-out",
+        "purpose": "Cards and the hourly sheet fade/slide in once data settles; fade out on clear/swap."
+      },
+      {
+        "name": "collapse",
+        "value": "grid-template-rows 0fr↔1fr + opacity, 300ms ease-out",
+        "purpose": "Layers panel expand/collapse without unmounting content."
+      },
+      {
+        "name": "sheet-snap",
+        "value": "height 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)",
+        "purpose": "Weather sheet settling to peek/half/full after a drag — the deliberate layout-height exception."
+      },
+      {
+        "name": "skeleton-pulse",
+        "value": "opacity 1↔0.55, 1.6s ease-in-out infinite",
+        "purpose": "Loading skeleton blocks."
+      },
+      {
+        "name": "overlay-fade",
+        "value": "raster-opacity 180ms (static) / 380ms out, 0ms in (time-lapse)",
+        "purpose": "WMS overlay opacity; time-lapse frames snap in on top and fade the outgoing frame beneath, 550ms per frame."
+      },
+      {
+        "name": "state-color",
+        "value": "transition-colors (150ms default)",
+        "purpose": "Hover/active ink and fill shifts on every control; confidence tags transition box-shadow for their ring states."
+      }
     ],
     "breakpoints": [
-      { "name": "sm", "value": "640px" },
-      { "name": "md (mobile/desktop split)", "value": "768px" }
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md (mobile/desktop split)",
+        "value": "768px"
+      }
     ]
   },
   "components": [
@@ -142,15 +436,51 @@
       "Light-only, flat-leaning elevation; complete state vocabulary (hover, focus-visible, active, disabled, skeleton, inline error)."
     ],
     "rules": [
-      { "name": "The No-Raw-Palette Rule", "body": "A component never introduces a literal hex value or a stock Tailwind palette class (slate-*, gray-*). Everything routes through the @theme tokens — including SVG, via var(--color-*); location colors route through lib/accents.ts.", "section": "colors" },
-      { "name": "The Blue-Means-Consensus Rule", "body": "accent is the consensus stroke and the interaction color — the bold tick, the temperature line, the selection fill, the focus ring. If something blue is neither the consensus mark nor interactive, it's the wrong color (precip for rain).", "section": "colors" },
-      { "name": "The Reserved-Red Rule", "body": "loc-b red appears only as location B. Low confidence and errors use their own deeper reds (conf-low, danger) precisely so a B-mark is never mistaken for a warning.", "section": "colors" },
-      { "name": "The Tabular Rule", "body": "Every rendered number gets tabular-nums. No exceptions.", "section": "typography" },
-      { "name": "The Annotation Rule", "body": "Micro-labels are annotations on a figure: 10px, tracked caps, ink-400, no background. If a label wants a filled chip, it's probably over-dressed for this world.", "section": "typography" },
-      { "name": "The 16px Input Rule", "body": "Text inputs are text-base (16px) below md and text-sm above — iOS zooms into any focused input under 16px and never zooms back out (the viewport is locked user-scalable=no for the same reason).", "section": "typography" },
-      { "name": "The One Recipe Rule", "body": "Every element floating over the map is the panel utility — bg-surface + backdrop-blur(8px) + shadow-panel + hairline ring — plus a radius from the Shapes scale. No second material exists; a new floating element starts from panel.", "section": "elevation" },
-      { "name": "The Static Elevation Rule", "body": "Shadows do not respond to state. Hover and focus are color and outline changes; nothing lifts, grows, or deepens its shadow.", "section": "elevation" },
-      { "name": "The Shared Scale Rule", "body": "All spread strips in one card share one degrees-per-pixel scale (spreadExtent, floored at 1°). A tight cluster must genuinely read tighter than a scattered one, row to row — never rescale a strip to its own day's extent.", "section": "components" }
+      {
+        "name": "The No-Raw-Palette Rule",
+        "body": "A component never introduces a literal hex value or a stock Tailwind palette class (slate-*, gray-*). Everything routes through the @theme tokens — including SVG, via var(--color-*); location colors route through lib/accents.ts.",
+        "section": "colors"
+      },
+      {
+        "name": "The Blue-Means-Consensus Rule",
+        "body": "accent is the consensus stroke and the interaction color — the bold tick, the temperature line, the selection fill, the focus ring. If something blue is neither the consensus mark nor interactive, it's the wrong color (precip for rain).",
+        "section": "colors"
+      },
+      {
+        "name": "The Reserved-Red Rule",
+        "body": "loc-b red appears only as location B. Low confidence and errors use their own deeper reds (conf-low, danger) precisely so a B-mark is never mistaken for a warning.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tabular Rule",
+        "body": "Every rendered number gets tabular-nums. No exceptions.",
+        "section": "typography"
+      },
+      {
+        "name": "The Annotation Rule",
+        "body": "Micro-labels are annotations on a figure: 10px, tracked caps, ink-400, no background. If a label wants a filled chip, it's probably over-dressed for this world.",
+        "section": "typography"
+      },
+      {
+        "name": "The 16px Input Rule",
+        "body": "Text inputs are text-base (16px) below md and text-sm above — iOS zooms into any focused input under 16px and never zooms back out (the viewport is locked user-scalable=no for the same reason).",
+        "section": "typography"
+      },
+      {
+        "name": "The One Recipe Rule",
+        "body": "Every element floating over the map is the panel utility — bg-surface + backdrop-blur(8px) + shadow-panel + hairline ring — plus a radius from the Shapes scale. No second material exists; a new floating element starts from panel.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Static Elevation Rule",
+        "body": "Shadows do not respond to state. Hover and focus are color and outline changes; nothing lifts, grows, or deepens its shadow.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Shared Scale Rule",
+        "body": "All spread strips in one card share one degrees-per-pixel scale (spreadExtent, floored at 1°). A tight cluster must genuinely read tighter than a scattered one, row to row — never rescale a strip to its own day's extent.",
+        "section": "components"
+      }
     ],
     "dos": [
       "Do draw evidence with every consensus value: a SpreadStrip per day row, the DotStrip in the confidence detail — faint ink-400 model marks around a bold 2px accent consensus stroke.",
@@ -173,7 +503,7 @@
       "Don't add a dark mode, a webfont, shadows that react to hover, or a second panel material.",
       "Don't swap the Positron basemap or re-enable rotation/pitch/page zoom; the muted, locked map is the meteogram's field.",
       "Don't render weather conditions with emoji or off-hand icons — every condition comes from the drawn glyph set (structure currentColor, drops/flakes precip, solar marks sun) — and don't copy the About dialog's grandfathered iteration-1 grammar into new surfaces.",
-      "Don't propagate the \"Is the backend running?\" error hint into new copy — it's pending a user follow-up; new errors state what failed in plain language."
+      "Don't reference internal components or infrastructure in error copy — errors name what failed in the visitor's terms plus a recovery they can perform (\"Check your connection and try again.\")."
     ]
   }
 }

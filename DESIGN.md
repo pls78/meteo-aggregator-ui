@@ -271,7 +271,6 @@ the same vocabulary at ~1.8px (see Components → Weather Glyphs).
 - **Active selection:** `bg-accent/10` fill + `ring-1 ring-accent/40`, with `aria-pressed` (day rows, sheet tabs). Confidence tags ring in their own color (`ring-2 ring-current/60`).
 - **Disabled:** `opacity-40` + `disabled:cursor-not-allowed` (locked layer rows use `opacity-60`).
 - **Loading:** `skeleton` utility blocks (6px radius, `ink-900/8`, 1.6s opacity pulse) shaped to the final layout so content loads without reflow. Minor text fallbacks remain in low-stakes spots ("Searching…", "Loading layers…").
-- **Error:** inline `text-danger` sentence in place of the failed content, often with a practical hint ("Is the backend running?" — copy under review, see Do's and Don'ts).
 
 ### Spread Strip (signature)
 The meteogram signature at row scale (`src/components/panels/SpreadStrip.tsx`): a
@@ -423,4 +422,3 @@ off-hand icons.
 - **Don't** add a dark mode, a webfont, shadows that react to hover, or a second panel material.
 - **Don't** swap the Positron basemap or re-enable rotation/pitch/page zoom; the muted, locked map is the meteogram's field.
 - **Don't** render weather conditions with emoji or off-hand icons — every condition comes from the drawn glyph set (structure `currentColor`, drops/flakes `precip`, solar marks `sun`) — and don't copy the About dialog's grandfathered iteration-1 grammar into new surfaces.
-- **Don't** propagate the "Is the backend running?" error hint into new copy — it's pending a user follow-up; new errors state what failed in plain language.

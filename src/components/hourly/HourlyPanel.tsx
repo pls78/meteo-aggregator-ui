@@ -117,7 +117,7 @@ export function HourlyPanel({ floating = false }: { floating?: boolean }) {
           <ConfidenceView day={day} panels={confidencePanels} />
         ) : isError ? (
           <p className="py-6 text-center text-sm text-danger">
-            Couldn’t load hourly data. Is the backend running?
+            Couldn’t load hourly data. Check your connection and try again.
           </p>
         ) : isLoading ? (
           <div className="space-y-2 py-4" aria-hidden>
@@ -158,7 +158,7 @@ function ConfidenceView({ day, panels }: { day: string; panels: ConfidencePanel[
               </div>
             )}
             {q.isError ? (
-              <p className="py-4 text-sm text-danger">Couldn’t load forecast.</p>
+              <p className="py-4 text-sm text-danger">Couldn’t load the forecast. Check your connection and try again.</p>
             ) : dayData ? (
               <ConfidenceDetail day={dayData} />
             ) : (

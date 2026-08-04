@@ -72,7 +72,7 @@ export function LocationCard({ location, slot, accent }: Props) {
 
       {/* Current conditions */}
       {hourly.isError || forecast.isError ? (
-        <p className="text-sm text-danger">Couldn’t load weather. Is the backend running?</p>
+        <p className="text-sm text-danger">Couldn’t load the forecast. Check your connection and try again.</p>
       ) : hourly.isLoading ? (
         <CurrentSkeleton />
       ) : now ? (

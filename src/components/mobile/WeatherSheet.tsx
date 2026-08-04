@@ -68,6 +68,23 @@ export function WeatherSheet() {
   const [snap, setSnap] = useState<Snap>('half')
   const [dragH, setDragH] = useState<number | null>(null)
   const drag = useRef<{ startY: number; startH: number; moved: boolean } | null>(null)
+  // The day-detail section and the sheet's internal scroll container, so opening
+  // a day can bring the detail into view (at the half snap it often sits below
+  // the fold, and the tap would look inert). Scrolled via the container only —
+  // scrollIntoView would also scroll the overflow-hidden app root and shift the
+  // whole viewport.
+  const detailRef = useRef<HTMLDivElement | null>(null)
+  const scrollRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    if (!selectedDay) return
+    const el = detailRef.current
+    const c = scrollRef.current
+    if (!el || !c) return
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const delta = el.getBoundingClientRect().top - c.getBoundingClientRect().top
+    c.scrollTo({ top: c.scrollTop + delta - 4, behavior: reduce ? 'auto' : 'smooth' })
+  }, [selectedDay, selectedDayView])
 
   // A cleared comparison falls back to the primary tab.
   useEffect(() => {
@@ -146,7 +163,7 @@ export function WeatherSheet() {
       </div>
 
       {/* Scrollable detail (hidden visually at peek by the sheet height) */}
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-6" style={{ touchAction: 'pan-y' }}>
+      <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto px-4 pb-6" style={{ touchAction: 'pan-y' }}>
         {comparison && (
           <div className="mb-3 flex gap-2">
             {(['primary', 'comparison'] as Slot[]).map((s) => {
@@ -170,7 +187,7 @@ export function WeatherSheet() {
         )}
 
         {forecast.isError ? (
-          <p className="py-4 text-sm text-danger">Couldn’t load weather. Is the backend running?</p>
+          <p className="py-4 text-sm text-danger">Couldn’t load the forecast. Check your connection and try again.</p>
         ) : (
           <>
           {/* Column captions, set like a figure header over the day rows. */}
@@ -229,7 +246,7 @@ export function WeatherSheet() {
 
         {/* Detail for the tapped day: hourly chart, or confidence detail when the
             confidence label was tapped. */}
-        <div className="mt-4 border-t border-ink-900/10 pt-3">
+        <div ref={detailRef} className="mt-4 border-t border-ink-900/10 pt-3">
           {!selectedDay ? (
             <p className="text-center text-xs text-ink-400">Tap a day for its hour-by-hour forecast</p>
           ) : showConfidence ? (
@@ -239,7 +256,7 @@ export function WeatherSheet() {
                 <span className="text-xs text-ink-400">confidence</span>
               </div>
               {forecast.isError ? (
-                <p className="py-3 text-center text-sm text-danger">Couldn’t load forecast.</p>
+                <p className="py-3 text-center text-sm text-danger">Couldn’t load the forecast. Check your connection and try again.</p>
               ) : shownDay ? (
                 <ConfidenceDetail day={shownDay} />
               ) : (
@@ -262,7 +279,7 @@ export function WeatherSheet() {
                 )}
               </div>
               {pWeek.isError || cWeek.isError ? (
-                <p className="py-3 text-center text-sm text-danger">Couldn’t load hourly data.</p>
+                <p className="py-3 text-center text-sm text-danger">Couldn’t load hourly data. Check your connection and try again.</p>
               ) : (pWeek.isLoading || cWeek.isLoading) && !hasHours ? (
                 <span className="skeleton block h-32 w-full" aria-hidden />
               ) : !hasHours ? (
