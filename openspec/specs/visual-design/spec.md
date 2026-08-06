@@ -101,3 +101,11 @@ Weather-condition icons SHALL be drawn glyphs from a single shared set rendered 
 - **WHEN** a weather code outside the known set is received
 - **THEN** a neutral placeholder glyph renders with an "Unknown" label, with no emoji fallback
 
+### Requirement: One grammar across surfaces
+
+Every surface, including dense reading surfaces such as the info dialog, SHALL compose from the current visual world's vocabulary (ruled sections, annotation labels, token colors, the shared panel material). No surface SHALL retain a prior visual world's composition after a world change.
+
+#### Scenario: Reading surface follows the world
+
+- **WHEN** the info dialog renders after a visual-world change
+- **THEN** its sections, tables, and labels use the current world's grammar and tokens, with no leftover composition from the previous world

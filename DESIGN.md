@@ -187,6 +187,11 @@ the wrong color (`precip` for rain).
 and errors use their own deeper reds (`conf-low`, `danger`) precisely so a B-mark is
 never mistaken for a warning.
 
+**The Ink-400 Floor Rule.** `ink-400` text is legible only on `surface` /
+`surface-solid`. On the `well` surface it fails AA — small text there steps up to
+`ink-600` (application-note headers, well-tinted table header rows, the dialog
+footer; section titles stay `ink-400` because they sit on `surface-solid`).
+
 ## Typography
 
 **Display/Body Font:** system UI stack (Tailwind v4 default: `ui-sans-serif, system-ui, sans-serif` + emoji fallbacks). No webfont, deliberately — zero payload, native rendering.
@@ -238,7 +243,7 @@ hairline ring that draws the edge where the shadow is too soft to.
 ### Shadow Vocabulary
 - **Panel** (`--shadow-panel`: `0 1px 2px rgb(22 24 29 / 0.05), 0 12px 32px -16px rgb(22 24 29 / 0.22)`): every floating panel, always combined with the hairline ring `0 0 0 1px rgb(22 24 29 / 0.1)` (both baked into the `panel` utility along with `backdrop-blur(8px)`).
 - **Control** (`--shadow-control`: `0 1px 2px rgb(22 24 29 / 0.07), 0 6px 16px -10px rgb(22 24 29 / 0.25)`): lighter, for small floating bits — the play button, dark toasts/hints.
-- The About dialog alone uses Tailwind's stock `shadow-2xl` over its scrim (it covers the map rather than floating on it) — a grandfathered one-off (see Components → Dialog).
+- The About dialog shares `shadow-panel` + the `ink-900/10` hairline ring on an opaque `surface-solid` ground (it sits over a scrim, not the map, so it skips the blur and translucency).
 
 ### Named Rules
 **The One Recipe Rule.** Every element floating over the map is the `panel` utility
@@ -271,6 +276,7 @@ the same vocabulary at ~1.8px (see Components → Weather Glyphs).
 - **Active selection:** `bg-accent/10` fill + `ring-1 ring-accent/40`, with `aria-pressed` (day rows, sheet tabs). Confidence tags ring in their own color (`ring-2 ring-current/60`).
 - **Disabled:** `opacity-40` + `disabled:cursor-not-allowed` (locked layer rows use `opacity-60`).
 - **Loading:** `skeleton` utility blocks (6px radius, `ink-900/8`, 1.6s opacity pulse) shaped to the final layout so content loads without reflow. Minor text fallbacks remain in low-stakes spots ("Searching…", "Loading layers…").
+- **Error:** inline `text-danger` sentence in place of the failed content — what failed plus a practical next step ("Couldn't load the forecast. Check your connection and try again."); short-form for small panels ("Couldn't load layers.").
 
 ### Spread Strip (signature)
 The meteogram signature at row scale (`src/components/panels/SpreadStrip.tsx`): a
@@ -349,16 +355,29 @@ the same ruled-row + SpreadStrip + ConfidenceTag grammar as the desktop card. Th
 layers sheet slides in with `translate-y` over an `ink-900/35` scrim. Content
 scrolls internally (`touch-action: pan-y`); the map never pans behind a sheet.
 
-### Dialog (About)
+### Dialog (About) — the instrument's datasheet
 Full-screen sheet on mobile; centered `max-w-3xl` card at 16px radius on desktop,
-opaque white over an `ink-900/40` blurred scrim. Sections divided by `ink-900/8`
-hairlines; info cards sit in `well` wells with `ink-900/10` borders; weight bars
-fill `accent/80` (solid `loc-b` for the local model) in `ink-900/10` tracks.
-*Grandfathered from iteration 1:* its structure predates the meteogram pass —
-`bg-white` (not `surface-solid`), stock `shadow-2xl`, and tint-filled micro-badges
-that the Annotation Rule would now forbid. It consumes the current tokens for all
-its colors; bringing its grammar fully into the meteogram world is a known
-follow-up, not a template to copy. (Its header mark predates the glyph set too.)
+on the shared material — opaque `bg-surface-solid` + `shadow-panel` + `ink-900/10`
+hairline ring — over an `ink-900/40` blurred scrim. Composed as a datasheet:
+- **Sections** are hairline-ruled (`border-b ink-900/8`), and their 10px
+  tracked-caps titles (semibold, `tracking-[0.14em]`, `ink-400`) *are* the headings
+  — the Annotation Rule at section scale. Only the title block keeps a headline.
+- **Capabilities** are a ruled definition list (`<dl>` with `divide-y ink-900/8`,
+  fixed-width `ink-900` terms, `ink-600` definitions); **data sources** and
+  **imagery channels** are wrapping spec rows in the same ruled grammar (name,
+  chips, description, cadence chip).
+- **Models** and **confidence thresholds** are ruled tables inside an
+  `ink-900/10`-ringed rounded-lg frame with a `well`-tinted tracked-caps header row
+  (`ink-600` — see the Ink-400 Floor Rule); confidence levels appear as
+  `text-conf-*` semibold text in the Level column, no fills.
+- **Worked examples** are "application note" blocks on the well surface
+  (`rounded-lg bg-well ring-1 ring-ink-900/8`) with tracked-caps `ink-600` titles
+  ("Application note · …").
+- **Tags** (model role, cadence, satellite, "local") use the neutral bordered
+  **CHIP**: 10px tracked caps, `ink-600` text, `ink-900/10` border, rounded, no
+  fill — the text carries the meaning; semantic colors stay reserved for
+  confidence and locations. Weight bars fill solid `accent` in `ink-900/10`
+  tracks; imagery rows load as `skeleton` blocks.
 
 ### Hourly Chart (signature)
 Dependency-free inline SVG (`src/components/hourly/HourlyChart.tsx`): two stacked
@@ -421,4 +440,6 @@ off-hand icons.
 - **Don't** animate layout properties — transforms and opacity only, 300ms ease-out — except the weather sheet's height, which is its drag mechanic.
 - **Don't** add a dark mode, a webfont, shadows that react to hover, or a second panel material.
 - **Don't** swap the Positron basemap or re-enable rotation/pitch/page zoom; the muted, locked map is the meteogram's field.
-- **Don't** render weather conditions with emoji or off-hand icons — every condition comes from the drawn glyph set (structure `currentColor`, drops/flakes `precip`, solar marks `sun`) — and don't copy the About dialog's grandfathered iteration-1 grammar into new surfaces.
+- **Don't** render weather conditions with emoji or off-hand icons — every condition comes from the drawn glyph set (structure `currentColor`, drops/flakes `precip`, solar marks `sun`).
+- **Don't** set `ink-400` text on the `well` surface — it fails AA there; small text on wells steps up to `ink-600` (The Ink-400 Floor Rule).
+- **Don't** reference internal components or infrastructure in error copy — errors name what failed in the visitor's terms plus a recovery they can perform ("Check your connection and try again.").

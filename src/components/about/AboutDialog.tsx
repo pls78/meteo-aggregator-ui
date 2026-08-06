@@ -1,12 +1,14 @@
-// The info / "how it works" dialog: a light modal over the map describing the app's
-// features, data sources, aggregation/weighting method, and satellite layers. Opened
-// from a trigger in either layout via the shared appStore `aboutOpen` flag. Dismissed
-// with the ✕ button, Escape, or a backdrop click. Content lives in aboutContent.ts.
+// The info / "how it works" dialog, composed as the instrument's datasheet:
+// hairline-ruled sections with tracked-caps titles, definition/threshold/channel
+// tables, and worked examples as application notes. Opened from a trigger in
+// either layout via the shared appStore `aboutOpen` flag; dismissed with the ✕
+// button, Escape, or a backdrop click. Content lives in aboutContent.ts.
 
 import { useEffect, useRef } from 'react'
 import { useAppStore } from '../../store/appStore'
 import { useImagery } from '../../hooks/queries'
 import { cadenceFromTimes, shortTitle } from '../../lib/layerMeta'
+import { XIcon } from '../icons'
 import {
   CONFIDENCE,
   FEATURES,
@@ -15,34 +17,21 @@ import {
   SOURCES,
   WEIGHTS_NEAR_TERM,
   WEIGHTS_RANGE,
-  type ModelRole,
   type Weight,
 } from './aboutContent'
 
-const ROLE_BADGE: Record<ModelRole, string> = {
-  global: 'text-accent bg-accent/8',
-  ml: 'text-ink-600 bg-ink-900/6',
-  local: 'text-loc-b bg-loc-b/10',
-}
+// Neutral bordered chip for role/cadence/satellite tags: the text carries the
+// meaning; semantic colors stay reserved for confidence and locations.
+const CHIP =
+  'whitespace-nowrap rounded border border-ink-900/10 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-ink-600'
 
-const CADENCE_BADGE: Record<string, string> = {
-  fast: 'text-conf-low bg-conf-low/10',
-  normal: 'text-accent bg-accent/8',
-  daily: 'text-ink-600 bg-ink-900/6',
-}
-
-const CONF_BORDER: Record<string, string> = {
-  high: 'border-t-conf-high',
-  medium: 'border-t-conf-medium',
-  low: 'border-t-conf-low',
-}
 const CONF_TEXT: Record<string, string> = {
   high: 'text-conf-high',
   medium: 'text-conf-medium',
   low: 'text-conf-low',
 }
 
-// Illustrative worked example for the aggregation section: tomorrow's high (a
+// Illustrative worked example for the blend-weights section: tomorrow's high (a
 // near-term day, so the days 1–3 weights apply). The five near-term weights sum
 // to 1, so no renormalization is needed. The confidence example below reuses these
 // same five forecasts, since temperature max is the confidence variable.
@@ -54,13 +43,37 @@ const WEIGHT_EXAMPLE = [
   { model: 'GFS', value: '27.0', weight: '0.08', contribution: '2.16' },
 ]
 
+// A ruled datasheet section: the tracked-caps title IS the heading.
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="border-b border-ink-900/8 px-6 py-5">
+      <h3 className="mb-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-400">
+        {title}
+      </h3>
+      {children}
+    </section>
+  )
+}
+
+// Application-note block on the well surface (worked examples).
+function ApplicationNote({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-lg bg-well p-4 ring-1 ring-ink-900/8">
+      <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-600">
+        {title}
+      </p>
+      {children}
+    </div>
+  )
+}
+
 function WeightTable({ title, tag, rows }: { title: string; tag: string; rows: Weight[] }) {
   const max = Math.max(...rows.map((r) => r.weight))
   return (
-    <div className="rounded-xl border border-ink-900/10 bg-well p-4">
+    <div className="rounded-lg p-4 ring-1 ring-ink-900/8">
       <header className="mb-3 flex items-baseline justify-between gap-2">
-        <h4 className="font-semibold text-ink-900">{title}</h4>
-        <span className="tracking-wide text-xs text-ink-400">{tag}</span>
+        <h4 className="text-sm font-semibold text-ink-900">{title}</h4>
+        <span className="text-xs tabular-nums text-ink-400">{tag}</span>
       </header>
       <div className="space-y-2.5">
         {rows.map((r) => (
@@ -69,19 +82,19 @@ function WeightTable({ title, tag, rows }: { title: string; tag: string; rows: W
               <span className="text-sm text-ink-900">
                 {r.model}
                 {r.local && (
-                  <span className="ml-1.5 rounded bg-loc-b/10 px-1.5 py-px tracking-wide text-[10px] uppercase tracking-wide text-loc-b">
+                  <span className="ml-1.5 rounded border border-ink-900/10 px-1.5 py-px text-[10px] uppercase tracking-wide text-ink-600">
                     local
                   </span>
                 )}
               </span>
-              <span className="tracking-wide text-xs tabular-nums text-ink-600">
+              <span className="text-xs tabular-nums text-ink-600">
                 {r.absent ? `— ${r.absent}` : r.weight.toFixed(2)}
               </span>
             </div>
             <div className="mt-1 h-[7px] overflow-hidden rounded-full bg-ink-900/10">
               {!r.absent && (
                 <div
-                  className={`h-full rounded-full ${r.local ? 'bg-loc-b/100' : 'bg-accent/80'}`}
+                  className="h-full rounded-full bg-accent"
                   style={{ width: `${(r.weight / max) * 100}%` }}
                 />
               )}
@@ -120,16 +133,16 @@ export function AboutDialog() {
         className="absolute inset-0 cursor-default bg-ink-900/40 backdrop-blur-sm"
       />
 
-      {/* Panel */}
+      {/* Panel: a dense reading surface — solid ground, shared elevation. */}
       <div
         ref={panelRef}
         tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-labelledby="about-title"
-        className="relative z-10 flex max-h-full w-full flex-col overflow-hidden bg-white shadow-2xl outline-none sm:max-h-[88vh] sm:max-w-3xl sm:rounded-2xl"
+        className="relative z-10 flex max-h-full w-full flex-col overflow-hidden bg-surface-solid shadow-panel ring-1 ring-ink-900/10 outline-none sm:max-h-[88vh] sm:max-w-3xl sm:rounded-2xl"
       >
-        {/* Header */}
+        {/* Part header */}
         <div className="flex shrink-0 items-center gap-3 border-b border-ink-900/10 px-5 py-3.5">
           <span className="grid h-8 w-8 place-items-center rounded-lg bg-accent text-white">
             {/* Three stacked clouds, offset down-left toward the front, to evoke aggregation. Matches the favicon. */}
@@ -141,23 +154,21 @@ export function AboutDialog() {
           </span>
           <div className="mr-auto min-w-0">
             <p className="text-sm font-semibold leading-tight text-ink-900">meteo-aggregator</p>
-            <p className="tracking-wide text-[10px] tracking-wide text-ink-400">ABOUT · HOW IT WORKS</p>
+            <p className="text-[10px] uppercase tracking-wide text-ink-400">About · how it works</p>
           </div>
           <button
             type="button"
             aria-label="Close"
             onClick={() => setAboutOpen(false)}
-            className="grid h-8 w-8 place-items-center rounded-lg text-ink-400 hover:bg-ink-900/6 hover:text-ink-600"
+            className="grid h-8 w-8 place-items-center rounded-lg text-ink-400 transition-colors hover:bg-ink-900/5 hover:text-ink-600 focus-visible:outline-2 focus-visible:outline-accent"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="h-5 w-5">
-              <path d="M18 6 6 18M6 6l12 12" />
-            </svg>
+            <XIcon className="h-5 w-5" />
           </button>
         </div>
 
         {/* Scrollable body */}
         <div className="min-h-0 flex-1 overflow-y-auto" style={{ overscrollBehavior: 'contain' }}>
-          {/* Overview */}
+          {/* Title block */}
           <section className="border-b border-ink-900/8 px-6 py-6">
             <h2 id="about-title" className="mb-3 text-2xl font-bold tracking-tight text-ink-900 text-balance">
               Five weather models, one forecast
@@ -170,39 +181,41 @@ export function AboutDialog() {
             </p>
           </section>
 
-          {/* Features */}
-          <section className="border-b border-ink-900/8 px-6 py-6">
-            <h3 className="mb-4 text-lg font-semibold text-ink-900">What you can do</h3>
-            <div className="grid gap-px overflow-hidden rounded-xl border border-ink-900/8 bg-ink-900/6 sm:grid-cols-2">
+          {/* Capabilities as a ruled definition table */}
+          <Section title="Capabilities">
+            <dl className="divide-y divide-ink-900/8">
               {FEATURES.map((f) => (
-                <div key={f.title} className="bg-white p-4">
-                  <h4 className="mb-1 text-sm font-semibold text-ink-900">{f.title}</h4>
-                  <p className="text-sm text-ink-600">{f.body}</p>
+                <div key={f.title} className="flex flex-col gap-1 py-2.5 sm:flex-row sm:gap-4">
+                  <dt className="shrink-0 text-sm font-medium text-ink-900 sm:w-36">{f.title}</dt>
+                  <dd className="text-sm text-ink-600">{f.body}</dd>
                 </div>
               ))}
-            </div>
-          </section>
+            </dl>
+          </Section>
 
-          {/* Data sources */}
-          <section className="border-b border-ink-900/8 px-6 py-6">
-            <h3 className="mb-1 text-lg font-semibold text-ink-900">Where the numbers come from</h3>
-            <p className="mb-4 max-w-[60ch] text-sm text-ink-600">
+          {/* Data sources as spec rows */}
+          <Section title="Data sources">
+            <p className="mb-3 max-w-[60ch] text-sm text-ink-600">
               Forecasts, ensemble spread and place search come from Open-Meteo, which needs no key. Satellite imagery
               comes from EUMETSAT’s EUMETView, fetched by your browser.
             </p>
-            <div className="mb-5 grid gap-3 sm:grid-cols-2">
+            <ul className="divide-y divide-ink-900/8">
               {SOURCES.map((s) => (
-                <div key={s.title} className="rounded-xl border border-ink-900/10 bg-well p-3.5">
-                  <h4 className="text-sm font-semibold text-ink-900">{s.title}</h4>
-                  <p className="mt-0.5 text-xs text-ink-600">{s.body}</p>
-                  <code className="mt-1 block font-mono text-[10px] text-accent">{s.host}</code>
-                </div>
+                <li key={s.title} className="flex flex-col gap-1 py-2.5 sm:flex-row sm:items-baseline sm:gap-4">
+                  <span className="shrink-0 text-sm font-medium text-ink-900 sm:w-36">{s.title}</span>
+                  <span className="min-w-0 flex-1 text-sm text-ink-600">{s.body}</span>
+                  <code className="shrink-0 font-mono text-[0.72rem] text-ink-600">{s.host}</code>
+                </li>
               ))}
-            </div>
-            <div className="overflow-x-auto rounded-xl border border-ink-900/10">
+            </ul>
+          </Section>
+
+          {/* Model complement */}
+          <Section title="Models">
+            <div className="overflow-x-auto rounded-lg ring-1 ring-ink-900/10">
               <table className="w-full min-w-[520px] border-collapse text-left text-sm">
                 <thead>
-                  <tr className="bg-well tracking-wide text-[10px] uppercase tracking-wider text-ink-400">
+                  <tr className="bg-well text-[10px] uppercase tracking-wider text-ink-600">
                     <th className="border-b border-ink-900/10 px-3.5 py-2.5 font-medium">Model</th>
                     <th className="border-b border-ink-900/10 px-3.5 py-2.5 font-medium">Kind</th>
                     <th className="border-b border-ink-900/10 px-3.5 py-2.5 font-medium">Role</th>
@@ -219,7 +232,7 @@ export function AboutDialog() {
                       </td>
                       <td className="border-b border-ink-900/8 px-3.5 py-3 text-ink-600">{m.kind}</td>
                       <td className="border-b border-ink-900/8 px-3.5 py-3">
-                        <span className={`whitespace-nowrap rounded-full px-2 py-0.5 tracking-wide text-[10px] uppercase tracking-wide ${ROLE_BADGE[m.role]}`}>
+                        <span className={CHIP}>
                           {m.roleLabel}
                         </span>
                       </td>
@@ -230,11 +243,10 @@ export function AboutDialog() {
                 </tbody>
               </table>
             </div>
-          </section>
+          </Section>
 
-          {/* Aggregation */}
-          <section className="border-b border-ink-900/8 px-6 py-6">
-            <h3 className="mb-1 text-lg font-semibold text-ink-900">Weighting by lead time</h3>
+          {/* Blend weights */}
+          <Section title="Blend weights">
             <p className="mb-4 max-w-[60ch] text-sm text-ink-600">
               For each day and each variable, the consensus is a <b className="font-semibold text-ink-900">weighted
               average of the models that have data that day</b>. The weights shift with how far out the forecast is: the
@@ -246,93 +258,91 @@ export function AboutDialog() {
               <WeightTable title="Longer range" tag="days 4+" rows={WEIGHTS_RANGE} />
             </div>
 
-            <div className="mb-4 rounded-xl border border-ink-900/10 bg-white p-4">
-              <p className="mb-3 tracking-wide text-[10px] uppercase tracking-widest text-ink-400">
-                Worked example · tomorrow’s high (near term)
-              </p>
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[380px] border-collapse text-sm">
-                  <thead>
-                    <tr className="tracking-wide text-[10px] uppercase tracking-wide text-ink-400">
-                      <th className="py-1 pr-3 text-left font-medium">Model</th>
-                      <th className="px-3 py-1 text-right font-medium">Forecast</th>
-                      <th className="px-3 py-1 text-right font-medium">Weight</th>
-                      <th className="py-1 pl-3 text-right font-medium">Contribution</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {WEIGHT_EXAMPLE.map((r) => (
-                      <tr key={r.model}>
-                        <td className="py-1 pr-3 text-ink-600">{r.model}</td>
-                        <td className="px-3 py-1 text-right tabular-nums text-ink-600">{r.value} °C</td>
-                        <td className="px-3 py-1 text-right tabular-nums text-ink-600">{r.weight}</td>
-                        <td className="py-1 pl-3 text-right tabular-nums text-ink-600">{r.contribution}</td>
+            <div className="mb-4">
+              <ApplicationNote title="Application note · tomorrow’s high (near term)">
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[380px] border-collapse text-sm">
+                    <thead>
+                      <tr className="text-[10px] uppercase tracking-wide text-ink-600">
+                        <th className="py-1 pr-3 text-left font-medium">Model</th>
+                        <th className="px-3 py-1 text-right font-medium">Forecast</th>
+                        <th className="px-3 py-1 text-right font-medium">Weight</th>
+                        <th className="py-1 pl-3 text-right font-medium">Contribution</th>
                       </tr>
-                    ))}
-                  </tbody>
-                  <tfoot>
-                    <tr className="border-t border-ink-900/10 font-semibold text-ink-900">
-                      <td className="py-1.5 pr-3 text-left">Consensus</td>
-                      <td className="px-3 py-1.5 text-right" />
-                      <td className="px-3 py-1.5 text-right tabular-nums">1.00</td>
-                      <td className="py-1.5 pl-3 text-right tabular-nums">24.8 °C</td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-              <p className="mt-2 text-xs text-ink-600">
-                Each forecast times its weight, summed: 12.00 + 4.50 + 3.12 + 3.00 + 2.16 = 24.78, so the consensus
-                high is 24.8&nbsp;°C. These five weights already sum to 1, so nothing needs renormalizing.
-              </p>
+                    </thead>
+                    <tbody>
+                      {WEIGHT_EXAMPLE.map((r) => (
+                        <tr key={r.model}>
+                          <td className="py-1 pr-3 text-ink-600">{r.model}</td>
+                          <td className="px-3 py-1 text-right tabular-nums text-ink-600">{r.value} °C</td>
+                          <td className="px-3 py-1 text-right tabular-nums text-ink-600">{r.weight}</td>
+                          <td className="py-1 pl-3 text-right tabular-nums text-ink-600">{r.contribution}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot>
+                      <tr className="border-t border-ink-900/10 font-semibold text-ink-900">
+                        <td className="py-1.5 pr-3 text-left">Consensus</td>
+                        <td className="px-3 py-1.5 text-right" />
+                        <td className="px-3 py-1.5 text-right tabular-nums">1.00</td>
+                        <td className="py-1.5 pl-3 text-right tabular-nums">24.8 °C</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+                <p className="mt-2 text-xs text-ink-600">
+                  Each forecast times its weight, summed: 12.00 + 4.50 + 3.12 + 3.00 + 2.16 = 24.78, so the consensus
+                  high is 24.8&nbsp;°C. These five weights already sum to 1, so nothing needs renormalizing.
+                </p>
+              </ApplicationNote>
             </div>
 
-            <div className="mb-3 flex gap-3 rounded-xl border border-accent/25 bg-accent/8 px-4 py-3 text-sm">
-              <span className="mt-0.5 shrink-0 text-accent">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-[18px] w-[18px]">
-                  <path d="M21 12a9 9 0 1 1-9-9" />
-                  <path d="M16 3v5h5" />
-                </svg>
-              </span>
-              <p className="text-ink-600">
+            <div className="max-w-[65ch] space-y-3 text-sm text-ink-600">
+              <p>
                 <b className="font-semibold text-ink-900">Weights renormalize over the models present.</b> They don’t
                 need to sum to 1. When a model is missing for a day or variable (ICON-2i past day 3, or AIFS, which
                 supplies no precipitation probability), the app rescales the remaining weights to sum to 1 so gaps
                 don’t skew the blend.
               </p>
-            </div>
-            <div className="mb-5 flex gap-3 rounded-xl border border-ink-900/10 bg-well px-4 py-3 text-sm">
-              <span className="mt-0.5 shrink-0 text-conf-medium">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-[18px] w-[18px]">
-                  <path d="M12 4v16M4 8V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v3M9 20h6" />
-                </svg>
-              </span>
-              <p className="text-ink-600">
+              <p>
                 <b className="font-semibold text-ink-900">Some things can’t be averaged.</b> Sunrise, sunset, the
                 weather-code icon and wind direction take the value from the single highest-weighted model present.
                 Averaging a timestamp or a category would be meaningless.
               </p>
             </div>
+          </Section>
 
-            <h4 className="mb-1 font-semibold text-ink-900">Confidence, from how much the models disagree</h4>
+          {/* Confidence */}
+          <Section title="Confidence">
             <p className="mb-3 max-w-[60ch] text-sm text-ink-600">
               Confidence takes the <b className="font-semibold text-ink-900">larger</b> of two signals: how far the
               models spread apart, and the ICON ensemble spread, both measured on next-day high temperature. The daily
               range shown is the consensus ± that spread.
             </p>
-            <div className="grid gap-3 sm:grid-cols-3">
-              {CONFIDENCE.map((c) => (
-                <div key={c.level} className={`rounded-xl border border-t-[3px] border-ink-900/10 bg-well p-3.5 ${CONF_BORDER[c.level]}`}>
-                  <span className={`tracking-wide text-[10px] font-semibold uppercase tracking-widest ${CONF_TEXT[c.level]}`}>{c.label}</span>
-                  <div className="my-0.5 tracking-wide text-lg tabular-nums text-ink-900">{c.range}</div>
-                  <small className="text-xs text-ink-400">{c.note}</small>
-                </div>
-              ))}
+            <div className="mb-4 rounded-lg ring-1 ring-ink-900/10">
+              <table className="w-full border-collapse text-left text-sm">
+                <thead>
+                  <tr className="bg-well text-[10px] uppercase tracking-wider text-ink-600">
+                    <th className="border-b border-ink-900/10 px-3.5 py-2 font-medium">Level</th>
+                    <th className="border-b border-ink-900/10 px-3.5 py-2 font-medium">Spread</th>
+                    <th className="border-b border-ink-900/10 px-3.5 py-2 font-medium">Reading</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {CONFIDENCE.map((c) => (
+                    <tr key={c.level}>
+                      <td className={`border-b border-ink-900/8 px-3.5 py-2.5 text-sm font-semibold ${CONF_TEXT[c.level]}`}>
+                        {c.label}
+                      </td>
+                      <td className="border-b border-ink-900/8 px-3.5 py-2.5 tabular-nums text-ink-900">{c.range}</td>
+                      <td className="border-b border-ink-900/8 px-3.5 py-2.5 text-ink-600">{c.note}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
 
-            <div className="mt-4 rounded-xl border border-ink-900/10 bg-white p-4">
-              <p className="mb-3 tracking-wide text-[10px] uppercase tracking-widest text-ink-400">
-                Worked example · the same five highs
-              </p>
+            <ApplicationNote title="Application note · the same five highs">
               <p className="mb-3 text-sm text-ink-600">
                 Those five model highs were{' '}
                 <span className="tabular-nums text-ink-900">24, 25, 26, 25, 27&nbsp;°C</span>.
@@ -356,48 +366,49 @@ export function AboutDialog() {
                 <span className="font-semibold text-conf-high">High</span> confidence, with a range of{' '}
                 <span className="tabular-nums text-ink-900">24.8 ± 1.3 → 23.5 to 26.1&nbsp;°C</span>.
               </p>
-            </div>
-          </section>
+            </ApplicationNote>
+          </Section>
 
-          {/* Satellite layers */}
-          <section className="px-6 py-6">
-            <h3 className="mb-1 text-lg font-semibold text-ink-900">What each overlay shows & how often it updates</h3>
-            <p className="mb-4 max-w-[60ch] text-sm text-ink-600">
-              Imagery comes from EUMETSAT’s geostationary MTG and MSG satellites. The badge on each
-              layer is how often a fresh frame arrives.
+          {/* Imagery channels, derived from GET /imagery */}
+          <Section title="Imagery channels">
+            <p className="mb-3 max-w-[60ch] text-sm text-ink-600">
+              Imagery comes from EUMETSAT’s geostationary MTG and MSG satellites. The badge on each channel is how
+              often a fresh frame arrives.
             </p>
             {imagery ? (
-              <div className="grid gap-3 sm:grid-cols-2">
+              <ul className="divide-y divide-ink-900/8">
                 {imagery.layers.map((layer) => {
                   const info = LAYER_INFO[layer.layer]
                   const name = info?.name ?? shortTitle(layer.title)
                   const cadence = cadenceFromTimes(layer.times)
                   return (
-                    <div key={layer.layer} className="flex flex-col gap-1.5 rounded-xl border border-ink-900/10 bg-well p-3.5">
-                      <div className="flex items-center justify-between gap-2">
-                        <h4 className="text-sm font-semibold text-ink-900">{name}</h4>
-                        {cadence && (
-                          <span className={`whitespace-nowrap rounded-full px-2 py-0.5 tracking-wide text-[10px] font-semibold ${CADENCE_BADGE[cadence.kind]}`}>
-                            {cadence.label}
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-xs text-ink-600">{info?.description ?? name}</p>
+                    <li key={layer.layer} className="flex flex-wrap items-baseline gap-x-3 gap-y-1 py-2.5">
+                      <span className="shrink-0 text-sm font-medium text-ink-900 sm:w-40">{name}</span>
                       {info?.satellite && (
-                        <span className="mt-auto w-fit rounded border border-ink-900/10 px-1.5 py-0.5 tracking-wide text-[10px] uppercase tracking-wide text-ink-400">
+                        <span className="shrink-0 rounded border border-ink-900/10 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-ink-400">
                           {info.satellite}
                         </span>
                       )}
-                    </div>
+                      <span className="min-w-[14rem] flex-1 text-sm text-ink-600">{info?.description ?? name}</span>
+                      {cadence && (
+                        <span className={`shrink-0 ${CHIP}`}>
+                          {cadence.label}
+                        </span>
+                      )}
+                    </li>
                   )
                 })}
-              </div>
+              </ul>
             ) : (
-              <p className="text-sm text-ink-600">Loading layers…</p>
+              <div className="space-y-2" aria-hidden>
+                {Array.from({ length: 4 }, (_, i) => (
+                  <span key={i} className="skeleton block h-8 w-full" />
+                ))}
+              </div>
             )}
-          </section>
+          </Section>
 
-          <footer className="flex flex-wrap justify-between gap-3 bg-well px-6 py-4 tracking-wide text-[10px] text-ink-400">
+          <footer className="flex flex-wrap justify-between gap-3 bg-well px-6 py-4 text-xs text-ink-600">
             <span>multi-model consensus + EUMETSAT imagery</span>
             <span>metric · no account · no keys</span>
           </footer>
