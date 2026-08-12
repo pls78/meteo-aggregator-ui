@@ -214,20 +214,63 @@ SHALL clear the indicator once the frame's tiles have loaded.
 ### Requirement: Animate control stays clear of the weather sheet
 
 The system SHALL keep the time-lapse control visible and usable when the weather
-detail sheet (the hourly forecast or confidence detail for a day) is open:
-opening the sheet SHALL NOT cover the control, and the control SHALL be
-positioned clear of the sheet. When no sheet is open, the control SHALL rest near
-the bottom of the map as before.
+detail sheet (the hourly forecast or confidence detail for a day) is open: opening
+the sheet SHALL NOT cover the control. On the desktop layout the sheet SHALL rest
+flush at the bottom edge and the control SHALL move above the sheet's top edge when
+the sheet's panel would overlap it — the same clearance behavior, transform-only
+motion, and reduced-motion handling as the layer control. When no sheet is open (or
+the sheet does not reach the control), the control SHALL rest near the bottom of the
+map as before.
 
 #### Scenario: Forecast does not cover the control
 
 - **WHEN** a layer is animating (its control is shown) and the user opens a day's
   hourly forecast
-- **THEN** the play/pause control remains fully visible and usable, not covered by
-  the forecast sheet
+- **THEN** the play/pause control moves above the forecast sheet and remains fully
+  visible and usable, and the sheet stays at the bottom edge
 
 #### Scenario: Control rests at the bottom when no sheet is open
 
 - **WHEN** a layer is animating and no weather detail sheet is open
 - **THEN** the control sits near the bottom-centre of the map as before
+
+#### Scenario: Activating a layer while a sheet is open
+
+- **WHEN** a detail sheet is open and the user activates a satellite layer (making the
+  control appear)
+- **THEN** the control appears clear of the sheet, not overlapped by it
+
+### Requirement: Layer control stays clear of the weather detail sheet
+
+On the desktop layout, the system SHALL keep the layer control clear of the weather
+detail sheet (the hourly forecast or confidence detail for a day): while an open sheet's
+panel would overlap the control, the control SHALL sit above the sheet's top edge,
+following the sheet's actual height, and the reposition SHALL animate using only
+compositor-friendly properties (no animation under reduced motion). While no sheet is
+open — or the open sheet's panel does not reach the control's position — the control
+SHALL rest at the bottom-left of the map as before.
+
+#### Scenario: Sheet does not overlap the control
+
+- **WHEN** the user opens a detail sheet on desktop whose panel extends over the layer
+  control's bottom-left position
+- **THEN** the layer control moves above the sheet and no part of it overlaps the sheet
+
+#### Scenario: Control stays put when the sheet is clear of it
+
+- **WHEN** the open sheet's panel is narrow enough that it would not overlap the layer
+  control (e.g. a centered confidence detail)
+- **THEN** the control remains at its bottom-left resting position
+
+#### Scenario: Control returns when the sheet closes
+
+- **WHEN** the detail sheet is closed
+- **THEN** the layer control returns to its bottom-left resting position
+
+#### Scenario: Control follows the sheet's height
+
+- **WHEN** the open sheet's size changes (e.g. switching between the hourly chart and the
+  confidence detail, or content finishing loading)
+- **THEN** the layer control repositions — up, down, or back to rest — so it never
+  overlaps the sheet and never lifts without need
 
