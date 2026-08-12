@@ -129,6 +129,10 @@ preview environment as well (`--env preview`) or preview deploys return 503.
 - **`src/components/mobile/`** — the layout shown below the `md` breakpoint. `MobileShell`
   composes `MobileTopBar` (search + A/B target), `WeatherSheet` (draggable peek/half/full sheet
   with an A/B tab, embedding `HourlyChart`), and `MobileLayers` (Layers FAB + modal sheet).
+  `WeatherSheet` is a **fixed-height (92vh) panel pushed down by `translateY`** — never animate
+  its `height` (the settle transition is transform-only, disabled under reduced motion), and
+  its scroll container pads its bottom by the off-screen portion so content stays reachable at
+  every snap; keep both halves of that pairing if you touch the snap math.
 - **`src/components/about/`** — the in-app info / "how it works" dialog (opened from an info
   button in both layouts; state via `appStore.aboutOpen`). `AboutDialog` is a light modal
   documenting features, data sources, the aggregation/weighting algorithm (with worked
