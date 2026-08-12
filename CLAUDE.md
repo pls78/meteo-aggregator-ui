@@ -104,6 +104,10 @@ preview environment as well (`--env preview`) or preview deploys return 503.
   Shift+click always fills comparison. Active satellite layers are rendered imperatively in
   `MapView`; when one plays a time-lapse it mounts a preloaded raster layer per frame (see
   HANDOFF gotcha #3). `MapAnimateControl` is the floating play/pause control (single active layer).
+  On desktop, the detail sheet always sits flush at the bottom; `DesktopOverlays` (App.tsx)
+  watches the sheet with a `ResizeObserver` and lifts each bottom control (`LayerControl`,
+  `MapAnimateControl`) above it by transform — only when the sheet's panel would actually
+  overlap that control.
 - **`src/components/`** (desktop overlays):
   - `search/SearchBox` accepts a `className` for width.
   - `panels/LocationCard` gives each day row two click targets: the day area opens the hourly

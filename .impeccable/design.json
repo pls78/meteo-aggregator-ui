@@ -310,6 +310,11 @@
         "purpose": "Layers panel expand/collapse without unmounting content."
       },
       {
+        "name": "control-lift",
+        "value": "translateY, 300ms ease-out (motion-reduce: none)",
+        "purpose": "Desktop bottom controls (layers panel, time-lapse pill) glide above the open detail sheet — lift measured from the sheet's real height, applied only when the sheet's panel would overlap that control; the sheet itself stays flush at the bottom."
+      },
+      {
         "name": "sheet-snap",
         "value": "height 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)",
         "purpose": "Weather sheet settling to peek/half/full after a drag — the deliberate layout-height exception."
