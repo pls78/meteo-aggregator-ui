@@ -258,6 +258,23 @@
           "oklch(86% 0.06 25)",
           "oklch(95% 0.025 25)"
         ]
+      },
+      "satellite-legend": {
+        "role": "data",
+        "displayName": "Satellite Legend Keys",
+        "canonical": "#e06be0",
+        "tonalRamp": [
+          "#e06be0",
+          "#3fb24a",
+          "#c9a45c",
+          "#3e7bd6",
+          "#d14a3a",
+          "#f2d338",
+          "#e38b2e",
+          "#35c4e8",
+          "#2f3b52"
+        ],
+        "note": "Data colors, not palette: transcriptions of the colors appearing in EUMETSAT RGB imagery (src/lib/layerLegends.ts). Must match the satellite products, never the UI tokens."
       }
     },
     "typographyMeta": {
@@ -316,8 +333,8 @@
       },
       {
         "name": "sheet-snap",
-        "value": "height 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)",
-        "purpose": "Weather sheet settling to peek/half/full after a drag — the deliberate layout-height exception."
+        "value": "transform (translateY) 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); none under reduced motion",
+        "purpose": "Weather sheet settling to peek/half/full after a drag — a fixed-height sheet pushed down by translateY, so the settle never animates a layout property; the drag itself tracks 1:1 with no transition."
       },
       {
         "name": "skeleton-pulse",
@@ -517,7 +534,7 @@
       "Don't use loc-b red for anything but location B — low confidence is conf-low (deliberately deeper), errors are danger.",
       "Don't put fills behind annotation labels: confidence tags, weekday initials, and table headers are text on paper (the confidence-detail header pill and the mobile A/B tabs are the sanctioned tinted-fill survivors).",
       "Don't build a dual-axis chart; temperature and precipitation get separate stacked panels sharing one x-axis, and the precip domain keeps its 1mm floor.",
-      "Don't animate layout properties — transforms and opacity only, 300ms ease-out — except the weather sheet's height, which is its drag mechanic.",
+      "Don't animate layout properties — transforms and opacity only, 300ms ease-out (none under reduced motion).",
       "Don't add a dark mode, a webfont, shadows that react to hover, or a second panel material.",
       "Don't swap the Positron basemap or re-enable rotation/pitch/page zoom; the muted, locked map is the meteogram's field.",
       "Don't render weather conditions with emoji or off-hand icons — every condition comes from the drawn glyph set (structure currentColor, drops/flakes precip, solar marks sun).",

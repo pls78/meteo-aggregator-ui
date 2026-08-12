@@ -171,6 +171,7 @@ through the same tokens via `var(--color-*)`.
 - **Solid Paper** (`surface-solid`, `#fcfcfa`): opaque surfaces — search dropdown, legend image backing, the chart hover-dot outline.
 - **Well** (`#f4f6f8`): inset secondary surface — table headers and info-card wells in the About dialog.
 - Hairlines and tints are alpha inks: borders/dividers `ink-900/8`–`/10`, hover fill `ink-900/5`, the panel ring `rgb(22 24 29 / 0.1)`.
+- **Satellite legend keys** (`src/lib/layerLegends.ts`) are **data colors, not palette**: the swatches transcribe the colors that actually appear in EUMETSAT RGB imagery (dust pink `#e06be0`, ice green `#3fb24a`, cold-cloud red `#d14a3a`, …), so they must match the satellite products, never the UI tokens. Documented in the sidecar as the `satellite-legend` ramp; add there if EUMETSAT adds a product.
 
 ### Named Rules
 **The No-Raw-Palette Rule.** A component never introduces a literal hex value or a
@@ -348,9 +349,11 @@ dot. The weather sheet's location tabs use the same grammar with `accent/10` +
 ### Sheets (mobile)
 Bottom sheets are `panel` + `rounded-t-2xl` with a centered grip bar (`h-1.5 w-10`
 `ink-300` pill). The weather sheet snaps peek/half/full — tap the grip to cycle,
-drag to the nearest snap (settle animation `height 0.3s
-cubic-bezier(0.2,0.8,0.2,1)`; **a deliberate layout-height animation**, the one
-exception to transform-only motion, required by the drag mechanic). Its day list is
+drag to the nearest snap. The sheet is a fixed-height (92vh) panel pushed down by
+`translateY`: the settle animation is `transform 0.3s cubic-bezier(0.2,0.8,0.2,1)`
+(none under reduced motion), the drag tracks the pointer 1:1 with no transition,
+and the internal scroll area pads its bottom by the off-screen portion so every
+row stays reachable at every snap. Its day list is
 the same ruled-row + SpreadStrip + ConfidenceTag grammar as the desktop card. The
 layers sheet slides in with `translate-y` over an `ink-900/35` scrim. Content
 scrolls internally (`touch-action: pan-y`); the map never pans behind a sheet.

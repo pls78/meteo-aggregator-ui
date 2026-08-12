@@ -23,13 +23,15 @@ const WEEKDAY = (iso: string) => new Date(iso).toLocaleDateString(undefined, { w
 const prettyDay = (iso: string) =>
   new Date(`${iso}T00:00`).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'short' })
 
-function snapPx(s: Snap) {
-  const h = window.innerHeight
-  return s === 'peek' ? PEEK_PX : s === 'half' ? h * 0.46 : h * 0.88
+function snapPx(s: Snap, vh: number) {
+  return s === 'peek' ? PEEK_PX : s === 'half' ? vh * 0.46 : vh * 0.88
 }
-function nearestSnap(px: number): Snap {
+function nearestSnap(px: number, vh: number): Snap {
   const opts: Snap[] = ['peek', 'half', 'full']
-  return opts.reduce((best, s) => (Math.abs(snapPx(s) - px) < Math.abs(snapPx(best) - px) ? s : best), 'half')
+  return opts.reduce(
+    (best, s) => (Math.abs(snapPx(s, vh) - px) < Math.abs(snapPx(best, vh) - px) ? s : best),
+    'half',
+  )
 }
 
 // One location's current conditions (dot + name + temp + icon), compact enough to
@@ -67,6 +69,14 @@ export function WeatherSheet() {
   const [tab, setTab] = useState<Slot>('primary')
   const [snap, setSnap] = useState<Snap>('half')
   const [dragH, setDragH] = useState<number | null>(null)
+  // Viewport height as state: the sheet's fixed layout height and its translate
+  // both derive from it, so orientation changes must re-render.
+  const [vh, setVh] = useState(() => window.innerHeight)
+  useEffect(() => {
+    const onResize = () => setVh(window.innerHeight)
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
   const drag = useRef<{ startY: number; startH: number; moved: boolean } | null>(null)
   // The day-detail section and the sheet's internal scroll container, so opening
   // a day can bring the detail into view (at the half snap it often sits below
@@ -106,16 +116,24 @@ export function WeatherSheet() {
 
   if (!primary && !comparison) return null
 
-  const height = dragH != null ? `${dragH}px` : snap === 'peek' ? `${PEEK_PX}px` : snap === 'half' ? '46vh' : '88vh'
+  // Fixed-height sheet pushed down by translateY: only transform ever animates
+  // (never a layout property). Dragging tracks the pointer 1:1 with no
+  // transition; the settle-to-snap animates, except under reduced motion. The
+  // internal scroll container compensates for the off-screen portion with
+  // bottom padding so every row stays reachable at every snap.
+  const maxH = Math.round(vh * 0.92)
+  const visible = Math.min(dragH ?? snapPx(snap, vh), maxH)
+  const down = Math.max(0, maxH - visible)
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
   function onDown(e: React.PointerEvent) {
-    drag.current = { startY: e.clientY, startH: snapPx(snap), moved: false }
+    drag.current = { startY: e.clientY, startH: snapPx(snap, vh), moved: false }
     ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
   }
   function onMove(e: React.PointerEvent) {
     if (!drag.current) return
     const d = drag.current
-    const h = Math.max(70, Math.min(window.innerHeight * 0.92, d.startH + (d.startY - e.clientY)))
+    const h = Math.max(70, Math.min(maxH, d.startH + (d.startY - e.clientY)))
     if (Math.abs(e.clientY - d.startY) > 4) d.moved = true
     setDragH(h)
   }
@@ -123,7 +141,7 @@ export function WeatherSheet() {
     const d = drag.current
     if (!d) return
     if (!d.moved) setSnap((s) => (s === 'peek' ? 'half' : s === 'half' ? 'full' : 'peek'))
-    else setSnap(nearestSnap(dragH ?? snapPx(snap)))
+    else setSnap(nearestSnap(dragH ?? snapPx(snap, vh), vh))
     setDragH(null)
     drag.current = null
   }
@@ -138,7 +156,13 @@ export function WeatherSheet() {
   return (
     <section
       className="panel pointer-events-auto absolute inset-x-0 bottom-0 z-[1000] flex flex-col overflow-hidden rounded-t-2xl"
-      style={{ height, transition: dragH != null ? 'none' : 'height 0.3s cubic-bezier(0.2,0.8,0.2,1)', touchAction: 'none' }}
+      style={{
+        height: `${maxH}px`,
+        transform: `translateY(${down}px)`,
+        transition:
+          dragH != null || reduceMotion ? 'none' : 'transform 0.3s cubic-bezier(0.2,0.8,0.2,1)',
+        touchAction: 'none',
+      }}
     >
       {/* Grip: tap cycles peek/half/full, drag snaps to nearest. */}
       <div
@@ -163,7 +187,11 @@ export function WeatherSheet() {
       </div>
 
       {/* Scrollable detail (hidden visually at peek by the sheet height) */}
-      <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto px-4 pb-6" style={{ touchAction: 'pan-y' }}>
+      <div
+        ref={scrollRef}
+        className="min-h-0 flex-1 overflow-y-auto px-4"
+        style={{ touchAction: 'pan-y', paddingBottom: down + 24 }}
+      >
         {comparison && (
           <div className="mb-3 flex gap-2">
             {(['primary', 'comparison'] as Slot[]).map((s) => {
