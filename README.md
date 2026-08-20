@@ -82,6 +82,13 @@ npx wrangler pages secret put API_ORIGIN --project-name=<your-project>
 The proxy caches responses at the edge (5 min), so repeat queries never reach
 your backend. See [`.env.example`](.env.example).
 
+Satellite tiles and legends follow the same pattern on a `/wms` route (Vite proxy
+in dev, [`functions/wms.js`](functions/wms.js) in production, upstream fixed to
+EUMETSAT's WMS). This one is load-bearing, not just tidy: EUMETSAT serves GetMap
+images without CORS headers, and MapLibre fetches tiles in CORS mode, so direct
+cross-origin tile fetches are blocked by the browser. Timestamped tiles are
+immutable and cache at the edge for 7 days.
+
 ## Deploy
 
 The build is fully static; it's hosted on **Cloudflare Pages** (direct upload, no

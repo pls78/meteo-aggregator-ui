@@ -19,6 +19,14 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           rewrite: (p) => p.replace(/^\/api/, ''),
         },
+        // Satellite tiles/legends: same-origin /wms -> EUMETSAT, because their
+        // GetMap responses lack CORS headers and MapLibre fetches tiles in CORS
+        // mode. Production does the same via functions/wms.js.
+        '/wms': {
+          target: 'https://view.eumetsat.int',
+          changeOrigin: true,
+          rewrite: (p) => p.replace(/^\/wms/, '/geoserver/wms'),
+        },
       },
     },
   }

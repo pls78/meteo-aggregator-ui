@@ -22,7 +22,7 @@ Consensus is better: blending multiple weather models yields a more reliable sin
 
 - Pure frontend (Vite + React 19 + TypeScript + Tailwind v4 + MapLibre GL) over the sibling FastAPI backend `../meteo-aggregator-api`, reached only via same-origin `/api` (Vite dev proxy locally; Cloudflare Pages Function in production). CORS is never involved by design.
 - Live at <https://meteo-aggregator.pages.dev> as a capped free-tier demo (single backend instance, may be slow to wake); others can deploy their own backend and point the UI at it with one secret (`API_ORIGIN`).
-- Data: Open-Meteo (forecasts, place search; CC-BY-4.0, non-commercial tier) via the backend; EUMETSAT WMS for satellite imagery (fetched directly by the browser); CARTO Voyager / OpenStreetMap basemap. Sources are credited in the in-app "how it works" dialog.
+- Data: Open-Meteo (forecasts, place search; CC-BY-4.0, non-commercial tier) via the backend; EUMETSAT WMS for satellite imagery (via the same-origin `/wms` proxy — EUMETSAT sends no CORS headers on tile images); CARTO Voyager / OpenStreetMap basemap. Sources are credited in the in-app "how it works" dialog.
 - Spec-driven development via OpenSpec (`openspec/`); features go through change proposals, not ad hoc edits.
 
 ## Capabilities and Constraints

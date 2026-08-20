@@ -21,10 +21,12 @@ const ITALY_CENTER: [number, number] = [12.5, 42.5] // [lng, lat]
 
 // WMS GetMap tile template for a MapLibre raster source. v1.1.1 + srs + the
 // {bbox-epsg-3857} token avoids WMS 1.3.0 axis-order pitfalls. time is omitted
-// when null so the WMS serves the latest image.
+// when null so the WMS serves the latest image. Built on the same-origin /wms
+// route (not params.wms_url): MapLibre fetches tiles in CORS mode and the
+// EUMETSAT WMS serves images without CORS headers, so a direct fetch is blocked.
 function wmsTileUrl(params: WmsLayerParams, time: string | null): string {
   const base =
-    `${params.wms_url}?service=WMS&version=1.1.1&request=GetMap` +
+    `${window.location.origin}/wms?service=WMS&version=1.1.1&request=GetMap` +
     `&layers=${encodeURIComponent(params.layer)}&styles=` +
     `&format=image/png&transparent=true&srs=EPSG:3857` +
     `&width=256&height=256&bbox={bbox-epsg-3857}`

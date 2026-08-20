@@ -8,10 +8,11 @@ import type { WmsLayerParams } from '../../api/types'
 import { RGB_LEGENDS } from '../../lib/layerLegends'
 import { ChevronRightIcon } from '../icons'
 
-// Build a GetLegendGraphic URL for a layer from its WMS endpoint + name. Legends
-// are static color scales (independent of time).
+// Build a GetLegendGraphic URL for a layer from its name. Legends are static
+// color scales (independent of time). Uses the same-origin /wms route, like the
+// map tiles, so the client never dials the WMS origin directly.
 function legendUrl(params: WmsLayerParams): string {
-  const url = new URL(params.wms_url)
+  const url = new URL('/wms', window.location.origin)
   url.searchParams.set('service', 'WMS')
   url.searchParams.set('version', '1.3.0')
   url.searchParams.set('request', 'GetLegendGraphic')
