@@ -16,8 +16,9 @@ and let the user toggle each one on or off as a map overlay.
 #### Scenario: Toggle a layer on
 
 - **WHEN** the user enables a layer
-- **THEN** that layer is rendered as a WMS overlay on the map, with tiles fetched directly
-  from the EUMETSAT WMS endpoint using the parameters from the backend
+- **THEN** that layer is rendered as a WMS overlay on the map, with tiles fetched through
+  the same-origin `/wms` route (see the wms-proxy capability) using the layer parameters
+  from the backend
 
 #### Scenario: Toggle a layer off
 
@@ -47,8 +48,8 @@ Satellite overlays SHALL render above the base map but not prevent location sele
 
 The system SHALL display a legend for each active satellite layer, mapping the layer's colors
 to their meaning, so the overlay can be interpreted. The legend SHALL be obtained from the
-layer's own WMS service (a `GetLegendGraphic` request built from the layer's WMS URL and
-name).
+layer's WMS service (a `GetLegendGraphic` request built from the layer's name), requested
+through the same-origin `/wms` route.
 
 #### Scenario: Show a legend when a layer is active
 
