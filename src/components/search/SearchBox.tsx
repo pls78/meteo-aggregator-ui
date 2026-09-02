@@ -79,6 +79,9 @@ export function SearchBox({ slot, accent, onRemove, className = 'w-80 max-w-[80v
           style={{ background: accent }}
           aria-hidden
         />
+        {/* Height and line-height are pinned to each other, and the UA appearance
+            dropped, so the content box is exactly one line box: WebKit otherwise
+            lays the value/placeholder against the bottom of a taller box. */}
         <input
           type="text"
           value={query}
@@ -88,7 +91,7 @@ export function SearchBox({ slot, accent, onRemove, className = 'w-80 max-w-[80v
             setOpen(true)
           }}
           onFocus={() => setOpen(true)}
-          className="min-w-0 flex-1 bg-transparent text-base text-ink-900 outline-none placeholder:text-ink-400 md:text-sm"
+          className="h-6 min-w-0 flex-1 appearance-none bg-transparent p-0 text-base leading-6 text-ink-900 outline-none placeholder:text-ink-400 md:h-5 md:text-sm md:leading-5"
         />
         {focused && query.length > 0 && (
           <button

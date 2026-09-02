@@ -16,6 +16,15 @@ import { SpreadStrip, spreadExtent } from '../panels/SpreadStrip'
 import { LOC_A, LOC_B } from '../../lib/accents'
 type Snap = 'peek' | 'half' | 'full'
 const PEEK_PX = 96
+// The top bar (search + A/B target) owns the top of the screen, and the map's
+// floating controls hang off it, so the full snap stops below the bar rather
+// than taking a flat share of the viewport: on a short screen a percentage
+// would swallow the search box.
+const TOP_BAR_PX = 112
+// Bottom of the right-hand control stack (Layers 96 + locate 152 + info 208, each
+// 48 tall) plus a gap. Past this the sheet has covered the map, so the controls
+// that only act on the map step aside (see MobileShell).
+const MAP_CONTROLS_PX = 264
 
 const num = (v: DailyValue, d = 0) => (typeof v === 'number' ? v.toFixed(d) : '–')
 const label = (l: SelectedLocation) => l.name ?? `${l.lat.toFixed(3)}, ${l.lng.toFixed(3)}`
@@ -24,7 +33,7 @@ const prettyDay = (iso: string) =>
   new Date(`${iso}T00:00`).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'short' })
 
 function snapPx(s: Snap, vh: number) {
-  return s === 'peek' ? PEEK_PX : s === 'half' ? vh * 0.46 : vh * 0.88
+  return s === 'peek' ? PEEK_PX : s === 'half' ? vh * 0.46 : Math.max(vh * 0.5, vh - TOP_BAR_PX)
 }
 function nearestSnap(px: number, vh: number): Snap {
   const opts: Snap[] = ['peek', 'half', 'full']
@@ -114,8 +123,6 @@ export function WeatherSheet() {
   const cWeek = useHourlyRange(comparison, { enabled: dayOpen })
   const shownDay = forecast.data?.days.find((d) => d.date === selectedDay)
 
-  if (!primary && !comparison) return null
-
   // Fixed-height sheet pushed down by translateY: only transform ever animates
   // (never a layout property). Dragging tracks the pointer 1:1 with no
   // transition; the settle-to-snap animates, except under reduced motion. The
@@ -126,6 +133,28 @@ export function WeatherSheet() {
   const down = Math.max(0, maxH - visible)
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
+  // Publish the sheet's visible height (and whether it is currently animating)
+  // as custom properties, so the map controls that ride above it can follow by
+  // CSS alone — a store field would re-render every store consumer, MapView
+  // included, on every pointermove of a drag.
+  const mounted = Boolean(primary || comparison)
+  useEffect(() => {
+    const root = document.documentElement
+    root.style.setProperty('--weather-sheet', `${mounted ? Math.round(visible) : 0}px`)
+    root.style.setProperty('--weather-sheet-ease', dragH != null || reduceMotion ? '0s' : '0.3s')
+    root.style.setProperty(
+      '--map-controls',
+      !mounted || visible <= vh - MAP_CONTROLS_PX ? 'visible' : 'hidden',
+    )
+    return () => {
+      root.style.removeProperty('--weather-sheet')
+      root.style.removeProperty('--weather-sheet-ease')
+      root.style.removeProperty('--map-controls')
+    }
+  }, [mounted, visible, vh, dragH, reduceMotion])
+
+  if (!primary && !comparison) return null
+
   function onDown(e: React.PointerEvent) {
     drag.current = { startY: e.clientY, startH: snapPx(snap, vh), moved: false }
     ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
@@ -133,13 +162,18 @@ export function WeatherSheet() {
   function onMove(e: React.PointerEvent) {
     if (!drag.current) return
     const d = drag.current
-    const h = Math.max(70, Math.min(maxH, d.startH + (d.startY - e.clientY)))
+    const h = Math.max(70, Math.min(snapPx('full', vh), d.startH + (d.startY - e.clientY)))
     if (Math.abs(e.clientY - d.startY) > 4) d.moved = true
     setDragH(h)
   }
+  // Bound to pointerup and pointercancel alike: a cancelled gesture would
+  // otherwise leave `dragH` pinned, freezing the sheet mid-drag.
   function onUp() {
     const d = drag.current
-    if (!d) return
+    if (!d) {
+      setDragH(null)
+      return
+    }
     if (!d.moved) setSnap((s) => (s === 'peek' ? 'half' : s === 'half' ? 'full' : 'peek'))
     else setSnap(nearestSnap(dragH ?? snapPx(snap, vh), vh))
     setDragH(null)
@@ -169,6 +203,7 @@ export function WeatherSheet() {
         onPointerDown={onDown}
         onPointerMove={onMove}
         onPointerUp={onUp}
+        onPointerCancel={onUp}
         className="flex shrink-0 cursor-grab justify-center py-2.5"
       >
         <span className="h-1.5 w-10 rounded-full bg-ink-300" />

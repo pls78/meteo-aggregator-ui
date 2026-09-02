@@ -32,7 +32,7 @@ export function MobileTopBar() {
   const accent = activeSlot === 'comparison' ? LOC_B : LOC_A
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 top-0 z-[1000] flex flex-col gap-2 p-3">
+    <div className="pointer-events-none absolute inset-x-0 top-0 z-[1010] flex flex-col gap-2 p-3">
       <div className="pointer-events-auto">
         <SearchBox slot={activeSlot} accent={accent} className="w-full" />
       </div>

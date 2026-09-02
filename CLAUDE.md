@@ -132,7 +132,17 @@ preview environment as well (`--env preview`) or preview deploys return 503.
   `WeatherSheet` is a **fixed-height (92vh) panel pushed down by `translateY`** — never animate
   its `height` (the settle transition is transform-only, disabled under reduced motion), and
   its scroll container pads its bottom by the off-screen portion so content stays reachable at
-  every snap; keep both halves of that pairing if you touch the snap math.
+  every snap; keep both halves of that pairing if you touch the snap math. The sheet is
+  full-width, so **any control at its own `z-[1000]` is swallowed once a snap reaches it**:
+  the top bar and the floating controls sit at `z-[1010]` and the layers modal above them
+  (scrim `z-[1020]`, sheet `z-[1030]`). The full snap stops `TOP_BAR_PX` below the top of the
+  screen rather than at a flat percentage, and the sheet publishes `--weather-sheet` (its
+  visible height), `--weather-sheet-ease` and `--map-controls` on the document element — the
+  time-lapse control rides above its edge by CSS alone, and locate/info hide once the sheet
+  has covered the map. These are custom properties rather than store state on purpose: a
+  store field would re-render every consumer, `MapView` included, on every drag frame. The
+  Layers control never hides — imagery reads through the translucent sheet, so it must stay
+  reachable to be turned off.
 - **`src/components/about/`** — the in-app info / "how it works" dialog (opened from an info
   button in both layouts; state via `appStore.aboutOpen`). `AboutDialog` is a light modal
   documenting features, data sources, the aggregation/weighting algorithm (with worked
