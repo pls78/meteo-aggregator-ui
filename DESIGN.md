@@ -229,9 +229,9 @@ floating above the map canvas, with `pointer-events-none` wrappers so the map st
 clickable between panels.
 
 - **Desktop (≥ 768px):** search stack top-left; forecast card(s) top-right — cards size to their widest day row (`w-max min-w-72 max-w-[22rem]`), sit side by side when comparing, and scroll within `max-h-[calc(100vh-2rem)]`; layers panel bottom-left (`w-64`); time-lapse pill bottom-center; hourly/confidence sheet slides up bottom-center (`max-w-5xl`), always flush with the bottom edge — the two bottom controls lift themselves above its top edge (translateY, 300ms, none under reduced motion), each only when the sheet's panel would actually overlap it (a `ResizeObserver` in `DesktopOverlays` measures the sheet, so the lift tracks its content-dependent height); locate + info controls stacked bottom-right.
-- **Mobile (< 768px, `useIsMobile`):** a top bar (full-width search + A/B target or "+ Compare" pill), a right-edge FAB rail (layers at `top-24`, locate at `top-[9.5rem]`, info at `top-[13rem]`; 48px targets), the time-lapse pill floating above the sheet (`bottom-[6.5rem]`), and the draggable weather sheet pinned to the bottom with three snap heights — peek 96px, half 46vh, full 88vh.
+- **Mobile (< 768px, `useIsMobile`):** a top bar (full-width search + A/B target or "+ Compare" pill), a right-edge FAB rail (layers at `top-24`, locate at `top-[9.5rem]`, info at `top-[13rem]`; 48px targets), the time-lapse pill riding above the sheet's top edge, and the draggable weather sheet pinned to the bottom with three snap heights — peek 96px, half 46vh, full `vh − 112px` (the top bar's height, so the search is never covered). The sheet publishes its visible height as `--weather-sheet` and a `--map-controls` visibility flag: the time-lapse pill follows the edge by CSS alone, and locate + info step aside once the sheet has covered the map. The Layers FAB never hides — imagery reads through the sheet, so its switch has to stay reachable.
 - **Spacing rhythm** (4px grid): 16px panel padding (12px on the denser layers panel), 8px between siblings, 12px between related groups, 24px between dialog sections. Day rows sit on hairline dividers (`divide-y divide-ink-900/8`, `py-px` items) instead of gaps — ruled paper, not stacked chips. Screen-edge gutter: 12px (mobile), 16px (desktop).
-- **Z-order vocabulary:** map at 0 → in-panel popovers `z-10` → overlay shells `z-[1000]` → hourly sheet / layer scrim `z-[1001]` → layers panel/sheet + desktop time-lapse pill `z-[1002]` (both bottom controls glide *over* the sheet while lifting) → About dialog `z-[2000]`.
+- **Z-order vocabulary:** map at 0 → in-panel popovers `z-10` → overlay shells and the mobile weather sheet `z-[1000]` → desktop hourly sheet `z-[1001]` → desktop layers panel + time-lapse pill `z-[1002]` (both bottom controls glide *over* the sheet while lifting) → About dialog `z-[2000]`. Mobile stacks above its own sheet instead: top bar and floating controls `z-[1010]` → layers scrim `z-[1020]` → layers sheet `z-[1030]`. The overlay shell is a stacking context and the weather sheet is full-width and rendered last, so a mobile control left at `z-[1000]` is swallowed by the sheet at any snap that reaches it.
 - Both layouts consume the same tokens, store, and shared components (`ConfidenceTag`, `ConfidenceDetail`, `SpreadStrip`, `HourlyChart`, `SearchBox`, `LocateButton`, `AboutButton`); a visual change to one layout must land in its sibling in the same pass.
 
 ## Elevation & Depth
@@ -351,8 +351,9 @@ Bottom sheets are `panel` + `rounded-t-2xl` with a centered grip bar (`h-1.5 w-1
 `ink-300` pill). The weather sheet snaps peek/half/full — tap the grip to cycle,
 drag to the nearest snap. The sheet is a fixed-height (92vh) panel pushed down by
 `translateY`: the settle animation is `transform 0.3s cubic-bezier(0.2,0.8,0.2,1)`
-(none under reduced motion), the drag tracks the pointer 1:1 with no transition,
-and the internal scroll area pads its bottom by the off-screen portion so every
+(none under reduced motion), the drag tracks the pointer 1:1 with no transition
+(clamped to the full snap, and settled on `pointercancel` as well as release), and
+the internal scroll area pads its bottom by the off-screen portion so every
 row stays reachable at every snap. Its day list is
 the same ruled-row + SpreadStrip + ConfidenceTag grammar as the desktop card. The
 layers sheet slides in with `translate-y` over an `ink-900/35` scrim. Content

@@ -139,10 +139,10 @@ cd ../meteo-aggregator-api && uvicorn api.main:app --reload   # http://localhost
      cover its options (it does overlap the bottom-left corner). Don't drop the layer control back
      inside the `z-1000` wrapper: that wrapper is a stacking context, so a child there can never
      rise above the sheet however high its own `z-*`.
-   - The **time-lapse control** keeps a fixed `bottom-4` slot; the sheet gets a conditional
-     `bottom-20` (vs `bottom-0`) driven by `activeLayers.length > 0` so it lifts above the control
-     only when a layer is active (`animate-control-clears-forecast`). The `floating` prop rounds
-     all the sheet's corners while lifted.
+   - The **time-lapse control** no longer holds a fixed slot: since
+     `animate-control-above-sheet` the sheet always rests flush at `bottom-0` and *both* bottom
+     controls lift above it by transform, each only when the centered panel actually reaches its
+     span (`layer-lift-only-on-overlap`). `HourlyPanel`'s old `floating` prop is gone.
    - Known, unfixed: the sheet's `pointer-events-auto` wrapper is full-width, so it still eats map
      clicks in the transparent strips beside the centered sheet. Constraining it needs care,
      because the chart sizes itself from its container width, so don't wrap it in `w-fit`.
@@ -157,6 +157,24 @@ cd ../meteo-aggregator-api && uvicorn api.main:app --reload   # http://localhost
     locations compared, the top-right cards overlap the top-left search boxes. This predates the
     variable-width card (fixed `w-72` cards already collided); `harden-locate-control` widened it
     by ~30 px. A real fix means deciding how the two top overlays share a narrow viewport.
+12. **Mobile layering is the mirror image of gotcha #9, and bit us the same way.** `MobileShell`
+    is one stacking context and the weather sheet is full-width and rendered **last**, so any
+    control left at the sheet's own `z-[1000]` is swallowed the moment a snap reaches it — the
+    Layers FAB, locate, info and the time-lapse pill all were (`mobile-controls-above-sheet`).
+    Controls now sit at `z-[1010]`, the layers scrim/sheet at `z-[1020]`/`z-[1030]`. Two things
+    to keep if you touch it: the scrim must stay **above** the controls, or a modal sheet leaves
+    live buttons floating over its own backdrop; and the sheet's visible height reaches the
+    controls through the `--weather-sheet` / `--weather-sheet-ease` / `--map-controls` custom
+    properties, **not** the store — the store is a React context, so a field there would
+    re-render every consumer, `MapView` included, on every pointer-move of a drag. The full snap
+    is `vh − TOP_BAR_PX`, not a percentage, so the search field is never covered.
+13. **WebKit lays input text against the bottom of the box.** Tailwind's preflight gives form
+    controls `font: inherit` but leaves `appearance: auto`, so a text input carries an inherited
+    line-height inside a UA-rendered `textfield` box; WebKit bottom-aligns the value and
+    placeholder in that combination while Chromium centers them, which is why it only ever showed
+    on iOS. `SearchBox` pins the content box to exactly one line box
+    (`h-6 leading-6 p-0 appearance-none`, `md:h-5 md:leading-5`). Any new text input wants the
+    same treatment — you will not see the bug in a desktop browser.
 
 ## Accent colors (used in 3 places, keep consistent)
 
@@ -242,7 +260,11 @@ rather than adding their own spec.) Run `openspec list --specs` for the live cou
 → `add-info-page` → `add-locate-button` → `add-layer-animation` → `derive-info-page-layers`
 → `confidence-detail-view` → `interactive-hourly-chart` → `overlay-transparency`
 → `animate-control-clears-forecast` → `harden-locate-control`
-→ `document-locate-in-info-page`
+→ `document-locate-in-info-page` → `drawn-weather-icons` → `redesign-ui-category-standard`
+→ `redesign-ui-meteogram` → `search-clear-button` → `weather-panel-feedback`
+→ `redesign-about-datasheet` → `lift-layer-control` → `layer-lift-only-on-overlap`
+→ `animate-control-above-sheet` → `weathersheet-height-animation` → `proxy-wms-tiles`
+→ `mobile-controls-above-sheet`
 (all under `openspec/changes/archive/`).
 
 > Two small follow-ups to `add-info-page` (copy tightening, and worked examples in the

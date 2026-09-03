@@ -119,7 +119,11 @@ within the sheet without panning the map, and SHALL remain fully reachable by sc
 snap height. While dragging, the sheet SHALL track the pointer directly with no animation; on
 release (or on a handle tap) it SHALL settle to the nearest snap with a smooth animation that
 does not animate any layout property, and SHALL move without animating when the user prefers
-reduced motion.
+reduced motion. A drag that is interrupted rather than released SHALL settle the sheet too,
+never leave it stranded between snaps. No snap height SHALL cover the location search and A/B
+target, and expanding the sheet SHALL NOT strand the map's floating controls behind it: a
+control the sheet reaches SHALL either move clear of it or, where it only acts on a map the
+sheet has now covered, step aside until the sheet is collapsed again.
 
 #### Scenario: Peek keeps the map clear
 
@@ -149,6 +153,12 @@ reduced motion.
 - **THEN** the sheet follows the pointer 1:1 during the drag and then animates to the nearest
   snap height without stutter
 
+#### Scenario: Interrupted drag settles
+
+- **WHEN** a drag of the sheet handle is cancelled by the browser rather than released
+- **THEN** the sheet settles to a snap height instead of staying frozen where the pointer was
+  last seen
+
 #### Scenario: Snap without animation under reduced motion
 
 - **WHEN** the user has `prefers-reduced-motion: reduce` set and the sheet changes snap
@@ -158,6 +168,11 @@ reduced motion.
 
 - **WHEN** the sheet is at its half snap and the user scrolls the daily list to its end
 - **THEN** the final row (and the day-detail section) can be brought fully into view
+
+#### Scenario: Search stays clear at the tallest snap
+
+- **WHEN** the sheet is at its full height
+- **THEN** the search field and the A/B target remain visible and usable above it
 
 ### Requirement: Confidence label is a distinct, discoverable control
 
