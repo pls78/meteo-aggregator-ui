@@ -273,7 +273,7 @@ the same vocabulary at ~1.8px (see Components → Weather Glyphs).
 
 **State vocabulary (applies to every interactive element):**
 - **Hover:** one step of surface tint (`hover:bg-ink-900/5`) and/or one ink step up (`ink-400 → ink-600`, `ink-600 → ink-900`); `transition-colors`. Confidence tags instead gain a faint self-colored ring (`hover:ring-1 ring-current/40`).
-- **Focus:** `focus-visible:outline-2 outline-accent` universally (the search container uses `focus-within:ring-2 ring-accent`; the play button adds `outline-offset-2`; controls on dark toasts use `outline-white`).
+- **Focus:** `focus-visible:outline-2 outline-accent` universally (the search container uses `focus-within:outline-2 outline-accent` — an outline, never a `ring`, which is a box-shadow and would swap out the panel shadow; the play button adds `outline-offset-2`; controls on dark toasts use `outline-white`).
 - **Active selection:** `bg-accent/10` fill + `ring-1 ring-accent/40`, with `aria-pressed` (day rows, sheet tabs). Confidence tags ring in their own color (`ring-2 ring-current/60`).
 - **Disabled:** `opacity-40` + `disabled:cursor-not-allowed` (locked layer rows use `opacity-60`).
 - **Loading:** `skeleton` utility blocks (6px radius, `ink-900/8`, 1.6s opacity pulse) shaped to the final layout so content loads without reflow. Minor text fallbacks remain in low-stakes spots ("Searching…", "Loading layers…").
@@ -328,7 +328,7 @@ Interaction is carried by rings: `hover:ring-1 ring-current/40`, active
 the tint fill survives, as a heading device.)
 
 ### Search
-- **Field:** a `panel` at 12px radius, `px-3 py-2`, leading location-accent dot, borderless transparent input, `ink-400` placeholder; whole container rings accent on focus-within.
+- **Field:** a `panel` at 12px radius, `px-3 py-2`, leading location-accent dot, borderless transparent input, `ink-400` placeholder; whole container outlines accent on focus-within (see Focus above for why not a ring).
 - **Results:** opaque dropdown (`bg-surface-solid`, panel shadow, `ink-900/10` ring), full-width rows, hover/focus fill `accent/8`.
 
 ### Buttons / Controls

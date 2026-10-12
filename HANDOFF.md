@@ -168,13 +168,18 @@ cd ../meteo-aggregator-api && uvicorn api.main:app --reload   # http://localhost
     properties, **not** the store — the store is a React context, so a field there would
     re-render every consumer, `MapView` included, on every pointer-move of a drag. The full snap
     is `vh − TOP_BAR_PX`, not a percentage, so the search field is never covered.
-13. **WebKit lays input text against the bottom of the box.** Tailwind's preflight gives form
-    controls `font: inherit` but leaves `appearance: auto`, so a text input carries an inherited
-    line-height inside a UA-rendered `textfield` box; WebKit bottom-aligns the value and
-    placeholder in that combination while Chromium centers them, which is why it only ever showed
-    on iOS. `SearchBox` pins the content box to exactly one line box
-    (`h-6 leading-6 p-0 appearance-none`, `md:h-5 md:leading-5`). Any new text input wants the
-    same treatment — you will not see the bug in a desktop browser.
+13. **iOS strands the native caret when a blurred panel's box-shadow changes on focus.** The
+    search field's caret used to land about half a line below and right of the text on iOS
+    (text itself in place, caret correct for an instant and then drifting). Cause, bisected on
+    device: `focus-within:ring-2` is a box-shadow, so it *replaced* the `panel` shadow and
+    `transition-shadow` animated the swap; the panel is a composited layer (`backdrop-filter`),
+    its layer bounds include the shadow, and iOS hosts the caret in that layer's view without
+    re-placing it when the layer's bounds move. Either half removed fixes it: the search
+    container now draws its focus ring as an `outline` (nothing to transition, shadow static,
+    which the Static Elevation Rule wanted anyway). Rule: on a `panel` that contains a text
+    input, never change `box-shadow` on focus. The Sep 2026 `h-6 leading-6 appearance-none`
+    pinning on the input was an earlier misread of this same symptom; it is harmless and stays,
+    but it is not what fixed anything.
 
 ## Accent colors (used in 3 places, keep consistent)
 

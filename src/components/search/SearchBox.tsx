@@ -73,7 +73,11 @@ export function SearchBox({ slot, accent, onRemove, className = 'w-80 max-w-[80v
         if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocused(false)
       }}
     >
-      <div className="panel flex items-center gap-2 rounded-xl px-3 py-2 transition-shadow focus-within:ring-2 focus-within:ring-accent">
+      {/* The focus ring is an outline, not a Tailwind ring: a ring is a box-shadow
+          and would replace the panel shadow (and animate the swap), and on iOS a
+          box-shadow change on this blurred (composited) panel leaves the native
+          caret stranded about half a line off the text. */}
+      <div className="panel flex items-center gap-2 rounded-xl px-3 py-2 focus-within:outline-2 focus-within:outline-accent">
         <span
           className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
           style={{ background: accent }}
